@@ -55,3 +55,15 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Profils de réglages (plusieurs jeux de réglages, choisis par perso). Pas avant que les modules d'interface soient
+  posés. À faire le moment venu : une migration de la sauvegarde qui range les réglages actuels dans un profil
+  « Par défaut » (rien n'est perdu), le choix du profil branché dans le registre des modules (c'est lui qui donne
+  `M.db`), un écran pour créer, copier, renommer et supprimer un profil.
+  En attendant, chaque module garde deux habitudes pour que l'ajout reste simple :
+  - toujours lire `M.db` au moment de s'en servir, jamais garder une référence à ses réglages au chargement ;
+  - avoir une fonction qui réapplique tous ses réglages d'un coup (appelée au changement de profil).
+  Questions à trancher avant de commencer :
+  - qu'est-ce qui suit le profil : réglages des modules, positions des cadres (`ui.movers`), modules actifs ou
+    coupés ?
+  - qu'est-ce qui reste au compte : langue, bouton de minicarte ?
+  - par défaut : un profil commun à tous les persos, ou un profil par perso ?
