@@ -1,15 +1,8 @@
--- Module « Bouton de minicarte » : un bouton CœurUI (C + cœur) au bord de la minicarte.
--- Clic : ouvre ou ferme la fenêtre des modules. Glisser : le déplace autour de la minicarte.
--- Rien n'est créé tant que le module n'est pas activé ; coupé, le bouton est caché.
+-- Bouton de minicarte (C + cœur), au bord de la minicarte. Paramètre général, page « Paramètres ».
+-- Clic : ouvre ou ferme la fenêtre de CœurUI. Glisser : le déplace autour de la minicarte.
+-- Rien n'est créé tant que le bouton n'est pas demandé ; décoché, il est caché tout de suite.
 local _, CUI = ...
-
-local M = CUI:RegisterModule({
-    key = "Minicarte",
-    name = "Bouton de minicarte",
-    description = "Un bouton CœurUI au bord de la minicarte : clic pour ouvrir la fenêtre des modules, glisser pour le déplacer.",
-    defaultEnabled = true,
-    defaults = { angle = 200 }, -- position autour de la minicarte, en degrés (0 = à droite)
-})
+local L = CUI.L
 
 local TAILLE = 32
 local DEBORD = 8 -- le centre du bouton dépasse du bord de la minicarte d'autant
@@ -29,7 +22,7 @@ end
 
 local function placer()
     local minimap = _G.Minimap
-    local angle = math.rad(M.db.angle)
+    local angle = math.rad(CUI:GetGeneral("angleMinicarte") or 200)
     local x, y = math.cos(angle), math.sin(angle)
     if forme() == "SQUARE" then
         -- On pousse le point jusqu'au bord du carré.
@@ -50,14 +43,8 @@ local function suivreCurseur()
     local scale = minimap:GetEffectiveScale()
     local cx, cy = _G.GetCursorPosition()
     cx, cy = cx / scale, cy / scale
-    M.db.angle = math.floor(math.deg(math.atan2(cy - my, cx - mx)) % 360 + 0.5)
+    CUI.db.general.angleMinicarte = math.floor(math.deg(math.atan2(cy - my, cx - mx)) % 360 + 0.5)
     placer()
-end
-
-local function infobulle(self)
-    CUI:ShowTooltip(self, "CœurUI",
-        "Clic : ouvrir ou fermer la fenêtre des modules.",
-        "Glisser : déplacer le bouton autour de la minicarte.")
 end
 
 local function creer()
@@ -97,29 +84,35 @@ local function creer()
         self:SetScript("OnUpdate", nil)
         icone:SetVertexColor(1, 1, 1)
     end)
-    button:SetScript("OnEnter", infobulle)
+    button:SetScript("OnEnter", function(self)
+        CUI:ShowTooltip(self, "CœurUI", L.MINICARTE_CLIC, L.MINICARTE_GLISSER)
+    end)
     button:SetScript("OnLeave", function(self) CUI:HideTooltip(self) end)
 
     -- La minicarte peut changer de taille après coup (autre addon, réglages du jeu) : on suit.
-    -- Simple crochet (HookScript), qui ne fait rien quand le module est coupé.
+    -- Simple crochet (HookScript), qui ne fait rien quand le bouton est caché.
     minimap:HookScript("OnSizeChanged", function()
-        if M.enabled and button then
+        if button and button:IsShown() then
             placer()
         end
     end)
 end
 
-function M:OnEnable()
-    if not button then
-        creer()
-    end
-    placer()
-    button:Show()
-end
-
-function M:OnDisable()
-    if button then
+-- Montre ou cache le bouton selon le paramètre « Bouton de minicarte ».
+function CUI:UpdateMinimapButton()
+    if self:GetGeneral("boutonMinicarte") then
+        if not button then
+            creer()
+        end
+        placer()
+        button:Show()
+    elseif button then
         button:SetScript("OnUpdate", nil)
         button:Hide()
     end
 end
+
+CUI:On("PLAYER_LOGIN", "core:minicarte", function()
+    CUI:Off("PLAYER_LOGIN", "core:minicarte")
+    CUI:UpdateMinimapButton()
+end)

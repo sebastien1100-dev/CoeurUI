@@ -1,12 +1,20 @@
--- Commande /cui.
+-- Commande /cui. Chaque sous-commande a son nom français et son nom anglais (les deux marchent,
+-- quelle que soit la langue choisie).
 local _, CUI = ...
 local L = CUI.L
 
+-- Textes lus au moment de l'affichage (la langue n'est connue qu'au chargement de la sauvegarde).
 local STATES = {
-    actif = L.ETAT_ACTIF,
-    coupe = L.ETAT_COUPE,
-    reload = L.ETAT_RELOAD,
-    erreur = L.ETAT_ERREUR,
+    actif = "ETAT_ACTIF",
+    coupe = "ETAT_COUPE",
+    reload = "ETAT_RELOAD",
+    erreur = "ETAT_ERREUR",
+}
+
+local ALIASES = {
+    help = "aide",
+    enable = "activer",
+    disable = "couper",
 }
 
 local function showHelp()
@@ -24,7 +32,8 @@ local function listModules()
     end
     CUI:Print(L.MODULES_TITRE)
     for _, m in ipairs(list) do
-        _G.DEFAULT_CHAT_FRAME:AddMessage("   " .. L.MODULE_LIGNE:format(m.name, m.key:lower(), STATES[CUI:ModuleState(m)]))
+        local state = L[STATES[CUI:ModuleState(m)]]
+        _G.DEFAULT_CHAT_FRAME:AddMessage("   " .. L.MODULE_LIGNE:format(CUI:Tr(m.name), m.key:lower(), state))
     end
 end
 
@@ -39,11 +48,11 @@ local function toggle(command, arg, wanted)
         return
     end
     if wanted and m.enabled and not m.pendingReload then
-        CUI:Print(L.MODULE_DEJA_ACTIF:format(m.name))
+        CUI:Print(L.MODULE_DEJA_ACTIF:format(CUI:Tr(m.name)))
         return
     end
     if not wanted and not m:IsWanted() then
-        CUI:Print(L.MODULE_DEJA_COUPE:format(m.name))
+        CUI:Print(L.MODULE_DEJA_COUPE:format(CUI:Tr(m.name)))
         return
     end
     if not CUI:SetModuleEnabled(m, wanted) then
@@ -51,16 +60,17 @@ local function toggle(command, arg, wanted)
         return
     end
     if wanted then
-        CUI:Print(L.MODULE_ACTIVE:format(m.name))
+        CUI:Print(L.MODULE_ACTIVE:format(CUI:Tr(m.name)))
     elseif m.pendingReload then
-        CUI:Print(L.MODULE_RELOAD:format(m.name))
+        CUI:Print(L.MODULE_RELOAD:format(CUI:Tr(m.name)))
     else
-        CUI:Print(L.MODULE_COUPE:format(m.name))
+        CUI:Print(L.MODULE_COUPE:format(CUI:Tr(m.name)))
     end
 end
 
 local function reset(arg)
-    if arg:lower() ~= "oui" then
+    local answer = arg:lower()
+    if answer ~= "oui" and answer ~= "yes" then
         CUI:Print(L.RESET_CONFIRMER)
         return
     end
@@ -73,6 +83,8 @@ _G.SLASH_COEURUI1 = "/cui"
 _G.SlashCmdList.COEURUI = function(msg)
     local command, arg = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
     command = command:lower()
+    local typed = command
+    command = ALIASES[command] or command
 
     if CUI.resetPending and command ~= "aide" and command ~= "version" then
         CUI:Print(L.RESET_ATTENTE)
@@ -88,13 +100,13 @@ _G.SlashCmdList.COEURUI = function(msg)
     elseif command == "modules" then
         listModules()
     elseif command == "activer" then
-        toggle(command, arg, true)
+        toggle(typed, arg, true)
     elseif command == "couper" then
-        toggle(command, arg, false)
+        toggle(typed, arg, false)
     elseif command == "reset" then
         reset(arg)
     else
-        CUI:Print(L.COMMANDE_INCONNUE:format(command))
+        CUI:Print(L.COMMANDE_INCONNUE:format(typed))
         showHelp()
     end
 end

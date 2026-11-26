@@ -11,6 +11,7 @@ Sorties dans CoeurUI/Media/ :
 - IconeMinicarte.tga   64 px, rond, C + cœur sans « UI » : futur bouton de minicarte.
 - Logo.tga             64 px, C + cœur sans fond : barre de titre des fenêtres.
 - Cercle.tga           32 px, disque blanc : coins arrondis des cadres.
+- Engrenage.tga        32 px, engrenage blanc : entrée « Paramètres » de la fenêtre.
 """
 
 import math
@@ -156,6 +157,28 @@ def cercle(taille):
     return img.resize((taille, taille), Image.LANCZOS)
 
 
+def engrenage(taille):
+    """Engrenage blanc à 8 dents, trou au centre (entrée « Paramètres », teinté dans le jeu)."""
+    t = taille * SURECHANTILLON
+    img = Image.new("RGBA", (t, t), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    c = t / 2
+    r_corps, r_dent, demi_dent = 0.34 * t, 0.47 * t, 0.085 * t
+    for i in range(8):
+        a = math.radians(i * 45)
+        ux, uy = math.cos(a), math.sin(a)   # le long de la dent
+        vx, vy = -uy, ux                     # en travers
+        pts = []
+        for along, across in ((r_corps * 0.8, -demi_dent), (r_dent, -demi_dent * 0.8),
+                              (r_dent, demi_dent * 0.8), (r_corps * 0.8, demi_dent)):
+            pts.append((c + ux * along + vx * across, c + uy * along + vy * across))
+        d.polygon(pts, fill=(255, 255, 255, 255))
+    d.ellipse([c - r_corps, c - r_corps, c + r_corps, c + r_corps], fill=(255, 255, 255, 255))
+    r_trou = 0.15 * t
+    d.ellipse([c - r_trou, c - r_trou, c + r_trou, c + r_trou], fill=(255, 255, 255, 0))
+    return img.resize((taille, taille), Image.LANCZOS)
+
+
 def main():
     SORTIE.mkdir(parents=True, exist_ok=True)
     for nom, image in (
@@ -163,6 +186,7 @@ def main():
         ("IconeMinicarte.tga", icone_minicarte(64)),
         ("Logo.tga", logo(64)),
         ("Cercle.tga", cercle(32)),
+        ("Engrenage.tga", engrenage(32)),
     ):
         chemin = SORTIE / nom
         image.save(chemin, compression=None)  # TGA 32 bits non compressé

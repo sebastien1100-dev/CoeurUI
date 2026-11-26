@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.7.0 · 26/11/2026
+
+- Nouvelle page « Paramètres », en bas à gauche de la fenêtre : réglages généraux de CœurUI.
+- CœurUI parle anglais : choix de la langue dans « Paramètres » (par défaut celle du jeu), après un
+  rechargement de l'interface. Les commandes marchent en français et en anglais (`/cui help`, `enable`, `disable`).
+- Le bouton de minicarte n'est plus un module : on l'affiche ou le cache dans « Paramètres ». Sa place est gardée.
+- Correction : « Paramètres » avait une pastille blanche, comme un module, alors que ce n'en est pas un.
+- Redémarrer le jeu.
+
 ## 0.6.0 · 26/11/2026
 
 - Nouvelle fenêtre principale (`/cui` ou le bouton de minicarte) : les modules sont rangés à gauche, en tiroirs

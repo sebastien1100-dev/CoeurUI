@@ -128,3 +128,32 @@ Essai a maintenant trois réglages pour tester le panneau.
 12. Fermer et rouvrir la fenêtre : elle revient sur l'accueil, à la même place à l'écran.
 13. Le coin bas gauche de la fenêtre reste arrondi (la colonne sombre ne dépasse pas du contour).
 14. En combat : tout marche (sauf « Recharger l'interface », grisé), aucun message « action bloquée ».
+
+## Étape 7 · page « Paramètres », langue, bouton de minicarte (0.7.0)
+
+À comparer avec les maquettes validées « Paramètres » et « Settings (anglais) ». Le bouton de minicarte n'est
+plus un module : c'est un réglage de la page « Paramètres ».
+
+1. **Redémarrer le jeu** (nouveaux fichiers et nouvelle texture). Aucune erreur Lua. `/cui version` : « 0.7.0 ».
+2. Le bouton de minicarte est toujours là, **à la même place qu'avant** (sa place est reprise de l'ancien module).
+   Clic : la fenêtre s'ouvre ; glisser : il tourne autour de la minicarte ; infobulle « CœurUI ».
+3. Fenêtre : « Bouton de minicarte » n'est plus dans la liste des modules ni dans l'accueil. En bas de la colonne
+   de gauche, sous un trait : engrenage + « Paramètres ».
+4. Cliquer « Paramètres » : doré ; à droite « Paramètres », le texte d'aide, un trait, puis LANGUE (menu
+   « Langue de CœurUI » avec la note dessous) et MINICARTE (interrupteur « Bouton de minicarte »). Pied :
+   « Valeurs par défaut » et « Fermer ».
+5. Le menu de langue propose « Langue du jeu (Français) », « Français », « English ».
+6. Décocher « Bouton de minicarte » : le bouton disparaît tout de suite. Recocher : il revient au même endroit.
+   `/reload` : le choix est gardé.
+7. Choisir « English » : le bouton doré « Recharger l'interface » apparaît. Revenir sur « Langue du jeu » : il
+   disparaît. Remettre « English » et cliquer le bouton.
+8. Après le rechargement, tout CœurUI est en anglais : titre « CœurUI · Modules », « All modules », « Settings »,
+   module « Test » avec ses sous-modules « Messages » et « Timer », réglages, infobulles, pied (« Close »,
+   « Reset to defaults »). `/cui help` : l'aide en anglais. `/cui enable essai`, `/cui disable essai` marchent ;
+   `/cui activer essai` aussi.
+9. Activer « Test » : ses messages dans la discussion sont en anglais (« Test: started... »).
+10. Remettre « Langue du jeu (Français) », recharger : tout repasse en français.
+11. « Valeurs par défaut » sur la page Paramètres : langue du jeu, bouton de minicarte affiché.
+12. `/cui reset oui` puis `/reload` : le bouton de minicarte est affiché, la langue est celle du jeu.
+13. Aucun texte ne s'affiche sous forme de clé en majuscules (par exemple « ESSAI_NOM ») ; aucun carré à la place
+    d'une lettre, en français comme en anglais.

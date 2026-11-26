@@ -2,7 +2,7 @@
 
 ## En cours
 
-- Noyau, en 4 étapes testées une par une :
+- Noyau, en étapes testées une par une :
   1. ~~Socle : chargement, évènements, minuteries, réglages, registre des modules, commande `/cui` (sans fenêtre).~~
      Validé en jeu (0.1.0).
   2. ~~Thème, fenêtre, bouton, interrupteur, infobulle, écran « Modules ».~~ Validé en jeu (0.2.0).
@@ -10,13 +10,13 @@
   4. ~~Curseur et menu déroulant dans un panneau de réglages.~~ Validé en jeu (0.4.0).
   5. ~~Fenêtre principale (maquette A + accueil C validés) : modules à gauche en tiroirs avec leurs sous-modules,
      accueil « Tous les modules » en cartes, réglages à droite.~~ Validé en jeu (0.6.0).
-  6. Page « Paramètres » et traduction anglaise possible :
+  6. ~~Page « Paramètres » et traduction anglaise possible~~ Validé en jeu (0.7.0) :
      - une entrée « Paramètres » fixe dans la colonne de gauche (réglages généraux de CœurUI, pas un module qu'on
        coupe) ;
      - choix de la langue (français / anglais, par défaut celle du jeu), appliqué après un /reload ;
      - réglage du bouton de minicarte (afficher ou non) rangé là ;
      - tous les textes, ceux des modules compris, passent par les fichiers de `Locales/` (`frFR.lua`, `enUS.lua`).
-     Maquette à valider avant le code.
+     Autres langues : un fichier de plus dans `Locales/` (voir `enUS.lua`).
 
 ## Ensuite (dans l'ordre, un à la fois)
 

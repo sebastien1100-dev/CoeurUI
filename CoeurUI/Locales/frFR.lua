@@ -1,14 +1,15 @@
--- Tous les textes affichés par le noyau.
+-- Textes en français : la langue d'origine de CœurUI, toujours complète (les autres langues s'y
+-- rabattent pour un texte manquant). Les modules ont aussi leurs textes ici, chacun dans sa section.
 -- Rappel : polices du jeu en Windows-1252 seulement (pas de flèche, de « ~ », d'emoji...).
 local _, CUI = ...
-local L = CUI.L
+local L = CUI:NewLocale("frFR", "Français")
 
 L.ERREUR = "erreur dans « %s » (détails dans le message d'erreur du jeu)."
 
 -- Commande /cui
 L.AIDE_TITRE = "commandes :"
 L.AIDE = {
-    "/cui · ouvre ou ferme la fenêtre des modules",
+    "/cui · ouvre ou ferme la fenêtre de CœurUI",
     "/cui aide · cette aide",
     "/cui version · version de l'addon",
     "/cui modules · liste des modules et leur état",
@@ -40,7 +41,7 @@ L.COMMANDE_INCONNUE = "commande inconnue : « %s »."
 -- Fenêtres
 L.FERMER = "Fermer"
 
--- Écran « Modules »
+-- Fenêtre principale
 L.ECRAN_MODULES_TITRE = "Modules"
 L.ECRAN_MODULES_INTRO = "Activez ou coupez chaque module. Un module coupé ne charge rien et rend au jeu ce qu'il avait changé."
 L.MODULES_AUCUN_ECRAN = "Aucun module."
@@ -59,7 +60,7 @@ L.VALEURS_DEFAUT = "Valeurs par défaut"
 L.PANNEAU_INTRO = "Les réglages s'appliquent tout de suite."
 L.RECHARGER = "Recharger l'interface"
 L.INFOBULLE_BOUTON_RELOAD_TITRE = "Recharger l'interface"
-L.INFOBULLE_BOUTON_RELOAD = "Fait un /reload pour finir de couper les modules marqués."
+L.INFOBULLE_BOUTON_RELOAD = "Fait un /reload pour appliquer les changements en attente."
 L.INFOBULLE_BOUTON_RELOAD_COMBAT = "Indisponible en combat. Le bouton revient à la sortie du combat."
 L.INFOBULLE_RELOAD_TITRE = "Coupé au prochain /reload"
 L.INFOBULLE_RELOAD = "Ce module ne peut pas s'arrêter en cours de jeu. Faites /reload pour finir de le couper."
@@ -68,5 +69,41 @@ L.INFOBULLE_ERREUR = "Le module n'a pas pu démarrer. Les détails sont dans le 
 L.INFOBULLE_COMBAT_TITRE = "En combat"
 L.INFOBULLE_COMBAT = "Le changement sera fait à la sortie du combat."
 
+-- Page « Paramètres »
+L.PARAMETRES = "Paramètres"
+L.PARAMETRES_INTRO = "Réglages généraux de CœurUI, valables pour tous les modules."
+L.SECTION_LANGUE = "LANGUE"
+L.LANGUE = "Langue de CœurUI"
+L.LANGUE_JEU = "Langue du jeu (%s)"
+L.LANGUE_NOTE = "S'applique après un rechargement de l'interface."
+L.SECTION_MINICARTE = "MINICARTE"
+L.BOUTON_MINICARTE = "Bouton de minicarte"
+L.BOUTON_MINICARTE_DESC = "Le bouton CœurUI au bord de la minicarte. Sans lui, la fenêtre s'ouvre avec /cui."
+
+-- Bouton de minicarte
+L.MINICARTE_CLIC = "Clic : ouvrir ou fermer la fenêtre de CœurUI."
+L.MINICARTE_GLISSER = "Glisser : déplacer le bouton autour de la minicarte."
+
 -- Réglages du jeu (CVars)
 L.CVAR_INCONNUE = "réglage du jeu inconnu : %s."
+
+-- Module « Essai » (tests du noyau, retiré avant la publication)
+L.ESSAI_NOM = "Essai"
+L.ESSAI_DESC = "Module de test du noyau (développement seulement)."
+L.ESSAI_MESSAGES = "Messages"
+L.ESSAI_MESSAGES_DESC = "Messages écrits par Essai dans la discussion."
+L.ESSAI_DEMARRAGE = "Message au démarrage"
+L.ESSAI_DEMARRAGE_DESC = "Écrit « Essai : démarré » dans la discussion quand le module démarre."
+L.ESSAI_CIBLE = "Message quand la cible change"
+L.ESSAI_COURT = "Court"
+L.ESSAI_LONG = "Long"
+L.ESSAI_AUCUN = "Aucun"
+L.ESSAI_MINUTERIE = "Minuterie"
+L.ESSAI_MINUTERIE_DESC = "Minuterie lancée au démarrage d'Essai."
+L.ESSAI_DELAI = "Délai de la minuterie"
+L.ESSAI_DEMARRE = "Essai : démarré (%d fois depuis la dernière remise à zéro)."
+L.ESSAI_CIBLE_COURT = "Essai : cible changée."
+L.ESSAI_CIBLE_LONG = "Essai : vous avez changé de cible (message long)."
+L.ESSAI_MINUTERIE_FIN = "Essai : minuterie de %d s terminée."
+L.ESSAI_ARRETE = "Essai : arrêté."
+L.ESSAI_REGLAGE = "Essai : réglage « %s / %s » = %s."

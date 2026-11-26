@@ -69,7 +69,7 @@ end
 function CUI:FindModule(text)
     text = text:lower()
     for _, m in ipairs(order) do
-        if m.key:lower() == text or m.name:lower() == text then
+        if m.key:lower() == text or m.name:lower() == text or CUI:Tr(m.name):lower() == text then
             return m
         end
     end
@@ -171,7 +171,7 @@ end
 
 local function stop(m)
     if not m.enabled then return end
-    CUI:SafeCall(m.name, m.OnDisable, m)
+    CUI:SafeCall(CUI:Tr(m.name), m.OnDisable, m)
     cleanup(m)
     m.enabled = false
     m.pendingReload = false
@@ -181,7 +181,7 @@ local function start(m)
     if m.enabled then return true end
     m.enabled = true
     m.failed = false
-    if not CUI:SafeCall(m.name, m.OnEnable, m) then
+    if not CUI:SafeCall(CUI:Tr(m.name), m.OnEnable, m) then
         -- Démarrage raté : on rend au jeu ce qui a déjà été fait.
         stop(m)
         m.failed = true
@@ -269,7 +269,7 @@ function CUI:SetModuleSetting(m, item, value, sub)
     if store[item.key] == value then return end
     store[item.key] = value
     if m.enabled and m.OnSettingChanged then
-        self:SafeCall(m.name, m.OnSettingChanged, m, item.key, value, sub and sub.key)
+        self:SafeCall(CUI:Tr(m.name), m.OnSettingChanged, m, item.key, value, sub and sub.key)
     end
 end
 

@@ -1,6 +1,7 @@
 -- Fenêtre principale de CœurUI (maquettes A et C validées). S'ouvre avec /cui.
 --   À gauche : « Tous les modules », puis un tiroir par module ; un tiroir s'ouvre sur ses
---   sous-modules. À droite : l'accueil (une carte par module) ou la page de réglages choisie.
+--   sous-modules ; tout en bas, « Paramètres » (réglages généraux, pas un module).
+--   À droite : l'accueil (une carte par module) ou la page de réglages choisie.
 local _, CUI = ...
 local L = CUI.L
 local C = CUI.Colors
@@ -13,12 +14,14 @@ local PAD = 20                    -- marge de la zone de droite
 local MAIN_W = WIDTH - 2 - SIDE - 1
 local CARD_GAP, CARD_H = 8, 92
 local PANEL_W = 400               -- largeur des réglages d'une page
+local NAV_H = 32                  -- hauteur d'une ligne de la colonne de gauche
 
 local window, side, sideScroll, main, body
 local homeTitle, homeIntro, pageCrumb, pageTitle, pageState, pageSwitch, pageLine, emptyText
 local footer, summary, closeButton, reloadButton, defaultsButton
+local settingsItem, generalPanel
 local navItems, cards, panels = {}, {}, {}
-local selected = {}   -- { module = m, sub = s } ; vide : l'accueil
+local selected = {}   -- { module = m, sub = s }, ou { settings = true } ; vide : l'accueil
 local expanded = {}   -- clé du module -> tiroir ouvert
 
 -- Outils ----------------------------------------------------------------------------------
@@ -70,16 +73,40 @@ local function openPage(m, sub)
     if m and sub then
         expanded[m.key] = true
     end
-    local changed = selected.module ~= m or selected.sub ~= sub
+    local changed = selected.settings or selected.module ~= m or selected.sub ~= sub
     selected = { module = m, sub = sub }
     if changed and body then body:ScrollToTop() end
     CUI:RefreshModulesScreen()
 end
 
+local function openSettings()
+    if not selected.settings and body then body:ScrollToTop() end
+    selected = { settings = true }
+    CUI:RefreshModulesScreen()
+end
+
+-- Réglages de la page « Paramètres » (valeurs dans CUI.db.general).
+local function generalItems()
+    return {
+        { type = "section", text = "SECTION_LANGUE" },
+        { type = "dropdown", key = "langue", label = "LANGUE", description = "LANGUE_NOTE", options = function()
+            -- « Langue du jeu (...) » puis chaque langue déclarée dans Locales/ (ajoutée toute seule).
+            local game = CUI:GetLocaleName(CUI:ResolveLanguage("auto"))
+            local list = { { value = "auto", text = L.LANGUE_JEU:format(game) } }
+            for _, info in ipairs(CUI:GetLocales()) do
+                list[#list + 1] = { value = info.code, text = info.name }
+            end
+            return list
+        end },
+        { type = "section", text = "SECTION_MINICARTE" },
+        { type = "toggle", key = "boutonMinicarte", label = "BOUTON_MINICARTE", description = "BOUTON_MINICARTE_DESC" },
+    }
+end
+
 -- Colonne de gauche -----------------------------------------------------------------------
 
-local function createNavItem()
-    local b = _G.CreateFrame("Button", nil, sideScroll.child)
+local function createNavItem(parent)
+    local b = _G.CreateFrame("Button", nil, parent or sideScroll.child)
     b.bg = CUI:CreateRoundRect(b, 4, C.graphite)
     b.mark = solid(b, "ARTWORK", 0, C.or_) -- trait doré du sous-onglet choisi
     b.mark:SetPoint("TOPLEFT")
@@ -100,6 +127,9 @@ local function createNavItem()
         b.bg:SetColor(b.isSelected and C.graphite or C.graphiteClair)
         local color = b.isSelected and C.or_ or (b.level == 1 and C.texteSecondaire or C.texte)
         setColor(b.text, color)
+        if b.icon then
+            b.icon:SetVertexColor(color[1], color[2], color[3], 1)
+        end
     end
     b.paint = paint
     b:SetScript("OnEnter", function() b.hover = true; paint() end)
@@ -141,13 +171,13 @@ local function refreshSide()
             b.text:SetText(L.TOUS_LES_MODULES)
             b.text:SetPoint("LEFT", 10, 0)
             b.text:SetPoint("RIGHT", -10, 0)
-            b.isSelected = selected.module == nil
+            b.isSelected = selected.module == nil and not selected.settings
             b.onClick = function() openPage() end
         elseif e.kind == "module" then
             local m = e.module
             b.level = 0
             b:SetHeight(32)
-            b.text:SetText(m.name)
+            b.text:SetText(CUI:Tr(m.name))
             b.text:SetPoint("LEFT", 26, 0)
             b.text:SetPoint("RIGHT", -22, 0)
             local _, _, _, _, dotColor = stateInfo(m)
@@ -172,7 +202,7 @@ local function refreshSide()
         else
             b.level = 1
             b:SetHeight(28)
-            b.text:SetText(e.sub.name)
+            b.text:SetText(CUI:Tr(e.sub.name))
             b.text:SetPoint("LEFT", 30, 0)
             b.text:SetPoint("RIGHT", -10, 0)
             b.isSelected = selected.module == e.module and selected.sub == e.sub
@@ -231,8 +261,8 @@ local function refreshHome()
         card.switch:SetChecked(wanted)
         card.border:SetColor(wanted and C.bordureDiscrete or C.graphite)
         card.fill:SetColor(wanted and C.ligne or C.fenetre)
-        card.name:SetText(m.name)
-        card.desc:SetText(m.description)
+        card.name:SetText(CUI:Tr(m.name))
+        card.desc:SetText(CUI:Tr(m.description))
         card.link:SetShown(CUI:HasModuleSettings(m))
 
         -- État écrit seulement quand il y a quelque chose à signaler.
@@ -318,9 +348,30 @@ local function createWindow()
     sideLine:SetPoint("BOTTOMLEFT", side, "BOTTOMRIGHT")
     sideLine:SetWidth(1)
 
+    -- « Paramètres », fixé en bas de la colonne, sous un trait.
+    settingsItem = createNavItem(side)
+    settingsItem:SetPoint("BOTTOMLEFT", 8, 10)
+    settingsItem:SetPoint("BOTTOMRIGHT", -8, 10)
+    settingsItem:SetHeight(NAV_H)
+    settingsItem.level = 0
+    for _, t in ipairs(settingsItem.chevron.lines) do t:Hide() end
+    settingsItem.dot:Hide() -- pas un module : pas de pastille d'état
+    settingsItem.icon =settingsItem:CreateTexture(nil, "ARTWORK")
+    settingsItem.icon:SetTexture(CUI.MEDIA .. "Engrenage")
+    settingsItem.icon:SetSize(14, 14)
+    settingsItem.icon:SetPoint("LEFT", 10, 0)
+    settingsItem.text:SetPoint("LEFT", 30, 0)
+    settingsItem.text:SetPoint("RIGHT", -10, 0)
+    settingsItem.text:SetText(L.PARAMETRES)
+    settingsItem.onClick = openSettings
+    local sepBottom = solid(side, "ARTWORK", 0, C.graphite)
+    sepBottom:SetPoint("BOTTOMLEFT", 12, 10 + NAV_H + 6)
+    sepBottom:SetPoint("BOTTOMRIGHT", -12, 10 + NAV_H + 6)
+    sepBottom:SetHeight(1)
+
     sideScroll = CUI:CreateScrollArea(side)
     sideScroll:SetPoint("TOPLEFT", 8, -10)
-    sideScroll:SetPoint("BOTTOMRIGHT", -8, 10)
+    sideScroll:SetPoint("BOTTOMRIGHT", -8, 10 + NAV_H + 13)
     local sep = solid(sideScroll.child, "ARTWORK", 0, C.graphite) -- sous « Tous les modules »
     sep:SetPoint("TOPLEFT", 4, -39)
     sep:SetPoint("TOPRIGHT", -4, -39)
@@ -382,10 +433,12 @@ local function createWindow()
     reloadButton:Hide()
     defaultsButton = CUI:CreateButton(footer, L.VALEURS_DEFAUT)
     defaultsButton:SetScript("OnClick", function()
-        if selected.module then
+        if selected.settings then
+            CUI:ResetGeneral()
+        elseif selected.module then
             CUI:ResetModuleSettings(selected.module, selected.sub)
-            CUI:RefreshModulesScreen()
         end
+        CUI:RefreshModulesScreen()
     end)
     summary = CUI:CreateText(footer, "petit", "texteDiscret")
     summary:SetJustifyV("MIDDLE")
@@ -425,41 +478,71 @@ function CUI:RefreshModulesScreen()
     if not window or not window:IsShown() then return end
 
     local list = self:GetModules()
-    local active, waitReload = 0, false
+    local active, waitReload = 0, self:LanguagePending()
     for _, m in ipairs(list) do
         if m.enabled and not m.pendingReload then active = active + 1 end
         if m.pendingReload then waitReload = true end
     end
 
     refreshSide()
+    settingsItem.isSelected = selected.settings or false
+    settingsItem.paint()
 
     local m, sub = selected.module, selected.sub
-    local home = m == nil
-    homeTitle:SetShown(home)
-    homeIntro:SetShown(home)
-    pageCrumb:SetShown(not home)
-    pageTitle:SetShown(not home)
-    pageSwitch:SetShown(not home)
-    pageState:GetParent():SetShown(not home)
+    local settings = selected.settings
+    local home = m == nil and not settings
+    -- En-tête : titre + texte (accueil, Paramètres) ou fil + titre + état (page d'un module).
+    homeTitle:SetShown(m == nil)
+    homeIntro:SetShown(m == nil)
+    pageCrumb:SetShown(m ~= nil)
+    pageTitle:SetShown(m ~= nil)
+    pageSwitch:SetShown(m ~= nil)
+    pageState:GetParent():SetShown(m ~= nil)
     pageLine:SetShown(not home)
     for _, card in ipairs(cards) do
         card:SetShown(home)
     end
+    for _, p in pairs(panels) do
+        p:Hide()
+    end
+    if generalPanel then
+        generalPanel:SetShown(settings or false)
+    end
 
     local height
     if home then
-        for _, p in pairs(panels) do p:Hide() end
-        emptyText:SetText(L.MODULES_AUCUN_ECRAN)
         window:SetTitle(L.ECRAN_MODULES_TITRE)
+        homeTitle:SetText(L.TOUS_LES_MODULES)
+        homeIntro:SetText(L.ECRAN_MODULES_INTRO)
+        emptyText:SetText(L.MODULES_AUCUN_ECRAN)
         height = refreshHome()
         layoutFooter(waitReload, false, plural(L.N_MODULES, #list) .. " · " .. plural(L.N_ACTIFS, active))
+    elseif settings then
+        window:SetTitle(L.PARAMETRES)
+        homeTitle:SetText(L.PARAMETRES)
+        homeIntro:SetText(L.PARAMETRES_INTRO)
+        emptyText:Hide()
+        if not generalPanel then
+            generalPanel = self:CreateSettingsPanel(body.child, generalItems(), PANEL_W, nil,
+                function(item) return CUI:GetGeneral(item.key) end,
+                function(item, value)
+                    CUI:SetGeneral(item.key, value)
+                    CUI:RefreshModulesScreen() -- langue changée : bouton « Recharger l'interface »
+                end)
+            generalPanel:SetPoint("TOPLEFT", PAD, -4)
+        end
+        generalPanel:Refresh()
+        generalPanel:Show()
+        height = generalPanel:GetHeight() + 24
+        layoutFooter(waitReload, true, nil)
     else
-        window:SetTitle(m.name)
+        local name = self:Tr(m.name)
+        window:SetTitle(name)
         -- Fil : le module au-dessus du titre du sous-module.
-        pageCrumb:SetText(sub and m.name or L.MODULE)
+        pageCrumb:SetText(sub and name or L.MODULE)
         pageTitle:ClearAllPoints()
         pageTitle:SetPoint("TOPLEFT", pageCrumb, "BOTTOMLEFT", 0, -4)
-        pageTitle:SetText(sub and sub.name or m.name)
+        pageTitle:SetText(sub and self:Tr(sub.name) or name)
         height = refreshPage(m, sub)
         layoutFooter(waitReload, #self:GetPageSettings(m, sub) > 0, nil)
     end
