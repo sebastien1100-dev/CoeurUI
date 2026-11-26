@@ -2,6 +2,16 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.8.0 · 26/11/2026
+
+- Le module « Essai », qui servait aux tests, est retiré. S'il était actif, la plaque des PNJ amis revient à son
+  réglage d'origine.
+- Un cadenas dans la barre de titre servira à déverrouiller les cadres pour les déplacer (avec les prochains
+  modules qui ont des cadres).
+- La version de CœurUI s'affiche dans la barre de titre de la fenêtre.
+- Correction : « Paramètres » avait un trait doré à gauche alors qu'il n'était pas choisi.
+- Redémarrer le jeu.
+
 ## 0.7.0 · 26/11/2026
 
 - Nouvelle page « Paramètres », en bas à gauche de la fenêtre : réglages généraux de CœurUI.

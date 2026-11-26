@@ -36,6 +36,7 @@ CUI.Colors = {
     railActif = hex("5A4A2A"),      -- fond d'un interrupteur activé
     actif = hex("7FC98A"),
     erreur = hex("E06B7C"),
+    echantillon = hex("C69B6D"),     -- couleur des échantillons de texture de barre
     ombre = { 0, 0, 0, 0.55 },
 }
 

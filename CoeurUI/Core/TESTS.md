@@ -157,3 +157,21 @@ plus un module : c'est un réglage de la page « Paramètres ».
 12. `/cui reset oui` puis `/reload` : le bouton de minicarte est affiché, la langue est celle du jeu.
 13. Aucun texte ne s'affiche sous forme de clé en majuscules (par exemple « ESSAI_NOM ») ; aucun carré à la place
     d'une lettre, en français comme en anglais.
+
+## Étape 8 · cadenas, mode déplacement, pages sur deux colonnes (0.8.0)
+
+Le module « Essai » est supprimé : les étapes plus haut qui s'en servent ne se refont plus telles quelles.
+Le mode déplacement, les pages sur deux colonnes, l'aperçu fourni par un module et le menu de textures n'ont
+pas encore de module qui s'en sert : ils seront testés avec le module « Cadres d'unité ».
+
+1. **Redémarrer le jeu** (nouveaux fichiers et nouvelles textures). Aucune erreur Lua. `/cui version` : « 0.8.0 ».
+2. Si Essai était actif avant la mise à jour : la plaque des PNJ amis est revenue à sa valeur d'origine
+   (`/dump C_CVar.GetCVar("nameplateShowFriendlyNPCs")`).
+3. `/cui` : la colonne de gauche n'a plus que « Tous les modules » et « Paramètres ». L'accueil dit « Aucun
+   module. », le pied « 0 module · 0 actif ». `/cui modules` : « aucun module. »
+4. Barre de titre : un cadenas fermé, gris pâle, à gauche de la croix. Survol : infobulle « Déverrouiller les
+   cadres » avec « Aucun cadre à déplacer : activez un module qui en a. ». Clic : rien ne se passe.
+5. En combat : l'infobulle du cadenas dit « Indisponible en combat. ». Aucun message « action bloquée ».
+6. Page « Paramètres » : inchangée (langue, bouton de minicarte), tout marche comme avant.
+7. Barre de titre : « v0.8.0 » en petit et en gris, à gauche du cadenas.
+8. « Paramètres » non choisi : pas de trait doré à gauche ; choisi : fond plus clair, texte et engrenage dorés.

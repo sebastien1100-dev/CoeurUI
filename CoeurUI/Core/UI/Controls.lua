@@ -265,6 +265,7 @@ end
 --   local d = CUI:CreateDropdown(parent, {
 --       label = "Position", width = 240,
 --       options = { { value = "hg", text = "En haut à gauche" }, ... },
+--         (option.texture : fichier d'une texture de barre, montrée en échantillon devant le nom)
 --       onSelect = function(valeur) end,  -- seulement quand le joueur choisit
 --   })
 --   d:SetValue(v) (sans appeler onSelect) ; d:GetValue() ; d:SetEnabled(bool)
@@ -332,9 +333,13 @@ local function menuItem(i)
     item.bullet:SetJustifyV("MIDDLE")
     item.bullet:SetPoint("LEFT", 8, 0)
     item.bullet:SetText("•")
+    -- Échantillon de texture (option.texture), devant le nom.
+    item.swatch = item:CreateTexture(nil, "ARTWORK")
+    item.swatch:SetSize(48, 12)
+    item.swatch:SetPoint("LEFT", 22, 0)
+    item.swatch:SetVertexColor(unpack(C.echantillon))
     item.text = CUI:CreateText(item, "normal", "texte")
     item.text:SetJustifyV("MIDDLE")
-    item.text:SetPoint("LEFT", 22, 0)
     item.text:SetPoint("RIGHT", -8, 0)
     item.text:SetWordWrap(false)
     local function paint()
@@ -377,6 +382,11 @@ local function openMenu(b)
         item.selected = option.value == b.value
         item.hover = false
         item.text:SetText(option.text)
+        item.swatch:SetShown(option.texture ~= nil)
+        if option.texture then
+            item.swatch:SetTexture(option.texture)
+        end
+        item.text:SetPoint("LEFT", option.texture and 78 or 22, 0)
         item:ClearAllPoints()
         item:SetPoint("TOPLEFT", 4, y)
         item:SetPoint("TOPRIGHT", -4, y)
@@ -405,9 +415,13 @@ function CUI:CreateDropdown(parent, opts)
     b:SetSize(opts.width or 240, 28)
     b:SetPoint("TOPLEFT", 0, -22)
     b.border, b.fill = self:CreateBorderedRect(b, 4, C.bordure, C.graphite)
+    b.swatch = b:CreateTexture(nil, "ARTWORK")
+    b.swatch:SetSize(48, 12)
+    b.swatch:SetPoint("LEFT", 10, 0)
+    b.swatch:SetVertexColor(unpack(C.echantillon))
+    b.swatch:Hide()
     b.text = self:CreateText(b, "normal", "texte")
     b.text:SetJustifyV("MIDDLE")
-    b.text:SetPoint("LEFT", 10, 0)
     b.text:SetPoint("RIGHT", -28, 0)
     b.text:SetWordWrap(false)
     b.chevron = self:CreateChevron(b)
@@ -417,14 +431,19 @@ function CUI:CreateDropdown(parent, opts)
 
     function f:SetValue(v)
         b.value = v
-        local text = tostring(v)
+        local text, texture = tostring(v), nil
         for _, option in ipairs(b.options) do
             if option.value == v then
-                text = option.text
+                text, texture = option.text, option.texture
                 break
             end
         end
         b.text:SetText(text)
+        b.swatch:SetShown(texture ~= nil)
+        if texture then
+            b.swatch:SetTexture(texture)
+        end
+        b.text:SetPoint("LEFT", texture and 66 or 10, 0)
     end
 
     function f:GetValue()

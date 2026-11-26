@@ -2,7 +2,19 @@
 
 Addon World of Warcraft pour **WoW Forever** (`## Interface: 16001`, API moderne : `C_Item`, `C_Container`, `C_AddOns`,
 `TooltipDataProcessor`…). Interface minimaliste, découpée en modules qu'on active ou coupe un par un, plus un client PC
-pour les mises à jour. Toute l'interface et les textes sont en **français**. Réponses au joueur en français.
+pour les mises à jour. Réponses au joueur en français.
+
+## Langues des textes affichés
+
+- Tout texte affiché en jeu passe par les fichiers de `CoeurUI/Locales/` : jamais de phrase écrite en dur dans le code.
+- Le **français** (`frFR.lua`) est la langue d'origine, toujours complète. L'**anglais** (`enUS.lua`) est tenu à jour
+  en même temps : chaque nouvelle clé est ajoutée dans les deux fichiers (mêmes clés des deux côtés).
+- Un module donne des **clés** (nom, description, réglages, options), traduites à l'affichage par le noyau
+  (`CUI:Tr`) ; ses messages passent par `L.CLE`. Ses textes sont rangés dans sa propre section des fichiers de langue.
+- Ne jamais garder un texte traduit au chargement d'un fichier : la langue n'est connue qu'au chargement de la
+  sauvegarde. Lire `L.CLE` au moment de l'afficher.
+- Ajouter une langue : un fichier de plus dans `Locales/` (copié sur `enUS.lua`) et sa ligne dans le `.toc`.
+- Les commandes `/cui` ont leur nom français et anglais (les deux marchent toujours).
 
 ## Nom et identité
 

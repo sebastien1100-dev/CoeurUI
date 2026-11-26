@@ -50,56 +50,84 @@ end
 -- Construit une page de réglages, large de width points.
 --   items : liste de réglages ; intro : texte en tête (ou nil)
 --   get(item) » valeur ; set(item, valeur)
+-- Mise en page : une colonne (400 points au plus), ou deux si la liste contient { type = "column" }
+-- (les réglages qui suivent vont dans la colonne de droite).
+-- { type = "custom", height = h, build = function(parent, largeur) return cadre end,
+--   refresh = function(cadre) end } : un cadre fourni par le module (un aperçu par exemple),
+-- rafraîchi à l'ouverture de la page et après chaque réglage changé.
 -- Renvoie un cadre dont la hauteur suit le contenu, avec :Refresh() pour relire les valeurs.
+local COLUMN_GAP = 28
+
 function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
     local panel = _G.CreateFrame("Frame", nil, parent)
     panel:SetWidth(width)
-    panel.controls = {}
+    panel.controls, panel.customs = {}, {}
 
-    local y = 0
+    local twoColumns = false
+    for _, item in ipairs(items) do
+        if item.type == "column" then twoColumns = true end
+    end
+    local colW = twoColumns and math.floor((width - COLUMN_GAP) / 2) or math.min(width, 400)
+
+    local function changed(item, value)
+        set(item, value)
+        panel:RefreshCustoms() -- l'aperçu suit les réglages
+    end
+
+    local top = 0
     if intro and intro ~= "" then
         local introText = self:CreateText(panel, "petit", "texteDiscret")
         introText:SetPoint("TOPLEFT")
-        introText:SetWidth(width)
+        introText:SetWidth(twoColumns and width or colW)
         introText:SetWordWrap(true)
         introText:SetText(intro)
-        y = -math.ceil(introText:GetStringHeight()) - GAP
+        top = -math.ceil(introText:GetStringHeight()) - GAP
     end
 
+    local x, y, lowest = 0, top, top
     for _, item in ipairs(items) do
         local control, extra = nil, 0
-        if item.type == "section" then
+        if item.type == "column" then
+            lowest = math.min(lowest, y + GAP)
+            x, y = colW + COLUMN_GAP, top
+        elseif item.type == "section" then
             control = self:CreateText(panel, "petit", "texteDiscret")
             control:SetText(self:Tr(item.text or ""))
             control:SetHeight(math.ceil(control:GetStringHeight()))
         elseif item.type == "toggle" then
-            control = createToggle(panel, item, width, set)
+            control = createToggle(panel, item, colW, changed)
         elseif item.type == "slider" then
             control = self:CreateSlider(panel, {
                 label = self:Tr(item.label or item.key),
                 min = item.min, max = item.max, step = item.step, format = item.format,
-                onChange = function(value) set(item, value) end,
+                onChange = function(value) changed(item, value) end,
             })
-            control:SetWidth(width)
+            control:SetWidth(colW)
         elseif item.type == "dropdown" then
             -- options : une liste, ou une fonction qui la renvoie (liste calculée à l'ouverture).
             local options = type(item.options) == "function" and item.options() or item.options or {}
             local translated = {}
             for i, option in ipairs(options) do
-                translated[i] = { value = option.value, text = self:Tr(option.text) }
+                translated[i] = { value = option.value, text = self:Tr(option.text), texture = option.texture }
             end
             control = self:CreateDropdown(panel, {
                 label = self:Tr(item.label or item.key),
                 options = translated, width = item.width or 240,
-                onSelect = function(value) set(item, value) end,
+                onSelect = function(value) changed(item, value) end,
             })
-            control:SetWidth(width)
+            control:SetWidth(colW)
+        elseif item.type == "custom" and item.build then
+            control = item.build(panel, colW)
+            control:SetSize(colW, item.height or control:GetHeight())
+            control.refresh = item.refresh
+            panel.customs[#panel.customs + 1] = control
         end
 
         if control then
-            control:SetPoint("TOPLEFT", 0, y)
+            control:ClearAllPoints()
+            control:SetPoint("TOPLEFT", x, y)
             if item.type == "slider" or item.type == "dropdown" then
-                extra = addNote(panel, control, item, width)
+                extra = addNote(panel, control, item, colW)
             end
             y = y - control:GetHeight() - extra - GAP
             if item.key and control.SetValue then
@@ -108,12 +136,22 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
             end
         end
     end
-    panel:SetHeight(-y - GAP)
+    lowest = math.min(lowest, y + GAP) -- bas de la colonne la plus longue
+    panel:SetHeight(math.max(1, -lowest))
+
+    function panel:RefreshCustoms()
+        for _, custom in ipairs(self.customs) do
+            if custom.refresh then
+                CUI:SafeCall("aperçu", custom.refresh, custom)
+            end
+        end
+    end
 
     function panel:Refresh()
         for _, control in ipairs(self.controls) do
             control:SetValue(get(control.item))
         end
+        self:RefreshCustoms()
     end
     return panel
 end

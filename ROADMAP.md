@@ -17,6 +17,12 @@
      - réglage du bouton de minicarte (afficher ou non) rangé là ;
      - tous les textes, ceux des modules compris, passent par les fichiers de `Locales/` (`frFR.lua`, `enUS.lua`).
      Autres langues : un fichier de plus dans `Locales/` (voir `enUS.lua`).
+  7. Pièces pour les modules à cadres (maquettes validées ; codé en 0.8.0, la plupart testées avec le module
+     « Cadres d'unité ») :
+     cadenas « Déverrouiller les cadres » dans la barre de titre et mode déplacement commun ; pages de réglages sur
+     deux colonnes ; aperçu fourni par un module ; textures de barre et polices du jeu à disposition des modules.
+     (Police, taille du texte et texture des barres se règlent dans le module « Cadres d'unité », sous-onglet
+     « Général », communs à tous ses cadres.)
 
 ## Ensuite (dans l'ordre, un à la fois)
 
@@ -35,7 +41,7 @@
 
 ## Avant la première publication
 
-- Retirer le module « Essai » (sert seulement à tester le noyau).
+- ~~Retirer le module « Essai » (sert seulement à tester le noyau).~~ Fait (0.8.0).
 
 ## Plus tard
 

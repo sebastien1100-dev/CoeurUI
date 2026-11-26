@@ -86,6 +86,7 @@ function CUI:CreateWindow(key, title, width)
     header:SetPoint("TOPLEFT", 1, -1)
     header:SetPoint("TOPRIGHT", -1, -1)
     header:SetHeight(HEADER_HEIGHT)
+    f.header = header -- pour poser d'autres boutons à gauche de la croix (f.closeButton)
     self:CreateRoundRect(header, 5, C.graphite, 0, "BACKGROUND", 0)
     local square = header:CreateTexture(nil, "BACKGROUND", nil, 1) -- coins du bas carrés
     square:SetTexture("Interface\\Buttons\\WHITE8x8")

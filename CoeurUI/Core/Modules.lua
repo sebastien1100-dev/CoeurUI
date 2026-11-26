@@ -302,8 +302,33 @@ CUI:On("ADDON_LOADED", "core:boot", function(_, name)
     end
 end)
 
+-- Module retiré de CœurUI (sauvegarde sans module déclaré) : on rend au jeu les réglages qu'il
+-- avait changés, puis on efface ses données.
+local function cleanupRemovedModules()
+    local all = CUI.db.modules
+    for key, entry in pairs(all) do
+        if not modules[key] then
+            local cvars = type(entry) == "table" and entry.cvars
+            if type(cvars) == "table" and next(cvars) then
+                CUI:AfterCombat(function()
+                    for name, original in pairs(cvars) do
+                        _G.C_CVar.SetCVar(name, original)
+                    end
+                end)
+            end
+            all[key] = nil
+        end
+    end
+    for key in pairs(CUI.charDb.modules) do
+        if not modules[key] then
+            CUI.charDb.modules[key] = nil
+        end
+    end
+end
+
 CUI:On("PLAYER_LOGIN", "core:boot", function()
     CUI:Off("PLAYER_LOGIN", "core:boot")
+    cleanupRemovedModules()
     for _, m in ipairs(order) do
         if m.entry.enabled then
             start(m)

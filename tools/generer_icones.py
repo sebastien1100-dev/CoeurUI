@@ -12,6 +12,8 @@ Sorties dans CoeurUI/Media/ :
 - Logo.tga             64 px, C + cœur sans fond : barre de titre des fenêtres.
 - Cercle.tga           32 px, disque blanc : coins arrondis des cadres.
 - Engrenage.tga        32 px, engrenage blanc : entrée « Paramètres » de la fenêtre.
+- BarreLisse.tga       128 x 32, texture de barre « Lisse (CœurUI) » (blanc ombré, teinté dans le jeu).
+- Cadenas.tga / CadenasOuvert.tga   32 px : bouton « Déverrouiller les cadres ».
 """
 
 import math
@@ -179,6 +181,39 @@ def engrenage(taille):
     return img.resize((taille, taille), Image.LANCZOS)
 
 
+def barre_lisse(largeur, hauteur):
+    """Texture de barre « Lisse (CœurUI) » : blanc légèrement ombré de haut en bas (teinté dans le jeu)."""
+    img = Image.new("RGBA", (largeur, hauteur))
+    px = img.load()
+    for y in range(hauteur):
+        t = y / (hauteur - 1)
+        # Reflet en haut, puis descente douce vers le bas.
+        v = 1.0 - 0.28 * t + (0.06 if t < 0.15 else 0.0)
+        g = max(0, min(255, round(255 * v)))
+        for x in range(largeur):
+            px[x, y] = (g, g, g, 255)
+    return img
+
+
+def cadenas(taille, ouvert):
+    """Cadenas blanc (fermé ou ouvert) pour le bouton « Déverrouiller les cadres »."""
+    t = taille * SURECHANTILLON
+    img = Image.new("RGBA", (t, t), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    # Corps.
+    d.rounded_rectangle([0.14 * t, 0.46 * t, 0.86 * t, 0.94 * t], radius=0.1 * t, fill=(255, 255, 255, 255))
+    # Anse : arc du haut et deux montants ; ouverte, le montant droit est retiré et l'anse remonte.
+    epais = round(0.12 * t)
+    haut = 0.04 * t if not ouvert else -0.04 * t
+    d.arc([0.27 * t, haut, 0.73 * t, haut + 0.5 * t], 180, 360, fill=(255, 255, 255, 255), width=epais)
+    gx = 0.27 * t
+    d.rectangle([gx, haut + 0.25 * t, gx + epais, 0.5 * t], fill=(255, 255, 255, 255))
+    if not ouvert:
+        dx = 0.73 * t - epais
+        d.rectangle([dx, haut + 0.25 * t, dx + epais, 0.5 * t], fill=(255, 255, 255, 255))
+    return img.resize((taille, taille), Image.LANCZOS)
+
+
 def main():
     SORTIE.mkdir(parents=True, exist_ok=True)
     for nom, image in (
@@ -187,6 +222,9 @@ def main():
         ("Logo.tga", logo(64)),
         ("Cercle.tga", cercle(32)),
         ("Engrenage.tga", engrenage(32)),
+        ("BarreLisse.tga", barre_lisse(128, 32)),
+        ("Cadenas.tga", cadenas(32, False)),
+        ("CadenasOuvert.tga", cadenas(32, True)),
     ):
         chemin = SORTIE / nom
         image.save(chemin, compression=None)  # TGA 32 bits non compressé

@@ -13,14 +13,15 @@ local TOP = 70                    -- en-tête de la zone de droite
 local PAD = 20                    -- marge de la zone de droite
 local MAIN_W = WIDTH - 2 - SIDE - 1
 local CARD_GAP, CARD_H = 8, 92
-local PANEL_W = 400               -- largeur des réglages d'une page
+local PANEL_W = MAIN_W - PAD * 2  -- largeur des réglages d'une page (une colonne : 400 au plus)
 local NAV_H = 32                  -- hauteur d'une ligne de la colonne de gauche
 
 local window, side, sideScroll, main, body
 local homeTitle, homeIntro, pageCrumb, pageTitle, pageState, pageSwitch, pageLine, emptyText
 local footer, summary, closeButton, reloadButton, defaultsButton
-local settingsItem, generalPanel
+local settingsItem, generalPanel, lockButton, lockLabel, versionText
 local navItems, cards, panels = {}, {}, {}
+local paintLock, createLockButton -- plus bas (cadenas)
 local selected = {}   -- { module = m, sub = s }, ou { settings = true } ; vide : l'accueil
 local expanded = {}   -- clé du module -> tiroir ouvert
 
@@ -322,11 +323,74 @@ local function refreshPage(m, sub)
     return height
 end
 
+-- Cadenas de la barre de titre : déverrouiller les cadres (mode déplacement, Movers.lua) -------
+
+local function lockTooltip()
+    if CUI:InCombat() then
+        return L.DEVERROUILLER_CADRES, L.INFOBULLE_CADENAS_COMBAT
+    elseif not CUI:HasMovers() then
+        return L.DEVERROUILLER_CADRES, L.INFOBULLE_CADENAS_AUCUN
+    elseif CUI:AreMoversUnlocked() then
+        return L.VERROUILLER_CADRES, L.INFOBULLE_CADENAS
+    end
+    return L.DEVERROUILLER_CADRES, L.INFOBULLE_CADENAS
+end
+
+paintLock = function()
+    if not lockButton then return end
+    local open = CUI:AreMoversUnlocked()
+    local usable = not CUI:InCombat() and CUI:HasMovers()
+    lockButton.icon:SetTexture(CUI.MEDIA .. (open and "CadenasOuvert" or "Cadenas"))
+    local color = open and C.or_ or (not usable and C.bordure or (lockButton.hover and C.texte or C.texteDiscret))
+    lockButton.icon:SetVertexColor(color[1], color[2], color[3], 1)
+    lockButton.border:SetShown(open)
+    lockButton.fill:SetShown(open)
+    lockButton.hoverBg:SetShown(lockButton.hover and not open and usable)
+    lockLabel:SetShown(open)
+    lockLabel:SetText(L.CADRES_DEVERROUILLES)
+end
+
+createLockButton = function()
+    lockButton = _G.CreateFrame("Button", nil, window.header)
+    lockButton:SetSize(28, 28)
+    lockButton:SetPoint("RIGHT", window.closeButton, "LEFT", -4, 0)
+    lockButton.hoverBg = CUI:CreateRoundRect(lockButton, 4, C.graphiteClair)
+    lockButton.border, lockButton.fill = CUI:CreateBorderedRect(lockButton, 4, C.or_, C.railActif, "BACKGROUND", 1)
+    lockButton.icon = lockButton:CreateTexture(nil, "ARTWORK")
+    lockButton.icon:SetSize(16, 16)
+    lockButton.icon:SetPoint("CENTER")
+    -- Version de CœurUI, discrète, pour savoir laquelle tourne.
+    versionText = CUI:CreateText(window.header, "petit", "texteDiscret")
+    versionText:SetJustifyV("MIDDLE")
+    versionText:SetPoint("RIGHT", lockButton, "LEFT", -8, 0)
+    versionText:SetText("v" .. CUI.version)
+    lockLabel = CUI:CreateText(window.header, "petit", "or_")
+    lockLabel:SetJustifyV("MIDDLE")
+    lockLabel:SetPoint("RIGHT", versionText, "LEFT", -10, 0)
+
+    lockButton:SetScript("OnClick", function()
+        CUI:SetMoversUnlocked(not CUI:AreMoversUnlocked())
+        paintLock()
+    end)
+    lockButton:SetScript("OnEnter", function(self)
+        self.hover = true
+        paintLock()
+        CUI:ShowTooltip(self, lockTooltip())
+    end)
+    lockButton:SetScript("OnLeave", function(self)
+        self.hover = false
+        paintLock()
+        CUI:HideTooltip(self)
+    end)
+    paintLock()
+end
+
 -- Fenêtre ---------------------------------------------------------------------------------
 
 local function createWindow()
     window = CUI:CreateWindow("Modules", L.ECRAN_MODULES_TITRE, WIDTH)
     window:SetHeight(HEIGHT)
+    createLockButton()
     local content = window.content
 
     -- Colonne de gauche : fond sombre, coin bas gauche arrondi comme la fenêtre.
@@ -356,6 +420,7 @@ local function createWindow()
     settingsItem.level = 0
     for _, t in ipairs(settingsItem.chevron.lines) do t:Hide() end
     settingsItem.dot:Hide() -- pas un module : pas de pastille d'état
+    settingsItem.mark:Hide() -- le trait doré est réservé aux sous-onglets
     settingsItem.icon =settingsItem:CreateTexture(nil, "ARTWORK")
     settingsItem.icon:SetTexture(CUI.MEDIA .. "Engrenage")
     settingsItem.icon:SetSize(14, 14)
@@ -485,6 +550,7 @@ function CUI:RefreshModulesScreen()
     end
 
     refreshSide()
+    paintLock()
     settingsItem.isSelected = selected.settings or false
     settingsItem.paint()
 
@@ -558,3 +624,7 @@ end
 function CUI:OnModulesChanged()
     self:RefreshModulesScreen()
 end
+
+-- Le cadenas se grise en combat et revient après.
+CUI:On("PLAYER_REGEN_DISABLED", "core:cadenas", function() paintLock() end)
+CUI:On("PLAYER_REGEN_ENABLED", "core:cadenas", function() paintLock() end)
