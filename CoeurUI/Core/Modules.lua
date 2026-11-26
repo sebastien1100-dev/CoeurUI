@@ -232,8 +232,15 @@ end
 -- Réglages d'un module ----------------------------------------------------------------------
 
 -- Sous-modules déclarés (liste, éventuellement vide).
+-- Un sous-module avec shown = function() return bool end n'apparaît que quand elle renvoie vrai
+-- (ex. les postures, seulement pour un personnage qui en a).
 function CUI:GetModuleSubs(m)
-    return type(m.subs) == "table" and m.subs or {}
+    if type(m.subs) ~= "table" then return {} end
+    local list = {}
+    for _, sub in ipairs(m.subs) do
+        if not sub.shown or sub.shown() then list[#list + 1] = sub end
+    end
+    return list
 end
 
 -- Le module a-t-il une page de réglages (ou des sous-modules) ?

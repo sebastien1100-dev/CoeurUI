@@ -183,7 +183,7 @@ L.POLICE = "Police"
 L.POLICE_NOTE = "Utilisée partout dans CœurUI. Les tailles se règlent dans chaque module."
 
 -- Module « Infobulles et menus »
-L.IM_NOM = "Infobulles et menus"
+L.IM_NOM = "Tooltips"
 L.IM_DESC = "Les infobulles et les menus du jeu au style de CœurUI : fond sombre, liseré fin, pas d'or."
 
 -- Grille aimantée (panneau « Déplacement des cadres »)
@@ -194,8 +194,9 @@ L.AIMANT_NOTE = "grille · bords des cadres · centre de l'écran"
 
 -- Module « Barres d'actions »
 L.BA_NOM = "Barres d'actions"
-L.BA_DESC = "Barres 1 à 8, familier, postures et boutons spéciaux en carrés sobres, à la place de ceux du jeu."
+L.BA_DESC = "Barres 1 à 8, familier, postures, boutons spéciaux, micro-menu et sacs en carrés sobres, à la place de ceux du jeu."
 L.BA_BARRE = "Barre"
+L.BA_BARRES = "Barres"
 L.BA_BARRE1 = "Barre 1 (principale)"
 L.BA_BARRE2 = "Barre 2"
 L.BA_BARRE3 = "Barre 3"
@@ -208,6 +209,8 @@ L.BA_FAMILIER = "Familier"
 L.BA_POSTURES = "Postures et formes"
 L.BA_EXTRA = "Bouton d'action en plus"
 L.BA_VEHICULE = "Quitter le véhicule"
+L.BA_MICRO = "Micro-menu"
+L.BA_SACS = "Sacs"
 L.BA_DISPOSITION = "DISPOSITION"
 L.BA_AFFICHER = "Afficher cette barre"
 L.BA_NOMBRE = "Nombre de boutons"
@@ -228,4 +231,3 @@ L.BA_TEXTES = "TEXTES"
 L.BA_RACCOURCI = "Raccourci"
 L.BA_MACRO = "Nom des macros"
 L.BA_CHARGES = "Charges"
-L.BA_APERCU = "APERÇU"

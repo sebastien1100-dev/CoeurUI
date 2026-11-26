@@ -184,7 +184,7 @@ L.POLICE = "Font"
 L.POLICE_NOTE = "Used everywhere in CœurUI. Sizes are set in each module."
 
 -- "Tooltips and menus" module
-L.IM_NOM = "Tooltips and menus"
+L.IM_NOM = "Tooltips"
 L.IM_DESC = "The game's tooltips and menus in the CœurUI style: dark background, thin edge, no gold."
 
 -- Snapping grid ("Moving frames" panel)
@@ -195,8 +195,9 @@ L.AIMANT_NOTE = "grid · frame edges · screen centre"
 
 -- "Action bars" module
 L.BA_NOM = "Action bars"
-L.BA_DESC = "Bars 1 to 8, pet, stances and special buttons as plain squares, replacing the game's."
+L.BA_DESC = "Bars 1 to 8, pet, stances, special buttons, micro menu and bags as plain squares, replacing the game's."
 L.BA_BARRE = "Bar"
+L.BA_BARRES = "Bars"
 L.BA_BARRE1 = "Bar 1 (main)"
 L.BA_BARRE2 = "Bar 2"
 L.BA_BARRE3 = "Bar 3"
@@ -209,6 +210,8 @@ L.BA_FAMILIER = "Pet"
 L.BA_POSTURES = "Stances and forms"
 L.BA_EXTRA = "Extra action button"
 L.BA_VEHICULE = "Leave vehicle"
+L.BA_MICRO = "Micro menu"
+L.BA_SACS = "Bags"
 L.BA_DISPOSITION = "LAYOUT"
 L.BA_AFFICHER = "Show this bar"
 L.BA_NOMBRE = "Number of buttons"
@@ -229,4 +232,3 @@ L.BA_TEXTES = "TEXTS"
 L.BA_RACCOURCI = "Key binding"
 L.BA_MACRO = "Macro names"
 L.BA_CHARGES = "Charges"
-L.BA_APERCU = "PREVIEW"

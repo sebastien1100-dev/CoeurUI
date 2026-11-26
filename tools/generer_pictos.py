@@ -115,8 +115,115 @@ def sortie(d):
     ligne(d, (16, 8), (20, 12), (16, 16))
 
 
-ICONES = {"Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
-          "Sortie": sortie}
+def chemin(d, *pts):
+    """Ligne brisée qui revient à son point de départ."""
+    ligne(d, *pts, pts[0])
+
+
+# Micro-menu (barres d'actions) ------------------------------------------------------------------
+
+def personnage(d):
+    cercle(d, 12, 8.5, 3.5)
+    tampon(d, [p(*q) for q in bezier((4.5, 20), (4.5, 14), (19.5, 14), (19.5, 20))])
+
+
+def metiers(d):
+    """Marteau."""
+    ligne(d, (5, 19.5), (13, 11.5))
+    chemin(d, (11, 7.5), (15, 3.5), (20.5, 9), (16.5, 13))
+
+
+def sorts(d):
+    """Grimoire fermé."""
+    rect_arrondi(d, 5.5, 3.5, 13, 17, 2)
+    ligne(d, (9.5, 3.5), (9.5, 20.5))
+
+
+def succes(d):
+    """Bouclier."""
+    tampon(d, [p(*q) for q in [(12, 3), (19, 6), (19, 11)]
+               + bezier((19, 11), (19, 16), (15.5, 19.5), (12, 21))
+               + bezier((12, 21), (8.5, 19.5), (5, 16), (5, 11))
+               + [(5, 6), (12, 3)]])
+
+
+def quetes(d):
+    """Point d'exclamation."""
+    ligne(d, (12, 4), (12, 14.5))
+    ligne(d, (12, 19.5), (12, 19.6))
+
+
+def guilde(d):
+    """Étendard."""
+    ligne(d, (6, 21), (6, 3.5))
+    ligne(d, (6, 4), (18, 4), (15, 8.5), (18, 13), (6, 13))
+
+
+def groupes(d):
+    """Deux personnes."""
+    cercle(d, 9, 9, 3)
+    tampon(d, [p(*q) for q in bezier((3, 20), (3, 15), (15, 15), (15, 20))])
+    cercle(d, 16.5, 8, 2.5)
+    tampon(d, [p(*q) for q in bezier((16, 13.5), (19.5, 13.5), (21, 16), (21, 19))])
+
+
+def collections(d):
+    """Coffre."""
+    rect_arrondi(d, 4, 9.5, 16, 10.5, 1.5)
+    ligne(d, (4, 9.5), (6, 5), (18, 5), (20, 9.5))
+    ligne(d, (12, 12.5), (12, 15.5))
+
+
+def journal(d):
+    """Livre ouvert."""
+    chemin(d, (3, 6), (12, 8), (21, 6), (21, 19), (12, 21), (3, 19))
+    ligne(d, (12, 8), (12, 21))
+
+
+def boutique(d):
+    """Sac de boutique."""
+    rect_arrondi(d, 5, 8, 14, 12.5, 2)
+    tampon(d, [p(*q) for q in bezier((9, 8), (9, 3.5), (15, 3.5), (15, 8))])
+
+
+def menu(d):
+    for y in (7, 12, 17):
+        ligne(d, (5, y), (19, y))
+
+
+def logement(d):
+    """Maison."""
+    ligne(d, (3.5, 11.5), (12, 4), (20.5, 11.5))
+    ligne(d, (6, 9.5), (6, 20), (18, 20), (18, 9.5))
+    ligne(d, (10, 20), (10, 15), (14, 15), (14, 20))
+
+
+def talents(d):
+    """Étoile."""
+    pts = []
+    for i in range(10):
+        a = math.radians(-90 + 36 * i)
+        r = 8.5 if i % 2 == 0 else 3.8
+        pts.append((12 + r * math.cos(a), 12.8 + r * math.sin(a)))
+    chemin(d, *pts)
+
+
+def heritage(d):
+    """Couronne (Héritage, à la place des hauts faits sur Forever)."""
+    chemin(d, (4, 18), (4, 8), (8.5, 12), (12, 5), (15.5, 12), (20, 8), (20, 18))
+
+
+def aide(d):
+    """Point d'interrogation (assistance)."""
+    tampon(d, [p(*q) for q in bezier((8.5, 9), (8.5, 4.5), (15.5, 4.5), (15.5, 9))
+               + bezier((15.5, 9), (15.5, 11.5), (12, 12), (12, 14.5))])
+    ligne(d, (12, 19.5), (12, 19.6))
+
+
+ICONES = {"Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
+          "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
+          "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
+          "Boutique": boutique, "Menu": menu, "Logement": logement}
 
 
 def main():

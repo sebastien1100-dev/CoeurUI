@@ -51,3 +51,61 @@ barres du jeu). Le module ne dépend de rien chez EllesmereUI. Ne pas ouvrir le 
    du combat.
 10. Personnage sans posture ni forme (mage, chasseur...) : le menu « Barre » ne propose pas « Postures et formes » ;
     au cadenas, pas d'étiquette « Postures et formes ». Personnage avec postures : les deux sont là.
+
+## 0.16.0 · étape 3 : micro-menu et sacs
+
+1. **Redémarrer le jeu** (nouvelles textures). Aucune erreur Lua. `/cui version` : « 0.16.0 ».
+2. En bas à droite : le micro-menu en carrés sobres avec des icônes au trait grises (personnage, marteau, grimoire,
+   bouclier, point d'exclamation, maison, étendard, deux personnes, coffre, livre ouvert, sac, trois traits...).
+   Le micro-menu du jeu et ses sacs ont disparu de leur ancienne place.
+3. Survol d'un bouton : icône blanche, liseré plus clair, infobulle du jeu. Clic : ouvre la fenêtre du jeu
+   (personnage, grimoire, hauts faits...).
+4. Sans guilde : l'étendard est gris sombre. Un nouveau talent à placer (ou autre alerte du jeu) : pastille rouge sur
+   le bouton concerné.
+5. Au-dessus : les sacs en carrés sobres (image du sac, sans bord de qualité) ; le sac à dos montre ses places libres.
+   Clic : ouvre le sac. Glisser un sac dans un emplacement vide : il s'y équipe.
+6. Menu « Barre » : Micro-menu et Sacs : rangées, sens, taille, espacement, visibilité, opacité actifs ; nombre de
+   boutons et textes grisés. Ex. micro-menu « par rangée » 6 : deux rangées ; sens Verticale : une colonne.
+7. Cadenas : « Micro-menu » et « Sacs » ont leur contour doré et se placent. `/reload` : places gardées.
+8. Monter dans un véhicule puis en descendre : le micro-menu reste à sa place CœurUI (au pire, il y revient à la
+   sortie du combat).
+9. Minicarte coupée : l'œil de la file d'attente du jeu reste visible quand on est en file.
+10. **Correction des erreurs de recharge** : combattre plusieurs minutes en lançant des sorts à recharge : aucune
+    erreur « SetCooldown ... Secret values » ; les recharges tournent sur les boutons.
+11. Barres 1 à 8 : les raccourcis lancent toujours les bons sorts ; la touche écrite sur le bouton est celle du jeu.
+    Changer une touche dans les raccourcis du jeu : le bouton suit.
+12. Barre 1 qui change de page (forme, furtivité, véhicule, Maj + 2) : les sorts de la page s'affichent tout de
+    suite et les raccourcis les lancent.
+13. Barres 5 à 8 : si l'une reste vide ou ne s'affiche pas, l'activer aussi dans les options du jeu (Interface >
+    Barres d'action) et le dire à Claude.
+14. Micro-menu : aucune erreur « Blizzard_MicroMenu ... GetEdgeButton » à la connexion, au /reload, en montant
+    dans un véhicule ou en ouvrant le grimoire. Le fond et le bord du micro-menu du jeu ne se voient plus.
+15. Micro-menu en visibilité « Jamais » : la barre disparaît et l'endroit ne réagit plus à la souris (pas d'infobulle
+    ni de clic fantôme). Retour à « Toujours » : tout remarche.
+16. Micro-menu : tous les carrés sur une seule rangée, même taille, même écart, sans chevauchement ni grand cadre
+    derrière. Ouvrir puis fermer le grimoire, les talents, la carte : ils restent alignés (au pire, ils se
+    réalignent en moins d'une seconde).
+17. Micro-menu sur Forever : ni Logis ni Guide de l'aventurier (et rien d'invisible qui réagit à leur ancienne
+    place). Couronne = Héritage (clic : la fenêtre d'héritage). Livre = Grimoire (clic : le grimoire). Étoile =
+    Talents (grisée avant le niveau 10 ; ensuite clic : les talents). Point d'interrogation = assistance. Les
+    boutons sont dans l'ordre du micro-menu du jeu.
+18. Sacs (et barres, familier, postures) : chaque bouton a son fond sombre et son liseré gris fin bien visible, l'image
+    du sac à l'intérieur ; survol : liseré plus clair.
+19. Micro-menu : une seule étoile (Talents, à côté du livre du Grimoire) ; plus d'étoile en fin de barre. Infobulles :
+    chaque bouton annonce la bonne touche (C personnage, P grimoire, N talents...) et la touche ouvre bien sa fenêtre.
+20. Micro-menu : la couronne (Héritage) est juste après l'étoile (Talents), avant le point d'exclamation (Quêtes), et
+    non plus en fin de barre ; clic : la fenêtre d'Héritage.
+21. Plus aucun bouton seul à l'ancienne place du micro-menu (l'écusson de l'Héritage). La couronne est l'Héritage de
+    Forever : juste après l'étoile des talents ; survol : infobulle « Héritage » ; clic : la fenêtre d'Héritage.
+22. Portée : cible proche, aucun voile rouge ; s'éloigner : voile rouge sur les sorts hors de portée seulement ;
+    revenir : le voile disparaît. Sans cible : aucun voile. Sans assez de ressource : icône bleutée (couleur du jeu),
+    sans rouge.
+23. Fenêtre CœurUI : « Barres d'actions » a une flèche ; clic : le tiroir s'ouvre sur Barres, Familier, Postures et
+    formes (seulement avec postures), Bouton d'action en plus, Quitter le véhicule, Micro-menu, Sacs.
+24. Page Barres : menu « Barre » (Barre 1 à Barre 8 seulement) et tous les réglages ; changer de barre relit la page.
+    Page Familier : afficher, sens, taille, espacement (plus de nombre ni de rangées : 10 boutons sur une rangée),
+    visibilité, raccourci, aperçu. Page Postures : avec nombre et rangées. Pages Bouton d'action en plus et
+    Quitter le véhicule : la taille seulement. Pages Micro-menu et Sacs : sens, taille, espacement,
+    visibilité, opacité (ni rangées ni aperçu : toujours une rangée). Aucun réglage grisé hors opacité en mode « au survol ».
+25. « Valeurs par défaut » sur une page : seule cette page (ou la barre choisie, page Barres) revient à ses réglages.
+26. Aucune page du tiroir « Barres d'actions » n'a d'aperçu ; chaque réglage change tout de suite la vraie barre.

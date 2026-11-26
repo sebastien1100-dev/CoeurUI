@@ -2,6 +2,39 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.16.0 · 26/11/2026
+
+- Barres d'actions, étape 3 : le micro-menu (personnage, métiers, sorts et talents, hauts faits, quêtes, guilde,
+  recherche de groupe, collections, journal, boutique, menu...) en carrés sobres avec des icônes CœurUI au trait ;
+  une pastille rouge quand le jeu signale quelque chose, gris sombre quand un bouton est désactivé.
+- Les sacs (sac de composants, quatre sacs, sac à dos) en carrés sobres ; places libres gardées.
+- Tous deux se placent avec le cadenas ; rangées, sens, taille, espacement, visibilité, opacité (le nombre de
+  boutons est celui du jeu).
+- « Barres d'actions » devient un tiroir dans la fenêtre : « Barres » (les barres 1 à 8 réunies, un menu choisit la
+  barre), puis une page chacun pour Familier, Postures et formes (seulement si le personnage en a), Bouton d'action
+  en plus, Quitter le véhicule, Micro-menu et Sacs, avec seulement leurs réglages.
+- Familier : toujours ses 10 boutons sur une rangée ; « Nombre de boutons » et « Boutons par rangée » retirés de sa
+  page (le sens, la taille et l'espacement restent).
+- Micro-menu et sacs : toujours sur une rangée (ou une colonne en sens vertical) ; « Boutons par rangée » retiré de
+  leurs pages. L'aperçu est retiré de toutes les pages (la vraie barre change tout de suite).
+- Le module « Infobulles et menus » s'appelle maintenant « Tooltips » (rien ne change dans ses réglages).
+- Correction : des erreurs Lua ("SetCooldown ... Secret values") apparaissaient en combat sur les barres 1 à 8. Les
+  barres utilisent maintenant les boutons d'action du jeu (rangés et habillés par CœurUI) : le jeu met lui-même à jour
+  recharges, sorts et raccourcis.
+- Correction : une erreur Lua (Blizzard_MicroMenu, GetEdgeButton) apparaissait quand le micro-menu était rangé ; ses
+  boutons restent maintenant dans le micro-menu du jeu, seulement placés sur la barre CœurUI.
+- Correction : les boutons du micro-menu étaient mal alignés et de tailles différentes (échelle du micro-menu du jeu,
+  réarrangements du jeu) ; ils sont remis en place tout seuls.
+- Micro-menu adapté à WoW Forever : plus de Logis, de Guide de l'aventurier ni de hauts faits (ils n'y existent pas),
+  ni du bouton « sorts et talents » récent qui y faisait doublon (étoile en trop, mauvais raccourcis) ; le bouton
+  Héritage de Forever (couronne) a sa place après les talents (il restait seul à l'ancienne place du micro-menu) ;
+  le grimoire (livre) a son bouton, les talents (étoile) le leur ; l'assistance a son icône (point d'interrogation).
+- Correction : sur les sacs (et parfois ailleurs), les images touchaient les bords et le liseré gris ne se voyait pas ;
+  le liseré est maintenant toujours visible, par-dessus l'image.
+- Correction : les icônes restaient teintées de rouge quelle que soit la distance de la cible ; le rouge est
+  maintenant un voile posé seulement quand le jeu indique « hors de portée », la couleur de l'icône reste celle du jeu.
+- Redémarrer le jeu (nouvelles textures).
+
 ## 0.15.0 · 26/11/2026
 
 - Barres d'actions, étape 2 : la barre du familier et celle des postures (ou formes) en carrés sobres, au-dessus des

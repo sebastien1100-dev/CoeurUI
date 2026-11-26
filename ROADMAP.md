@@ -53,6 +53,9 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       au jeu. Maquette validée le 26/11/2026 (direction « sobre ») : fond sombre, liseré gris fin, pas d'or ;
       couleurs du jeu gardées sur le nom (qualité, attitude) ; barre de vie en trait fin ; menus : cases CœurUI
       (coche blanche au trait), ligne survolée plus claire, icônes du jeu à droite, chevron gris.
+   4b. Tooltips (ex-« Infobulles et menus ») : option « Afficher les identifiants » (demandée le 26/11/2026, prochaine
+      étape) : ID des sorts et des effets (améliorations, affaiblissements), ID
+      des objets, en bas de leur infobulle. Interrupteur dans une page de réglages du module (il n'en a pas encore).
    5. ~~Noyau : grille aimantée~~ Validée en jeu (0.13.0). Pour le déplacement des cadres : taille de la grille,
       aimant ou pas. Maquette validée le 26/11/2026 :
       - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;
@@ -61,7 +64,7 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       - aimant (actif par défaut) : grille (même cachée), bords des autres cadres (alignés ou collés), centre
         de l'écran ; à moins de 8 points ; trait vert sur ce qui attire ; Maj enfoncée = déplacement libre.
    6. Barres d'actions. Maquette validée le 26/11/2026. En trois étapes : 1) ~~barres 1 à 8~~ validée en jeu (0.14.0) ;
-      2) ~~familier, postures, boutons spéciaux~~ validée en jeu (0.15.0) ; 3) micro-menu et sacs. Choix du joueur :
+      2) ~~familier, postures, boutons spéciaux~~ validée en jeu (0.15.0) ; 3) ~~micro-menu et sacs~~ validée en jeu (0.16.0). Module terminé. Choix du joueur :
       - barres 1 à 8, familier, postures, boutons spéciaux (action en plus, quitter le véhicule), micro-menu et sacs ;
       - carrés sobres : icône rognée, liseré gris fin, coins à peine arrondis, pas d'or ; raccourci en petit ;
       - par barre : disposition (nombre de boutons, par ligne, taille, espacement), visibilité (toujours, survol,
