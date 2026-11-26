@@ -18,7 +18,9 @@
 --           { type = "dropdown", key = "z", label = "...", options = { { value = "a", text = "..." } } },
 --       },
 --   Chaque key est lue dans M.db (ou M.charDb avec char = true) ; sa valeur par défaut vient de
---   defaults (ou charDefaults).
+--   defaults (ou charDefaults). Ou ailleurs : store = function() return table, défauts end.
+--   refreshAll = true : changer ce réglage relit toute la page ; noReset = true : pas remis à
+--   sa valeur par défaut par « Valeurs par défaut » (un choix d'affichage).
 -- Soit des sous-modules (un tiroir dans la fenêtre, une page chacun) :
 --       subs = {
 --           { key = "joueur", name = "Joueur", description = "...", settings = { ... } },
@@ -247,6 +249,9 @@ end
 
 -- Table où est rangé un réglage (créée si besoin), et ses valeurs par défaut.
 local function storeOf(m, item, sub)
+    -- item.store = function() return table, défauts end : réglage rangé ailleurs (ex. la barre
+    -- choisie dans un menu de la même page).
+    if item.store then return item.store() end
     local store = item.char and m.charDb or m.db
     local defaults = item.char and m.charDefaults or m.defaults
     if sub then
@@ -277,7 +282,7 @@ end
 -- Remet les réglages d'une page (module ou sous-module) à leur valeur par défaut.
 function CUI:ResetModuleSettings(m, sub)
     for _, item in ipairs(self:GetPageSettings(m, sub)) do
-        if item.key then
+        if item.key and not item.noReset then -- noReset : un choix d'affichage, pas un réglage
             local _, defaults = storeOf(m, item, sub)
             self:SetModuleSetting(m, item, defaults[item.key], sub)
         end

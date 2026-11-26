@@ -74,8 +74,12 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
 
     local function changed(item, value)
         set(item, value)
-        panel:RefreshEnabled()
-        panel:RefreshCustoms() -- l'aperçu suit les réglages
+        if item.refreshAll then
+            panel:Refresh() -- ex. une autre barre choisie : tous les réglages relus
+        else
+            panel:RefreshEnabled()
+            panel:RefreshCustoms() -- l'aperçu suit les réglages
+        end
     end
 
     local top = 0

@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.14.0 · 26/11/2026
+
+- Nouveau module « Barres d'actions » (coupé d'office), première étape : les barres 1 à 8 en carrés sobres (icône
+  rognée, liseré gris fin, pas d'or), à la place des barres du jeu. Raccourcis du jeu gardés.
+- Pour chaque barre, sur une seule page (un menu choisit la barre) : l'afficher ou non, nombre de boutons (1 à
+  12), boutons par rangée, sens horizontal ou vertical, taille, espacement ; quand l'afficher (toujours, au survol
+  seulement, en combat seulement, jamais) et opacité hors survol ; raccourci, nom des macros, charges.
+- Hors de portée : icône teintée en rouge. Sort mis en avant par le jeu : halo blanc au lieu de doré.
+- Les barres se placent avec le cadenas (grille aimantée). Un réglage changé en combat s'applique à la sortie.
+- Familier, postures, boutons spéciaux, micro-menu et sacs : prochaines étapes du module.
+- Couper le module demande un rechargement de l'interface.
+- Redémarrer le jeu.
+
 ## 0.13.0 · 26/11/2026
 
 - Cadenas ouvert : une grille fine s'affiche sous l'interface, partie du centre de l'écran (axes du centre en
