@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.6.0 · 26/11/2026
+
+- Nouvelle fenêtre principale (`/cui` ou le bouton de minicarte) : les modules sont rangés à gauche, en tiroirs
+  qui s'ouvrent sur leurs sous-modules.
+- Accueil « Tous les modules » : une carte par module, avec son interrupteur et un lien vers ses réglages.
+- Les réglages d'un module ou d'un sous-module s'ouvrent à droite ; la molette fait défiler les longues pages.
+
 ## 0.5.0 · 26/11/2026
 
 - Nouveau module « Bouton de minicarte », actif d'office : un clic ouvre la fenêtre des modules, on le glisse

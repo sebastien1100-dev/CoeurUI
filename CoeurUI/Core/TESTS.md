@@ -99,3 +99,32 @@ Essai a maintenant trois réglages pour tester le panneau.
     gardée.
 13. Échap avec le menu ouvert : fenêtre et menu se ferment. `/cui` rouvre sur la liste.
 14. En combat : le panneau s'ouvre, les réglages se changent, aucun message « action bloquée ».
+
+## Étape 6 · fenêtre principale à tiroirs (0.6.0)
+
+À comparer avec les maquettes validées A (tiroirs) et C (accueil). Essai a maintenant deux sous-modules,
+« Messages » et « Minuterie », pour tester les tiroirs. Un `/reload` suffit (aucun nouveau fichier).
+
+1. `/reload`. Aucune erreur Lua. `/cui version` affiche « version 0.6.0 ».
+2. `/cui` : fenêtre plus grande. À gauche, sur fond plus sombre : « Tous les modules » (choisi, doré), un trait,
+   puis « Bouton de minicarte » et « Essai » avec une pastille (verte si actif, grise si coupé). Essai a un
+   chevron « > ».
+3. À droite, l'accueil : « Tous les modules », le texte d'aide, une carte par module (nom, description,
+   interrupteur). La carte d'un module actif a un fond plus clair. Essai a un lien « Réglages » ».
+   Le pied indique « 2 modules · n actifs ».
+4. Interrupteur d'une carte : le module s'active ou se coupe, la pastille de gauche change de couleur.
+5. Cliquer « Essai » à gauche : le tiroir s'ouvre (chevron vers le bas), « Messages » et « Minuterie » apparaissent
+   en retrait ; « Messages » est choisi (doré, trait doré à gauche). À droite : « Essai » en petit, « Messages » en
+   titre, l'état et l'interrupteur d'Essai, puis les réglages. Le titre de la fenêtre devient « CœurUI · Essai ».
+6. Cliquer « Minuterie » : sa page s'ouvre (curseur). Recliquer « Essai » : le tiroir se ferme, la page reste.
+7. Essai actif : changer un réglage écrit « Essai : réglage « messages / cible » = long. » (ou minuterie / delai).
+   Les réglages marchent comme avant (messages de cible, délai de la minuterie après un arrêt / redémarrage).
+8. « Valeurs par défaut » ne remet à zéro que la page ouverte.
+9. « Bouton de minicarte » à gauche : sa page dit « Ce module n'a pas de réglages. », avec l'interrupteur ;
+   pas de « Valeurs par défaut ».
+10. Carte « Essai » de l'accueil, lien « Réglages » » : ouvre le tiroir sur « Messages ».
+11. Molette sur la colonne de gauche ou la zone de droite : rien ne bouge tant que tout tient (pas de barre).
+    Menu déroulant ouvert, molette : le menu se ferme.
+12. Fermer et rouvrir la fenêtre : elle revient sur l'accueil, à la même place à l'écran.
+13. Le coin bas gauche de la fenêtre reste arrondi (la colonne sombre ne dépasse pas du contour).
+14. En combat : tout marche (sauf « Recharger l'interface », grisé), aucun message « action bloquée ».

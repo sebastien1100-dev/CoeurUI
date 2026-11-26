@@ -16,15 +16,118 @@ local function tint(texture, color)
     texture:SetVertexColor(color[1], color[2], color[3], color[4] or 1)
 end
 
--- Bouton lien ------------------------------------------------------------------------------
--- Texte doré sans cadre, fond au survol (ex. « « Modules »).
+-- Chevron ----------------------------------------------------------------------------------
+-- Deux petits traits tournés. c:SetDirection("right" | "down" | "up") ; c:SetColor(couleur).
 
-function CUI:CreateLinkButton(parent, text)
+function CUI:CreateChevron(parent, layer)
+    local c = { lines = {} }
+    for i = 1, 2 do
+        local t = solid(parent, layer or "ARTWORK", 0, C.texteDiscret)
+        t:SetSize(6, 1.6)
+        c.lines[i] = t
+    end
+
+    function c:SetPoint(...)
+        self.point = { ... }
+        self:SetDirection(self.direction or "down")
+    end
+
+    -- Chaque trait est placé à côté du point d'ancrage, puis tourné.
+    local SHAPES = {
+        down = { { -2, 0, -45 }, { 2, 0, 45 } },
+        up = { { -2, 0, 45 }, { 2, 0, -45 } },
+        right = { { 0, 2, -45 }, { 0, -2, 45 } },
+    }
+    function c:SetDirection(direction)
+        self.direction = direction
+        if not self.point then return end
+        local p = self.point
+        for i, shape in ipairs(SHAPES[direction]) do
+            local t = self.lines[i]
+            t:ClearAllPoints()
+            t:SetPoint("CENTER", p[1], p[2], (p[3] or 0) + shape[1], (p[4] or 0) + shape[2])
+            t:SetRotation(math.rad(shape[3]))
+        end
+    end
+
+    function c:SetColor(color)
+        for _, t in ipairs(self.lines) do
+            tint(t, color)
+        end
+    end
+    return c
+end
+
+-- Zone à faire défiler (molette) -------------------------------------------------------------
+--   local zone = CUI:CreateScrollArea(parent) ; zone.child : le contenu (largeur = celle de la zone)
+--   zone:SetContentHeight(h) après chaque mise en page ; zone:ScrollToTop()
+-- Une fine barre à droite montre la position quand le contenu dépasse.
+
+function CUI:CreateScrollArea(parent)
+    local sf = _G.CreateFrame("ScrollFrame", nil, parent)
+    local child = _G.CreateFrame("Frame", nil, sf)
+    child:SetSize(1, 1)
+    sf:SetScrollChild(child)
+    sf.child = child
+
+    local bar = solid(sf, "OVERLAY", 0, C.bordure)
+    bar:SetWidth(3)
+    bar:Hide()
+
+    local function maxScroll()
+        return math.max(0, child:GetHeight() - sf:GetHeight())
+    end
+
+    local function updateBar()
+        local max = maxScroll()
+        if max <= 0 then
+            bar:Hide()
+            return
+        end
+        local view = sf:GetHeight()
+        local size = math.max(20, view * view / child:GetHeight())
+        local pos = (view - size) * sf:GetVerticalScroll() / max
+        bar:ClearAllPoints()
+        bar:SetPoint("TOPRIGHT", sf, "TOPRIGHT", -2, -pos)
+        bar:SetHeight(size)
+        bar:Show()
+    end
+
+    local function scrollTo(value)
+        sf:SetVerticalScroll(math.min(maxScroll(), math.max(0, value)))
+        updateBar()
+    end
+
+    sf:EnableMouseWheel(true)
+    sf:SetScript("OnMouseWheel", function(_, delta)
+        scrollTo(sf:GetVerticalScroll() - delta * 40)
+    end)
+    sf:SetScript("OnSizeChanged", function(_, width)
+        child:SetWidth(width)
+        scrollTo(sf:GetVerticalScroll())
+    end)
+
+    function sf:SetContentHeight(height)
+        child:SetWidth(self:GetWidth())
+        child:SetHeight(math.max(1, height))
+        scrollTo(self:GetVerticalScroll())
+    end
+
+    function sf:ScrollToTop()
+        scrollTo(0)
+    end
+    return sf
+end
+
+-- Bouton lien ------------------------------------------------------------------------------
+-- Texte doré sans cadre, fond au survol (ex. « « Modules », « Réglages » »).
+
+function CUI:CreateLinkButton(parent, text, petit)
     local b = _G.CreateFrame("Button", nil, parent)
-    b:SetHeight(26)
+    b:SetHeight(petit and 22 or 26)
     b.bg = self:CreateRoundRect(b, 4, C.graphiteClair)
     b.bg:SetShown(false)
-    b.label = self:CreateText(b, "normal", "or_")
+    b.label = self:CreateText(b, petit and "petit" or "normal", "or_")
     b.label:SetJustifyV("MIDDLE")
     b.label:SetPoint("CENTER")
     b.label:SetText(text)
@@ -184,11 +287,8 @@ local function updateDropdown(b)
     b.fill:SetColor(fill)
     b.text:SetTextColor(text[1], text[2], text[3], 1)
     -- Chevron : vers le bas fermé, vers le haut ouvert.
-    local angle = b.open and -45 or 45
-    b.arrowLeft:SetRotation(math.rad(-angle))
-    b.arrowRight:SetRotation(math.rad(angle))
-    tint(b.arrowLeft, arrow)
-    tint(b.arrowRight, arrow)
+    b.chevron:SetDirection(b.open and "up" or "down")
+    b.chevron:SetColor(arrow)
 end
 
 local function closeMenu()
@@ -208,6 +308,8 @@ local function createMenu()
     catcher:SetFrameStrata("FULLSCREEN_DIALOG")
     catcher:EnableMouse(true)
     catcher:SetScript("OnMouseDown", closeMenu)
+    catcher:EnableMouseWheel(true) -- la molette ferme aussi la liste (sinon le contenu défile dessous)
+    catcher:SetScript("OnMouseWheel", closeMenu)
     catcher:Hide()
 
     menu = _G.CreateFrame("Frame", "CoeurUIMenuDeroulant", _G.UIParent)
@@ -308,12 +410,8 @@ function CUI:CreateDropdown(parent, opts)
     b.text:SetPoint("LEFT", 10, 0)
     b.text:SetPoint("RIGHT", -28, 0)
     b.text:SetWordWrap(false)
-    b.arrowLeft = solid(b, "ARTWORK", 0, C.texteDiscret)
-    b.arrowLeft:SetSize(6, 1.6)
-    b.arrowLeft:SetPoint("CENTER", b, "RIGHT", -16, 0)
-    b.arrowRight = solid(b, "ARTWORK", 0, C.texteDiscret)
-    b.arrowRight:SetSize(6, 1.6)
-    b.arrowRight:SetPoint("CENTER", b, "RIGHT", -12, 0)
+    b.chevron = self:CreateChevron(b)
+    b.chevron:SetPoint(b, "RIGHT", -14, 0)
     b.options = opts.options or {}
     f.button = b
 

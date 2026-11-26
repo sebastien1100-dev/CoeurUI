@@ -6,11 +6,11 @@ local L = CUI.L
 local GAP = 18 -- espace entre deux réglages
 
 -- Interrupteur avec son texte, pour un réglage « toggle ».
-local function createToggle(panel, m, item, width)
+local function createToggle(panel, m, item, width, sub)
     local f = _G.CreateFrame("Frame", nil, panel)
     f:SetWidth(width)
     f.switch = CUI:CreateSwitch(f, function(_, checked)
-        CUI:SetModuleSetting(m, item, checked)
+        CUI:SetModuleSetting(m, item, checked, sub)
     end)
     f.switch:SetPoint("RIGHT")
 
@@ -34,9 +34,9 @@ local function createToggle(panel, m, item, width)
     return f
 end
 
--- Construit le contenu du panneau (une fois par module), large de width points.
+-- Construit le contenu d'une page (une fois par module ou sous-module sub), large de width points.
 -- Renvoie un cadre dont la hauteur suit le contenu, avec :Refresh() pour relire les valeurs.
-function CUI:BuildSettingsPanel(parent, m, width)
+function CUI:BuildSettingsPanel(parent, m, width, sub)
     local panel = _G.CreateFrame("Frame", nil, parent)
     panel:SetWidth(width)
     panel.controls = {}
@@ -46,32 +46,33 @@ function CUI:BuildSettingsPanel(parent, m, width)
     intro:SetWidth(width)
     intro:SetWordWrap(true)
     local text = L.PANNEAU_INTRO
-    if m.description ~= "" then
-        text = m.description .. " " .. text
+    local description = sub and sub.description or (not sub and m.description) or ""
+    if description ~= "" then
+        text = description .. " " .. text
     end
     intro:SetText(text)
     local y = -math.ceil(intro:GetStringHeight()) - GAP
 
-    for _, item in ipairs(m.settings) do
+    for _, item in ipairs(self:GetPageSettings(m, sub)) do
         local control
         if item.type == "section" then
             control = self:CreateText(panel, "petit", "texteDiscret")
             control:SetText(item.text or "")
             control:SetHeight(math.ceil(control:GetStringHeight()))
         elseif item.type == "toggle" then
-            control = createToggle(panel, m, item, width)
+            control = createToggle(panel, m, item, width, sub)
         elseif item.type == "slider" then
             control = self:CreateSlider(panel, {
                 label = item.label or item.key,
                 min = item.min, max = item.max, step = item.step, format = item.format,
-                onChange = function(value) CUI:SetModuleSetting(m, item, value) end,
+                onChange = function(value) CUI:SetModuleSetting(m, item, value, sub) end,
             })
             control:SetWidth(width)
         elseif item.type == "dropdown" then
             control = self:CreateDropdown(panel, {
                 label = item.label or item.key,
                 options = item.options, width = item.width or 240,
-                onSelect = function(value) CUI:SetModuleSetting(m, item, value) end,
+                onSelect = function(value) CUI:SetModuleSetting(m, item, value, sub) end,
             })
             control:SetWidth(width)
         end
@@ -89,7 +90,7 @@ function CUI:BuildSettingsPanel(parent, m, width)
 
     function panel:Refresh()
         for _, control in ipairs(self.controls) do
-            control:SetValue(CUI:GetModuleSetting(m, control.item))
+            control:SetValue(CUI:GetModuleSetting(m, control.item, sub))
         end
     end
     return panel

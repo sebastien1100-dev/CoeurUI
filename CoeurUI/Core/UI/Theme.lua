@@ -28,6 +28,8 @@ CUI.Colors = {
     bordureDiscrete = hex("3A3E47"),
     texte = hex("F2F2F2"),
     texteDiscret = hex("9A9DA5"),
+    texteSecondaire = hex("C4C6CC"),  -- sous-onglets de la colonne de gauche
+    colonne = hex("16181D"),          -- fond de la colonne de gauche
     texteDesactive = hex("8A8D95"),
     desactiveFond = hex("22252B"),
     desactiveBordure = hex("33363E"),
@@ -53,13 +55,14 @@ local function makeFont(name, size)
 end
 
 CUI.Fonts = {
+    grand = makeFont("CoeurUIPoliceGrande", 17),
     titre = makeFont("CoeurUIPoliceTitre", 14),
     normal = makeFont("CoeurUIPoliceNormale", 12),
     petit = makeFont("CoeurUIPolicePetite", 11),
 }
 
 -- Crée un texte avec la police et la couleur du thème.
---   font : "titre", "normal" ou "petit" ; color : une clé de CUI.Colors
+--   font : "grand", "titre", "normal" ou "petit" ; color : une clé de CUI.Colors
 function CUI:CreateText(parent, font, color, layer)
     local fs = parent:CreateFontString(nil, layer or "OVERLAY")
     fs:SetFontObject(self.Fonts[font or "normal"])

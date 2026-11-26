@@ -10,7 +10,7 @@
 --   function M:OnEnable() end
 --   function M:OnDisable() end
 --
--- Réglages affichés dans son panneau (bouton « Réglages » de l'écran Modules), facultatif :
+-- Réglages affichés dans la fenêtre principale, facultatif. Soit une seule page :
 --       settings = {
 --           { type = "section", text = "AFFICHAGE" },
 --           { type = "toggle", key = "x", label = "...", description = "..." },
@@ -18,8 +18,14 @@
 --           { type = "dropdown", key = "z", label = "...", options = { { value = "a", text = "..." } } },
 --       },
 --   Chaque key est lue dans M.db (ou M.charDb avec char = true) ; sa valeur par défaut vient de
---   defaults (ou charDefaults). Un changement s'applique tout de suite :
---   function M:OnSettingChanged(key, value) end  -- appelée seulement quand le module est actif
+--   defaults (ou charDefaults).
+-- Soit des sous-modules (un tiroir dans la fenêtre, une page chacun) :
+--       subs = {
+--           { key = "joueur", name = "Joueur", description = "...", settings = { ... } },
+--       },
+--   Les réglages d'un sous-module sont rangés dans M.db[sous.key] (défauts : defaults[sous.key]).
+-- Un changement s'applique tout de suite :
+--   function M:OnSettingChanged(key, value, subKey) end  -- seulement quand le module est actif
 --
 -- Tant qu'il n'est pas activé, un module ne fait rien. Ses évènements (M:On), minuteries
 -- (M:After, M:Every) et réglages du jeu (M:SetCVar) sont retirés ou rendus automatiquement
@@ -45,6 +51,7 @@ function CUI:RegisterModule(def)
         defaults = def.defaults or {},
         charDefaults = def.charDefaults or {},
         settings = def.settings,
+        subs = def.subs,
         enabled = false,       -- en marche en ce moment
         pendingReload = false, -- coupé, mais encore en marche jusqu'au prochain /reload
         failed = false,        -- erreur au dernier démarrage
@@ -221,32 +228,57 @@ end
 
 -- Réglages d'un module ----------------------------------------------------------------------
 
-function CUI:HasModuleSettings(m)
-    return type(m.settings) == "table" and #m.settings > 0
+-- Sous-modules déclarés (liste, éventuellement vide).
+function CUI:GetModuleSubs(m)
+    return type(m.subs) == "table" and m.subs or {}
 end
 
-function CUI:GetModuleSetting(m, item)
+-- Le module a-t-il une page de réglages (ou des sous-modules) ?
+function CUI:HasModuleSettings(m)
+    return #self:GetModuleSubs(m) > 0 or (type(m.settings) == "table" and #m.settings > 0)
+end
+
+-- Réglages d'une page : ceux du sous-module sub, ou ceux du module.
+function CUI:GetPageSettings(m, sub)
+    local list = sub and sub.settings or m.settings
+    return type(list) == "table" and list or {}
+end
+
+-- Table où est rangé un réglage (créée si besoin), et ses valeurs par défaut.
+local function storeOf(m, item, sub)
     local store = item.char and m.charDb or m.db
+    local defaults = item.char and m.charDefaults or m.defaults
+    if sub then
+        if type(store[sub.key]) ~= "table" then
+            store[sub.key] = {}
+        end
+        store = store[sub.key]
+        defaults = type(defaults[sub.key]) == "table" and defaults[sub.key] or {}
+    end
+    return store, defaults
+end
+
+function CUI:GetModuleSetting(m, item, sub)
+    local store = storeOf(m, item, sub)
     return store[item.key]
 end
 
 -- Change un réglage et prévient le module s'il est actif.
-function CUI:SetModuleSetting(m, item, value)
-    local store = item.char and m.charDb or m.db
+function CUI:SetModuleSetting(m, item, value, sub)
+    local store = storeOf(m, item, sub)
     if store[item.key] == value then return end
     store[item.key] = value
     if m.enabled and m.OnSettingChanged then
-        self:SafeCall(m.name, m.OnSettingChanged, m, item.key, value)
+        self:SafeCall(m.name, m.OnSettingChanged, m, item.key, value, sub and sub.key)
     end
 end
 
--- Remet tous les réglages du panneau à leur valeur par défaut.
-function CUI:ResetModuleSettings(m)
-    if not self:HasModuleSettings(m) then return end
-    for _, item in ipairs(m.settings) do
+-- Remet les réglages d'une page (module ou sous-module) à leur valeur par défaut.
+function CUI:ResetModuleSettings(m, sub)
+    for _, item in ipairs(self:GetPageSettings(m, sub)) do
         if item.key then
-            local defaults = item.char and m.charDefaults or m.defaults
-            self:SetModuleSetting(m, item, defaults[item.key])
+            local _, defaults = storeOf(m, item, sub)
+            self:SetModuleSetting(m, item, defaults[item.key], sub)
         end
     end
 end
