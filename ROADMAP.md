@@ -53,8 +53,8 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       au jeu. Maquette validée le 26/11/2026 (direction « sobre ») : fond sombre, liseré gris fin, pas d'or ;
       couleurs du jeu gardées sur le nom (qualité, attitude) ; barre de vie en trait fin ; menus : cases CœurUI
       (coche blanche au trait), ligne survolée plus claire, icônes du jeu à droite, chevron gris.
-   5. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
-      aimant ou pas. Maquette validée le 26/11/2026 ; code après la validation de la Minicarte en jeu :
+   5. ~~Noyau : grille aimantée~~ Validée en jeu (0.13.0). Pour le déplacement des cadres : taille de la grille,
+      aimant ou pas. Maquette validée le 26/11/2026 :
       - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;
       - grille affichée seulement cadenas ouvert, à afficher ou cacher ; tailles 8, 16, 32 (défaut), 48, 64 ;
         partie du centre de l'écran, axes du centre en doré ;

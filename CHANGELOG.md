@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.13.0 · 26/11/2026
+
+- Cadenas ouvert : une grille fine s'affiche sous l'interface, partie du centre de l'écran (axes du centre en
+  doré). Dans le panneau « Déplacement des cadres » : l'afficher ou non, et sa taille (8, 16, 32, 48 ou 64).
+- Aimant (activé d'office, se coupe dans le même panneau) : un cadre glissé se colle à la grille, aux bords des
+  autres cadres (alignés ou collés) et au centre de l'écran ; un trait vert montre ce qui l'attire. Maj enfoncée :
+  déplacement libre.
+- Un /reload suffit.
+
 ## 0.12.0 · 26/11/2026
 
 - Nouveau module « Infobulles et menus » (coupé d'office) : les infobulles du jeu (unités, objets, sorts...) et ses

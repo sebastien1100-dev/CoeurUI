@@ -195,3 +195,26 @@ pas encore de module qui s'en sert : ils seront testés avec le module « Cadres
 10. En combat : la flèche est gris sombre ; survol : infobulle qui dit pourquoi ; clic : rien. Après le combat, elle
     remarche.
 11. Le bouton « Recharger l'interface » du pied de page (langue changée, module coupé) marche toujours.
+
+## 0.13.0 · grille aimantée
+
+Avec au moins un module à cadres actif (Cadres d'unité, Minicarte).
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.13.0 ».
+2. Cadenas : une grille fine (traits très pâles) couvre l'écran sous l'interface, tous les 32 points, partie du
+   centre ; les deux axes du centre sont dorés. Le panneau « Déplacement des cadres » a deux lignes de plus :
+   « Grille » (interrupteur, Taille 8 16 32 48 64, 32 en doré) et « Aimant » (interrupteur, « grille · bords des
+   cadres · centre de l'écran »).
+3. Taille 64 puis 8 : la grille change tout de suite. Interrupteur Grille coupé : elle disparaît.
+4. Glisser le cadre du joueur lentement : il avance par petits sauts (il se colle aux lignes de la grille, même
+   cachée) ; un trait vert vertical ou horizontal apparaît sur la ligne qui l'attire.
+5. Approcher le bord haut de la cible du bord haut du joueur : il s'aligne, trait vert horizontal. Approcher la
+   cible juste sous le joueur : elle s'y colle.
+6. Approcher le milieu d'un cadre de l'axe vertical du centre : il s'y pose, trait vert sur l'axe.
+7. Glisser en gardant Maj enfoncée : déplacement libre, aucun trait vert.
+8. Aimant coupé : déplacement libre ; la note de l'aimant devient grise.
+9. Minicarte : glisser la carte, ses éléments la suivent ; glisser le nom de la zone : il peut s'aligner sur la
+   carte.
+10. Verrouiller : grille et traits disparaissent. `/reload` puis cadenas : taille, grille et aimant sont gardés.
+11. Déverrouiller puis entrer en combat : tout se verrouille, la grille disparaît.
+12. Langue anglaise : « Grid », « Size », « Snap ».

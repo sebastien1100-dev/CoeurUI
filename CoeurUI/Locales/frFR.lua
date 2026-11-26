@@ -96,7 +96,7 @@ L.INFOBULLE_CADENAS = "Les cadres se glissent à la souris tant que le cadenas e
 L.INFOBULLE_CADENAS_COMBAT = "Indisponible en combat."
 L.INFOBULLE_CADENAS_AUCUN = "Aucun cadre à déplacer : activez un module qui en a."
 L.DEPLACEMENT_TITRE = "Déplacement des cadres"
-L.DEPLACEMENT_AIDE = "Glissez un cadre pour le placer. Clic droit sur un cadre : remettre à sa place d'origine."
+L.DEPLACEMENT_AIDE = "Glissez un cadre (ou son nom) pour le placer ; Maj enfoncée : sans aimant. Clic droit : place d'origine."
 L.DEPLACEMENT_TOUT = "Tout remettre en place"
 L.VERROUILLER = "Verrouiller"
 L.DEPLACEMENT_COMBAT = "en combat : impossible de déplacer les cadres."
@@ -185,3 +185,9 @@ L.POLICE_NOTE = "Utilisée partout dans CœurUI. Les tailles se règlent dans ch
 -- Module « Infobulles et menus »
 L.IM_NOM = "Infobulles et menus"
 L.IM_DESC = "Les infobulles et les menus du jeu au style de CœurUI : fond sombre, liseré fin, pas d'or."
+
+-- Grille aimantée (panneau « Déplacement des cadres »)
+L.GRILLE = "Grille"
+L.GRILLE_TAILLE = "Taille"
+L.AIMANT = "Aimant"
+L.AIMANT_NOTE = "grille · bords des cadres · centre de l'écran"

@@ -97,7 +97,7 @@ L.INFOBULLE_CADENAS = "Frames can be dragged with the mouse while the padlock is
 L.INFOBULLE_CADENAS_COMBAT = "Not available in combat."
 L.INFOBULLE_CADENAS_AUCUN = "No frames to move: enable a module that has some."
 L.DEPLACEMENT_TITRE = "Moving frames"
-L.DEPLACEMENT_AIDE = "Drag a frame to place it. Right-click a frame: put it back in its original place."
+L.DEPLACEMENT_AIDE = "Drag a frame (or its name) to place it; hold Shift: no snapping. Right-click: original place."
 L.DEPLACEMENT_TOUT = "Reset all positions"
 L.VERROUILLER = "Lock"
 L.DEPLACEMENT_COMBAT = "in combat: frames cannot be moved."
@@ -186,3 +186,9 @@ L.POLICE_NOTE = "Used everywhere in CœurUI. Sizes are set in each module."
 -- "Tooltips and menus" module
 L.IM_NOM = "Tooltips and menus"
 L.IM_DESC = "The game's tooltips and menus in the CœurUI style: dark background, thin edge, no gold."
+
+-- Snapping grid ("Moving frames" panel)
+L.GRILLE = "Grid"
+L.GRILLE_TAILLE = "Size"
+L.AIMANT = "Snap"
+L.AIMANT_NOTE = "grid · frame edges · screen centre"
