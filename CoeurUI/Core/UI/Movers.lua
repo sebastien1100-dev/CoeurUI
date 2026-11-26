@@ -5,7 +5,9 @@
 --       key = "joueur", frame = cadre, label = "CLE_DU_NOM",            -- nom affiché sur le cadre
 --       default = { "CENTER", "CENTER", -200, -150 },                   -- point, point de UIParent, x, y
 --       onUnlock = function(cadre) end, onLock = function(cadre) end,   -- ex. montrer un exemple
+--       parent = autreCadre,  -- facultatif : position rattachée à ce cadre (default aussi), qu'il suit
 --   })
+--   CUI:ResetMover("joueur")        -- remet un seul cadre à sa place d'origine
 --   CUI:UnregisterMover("joueur")   -- quand le module est coupé
 --
 -- Position gardée dans CUI.db.ui.movers[key]. Déplacement impossible en combat : un combat qui
@@ -40,10 +42,21 @@ local function applyPosition(def)
     if _G.InCombatLockdown() and frame:IsProtected() then return end
     local pos = saved()[def.key] or def.default
     frame:ClearAllPoints()
-    frame:SetPoint(pos[1], _G.UIParent, pos[2] or pos[1], pos[3] or 0, pos[4] or 0)
+    frame:SetPoint(pos[1], def.parent or _G.UIParent, pos[2] or pos[1], pos[3] or 0, pos[4] or 0)
 end
 
 local function savePosition(def)
+    if def.parent then
+        -- Écart entre le centre du cadre et celui du cadre de rattachement.
+        local cx, cy = def.frame:GetCenter()
+        local px, py = def.parent:GetCenter()
+        if cx and px then
+            local k = def.parent:GetEffectiveScale() / def.frame:GetEffectiveScale()
+            saved()[def.key] = { "CENTER", "CENTER", math.floor(cx - px * k + 0.5), math.floor(cy - py * k + 0.5) }
+        end
+        applyPosition(def) -- de nouveau rattaché (le glisser l'avait accroché à l'écran)
+        return
+    end
     local point, _, relPoint, x, y = def.frame:GetPoint(1)
     if point then
         saved()[def.key] = { point, relPoint, math.floor(x + 0.5), math.floor(y + 0.5) }
@@ -206,6 +219,14 @@ function CUI:SetMoversUnlocked(on)
     end
     showPanel(on)
     self:RefreshModulesScreen()
+end
+
+-- Remet un cadre à sa place d'origine.
+function CUI:ResetMover(key)
+    local def = movers[key]
+    if not def or _G.InCombatLockdown() then return end
+    saved()[key] = nil
+    applyPosition(def)
 end
 
 -- Remet tous les cadres à leur place d'origine.

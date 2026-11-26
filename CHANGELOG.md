@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.10.0 · 26/11/2026
+
+- Nouveau module « Minicarte » (coupé d'office) : minicarte sobre, carrée ou rectangulaire (largeur et hauteur
+  réglables), avec le nom de la zone, les coordonnées en bas de la carte et le zoom à la molette.
+- Boutons du jeu gardés : courrier, suivi, file d'attente. Plus d'heure ni de calendrier sur la carte.
+- Les boutons des addons sont rangés dans un tiroir qui s'ouvre d'un clic.
+- Avec le cadenas, on place la carte, le nom de la zone, le tiroir et chaque bouton du jeu ; les éléments suivent la
+  carte quand on la déplace.
+- Couper le module demande un rechargement de l'interface.
+- Redémarrer le jeu.
+
 ## 0.9.0 · 26/11/2026
 
 - Nouveau module « Cadres d'unité » (coupé d'office) : cadres du joueur, de la cible et de la cible de la cible, à

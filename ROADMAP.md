@@ -33,18 +33,26 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 2. ~~Premier module d'interface : bouton de minicarte.~~ Validé en jeu (0.5.0).
 3. Modules d'interface, un à la fois (chacun : maquette validée, puis code, puis tests en jeu) :
    1. ~~Barres de vie : module « Cadres d'unité » (joueur, cible, cible de la cible).~~ Validé en jeu (0.9.0).
-   2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt). Prochain module.
-      Questions posées au joueur, à trancher avant la maquette (sans réponse : propositions de Claude) :
-      - forme : ronde, carrée, ou au choix dans les réglages ?
-      - autour : nom de la zone, heure, coordonnées, zoom à la molette, boutons du jeu (courrier, file d'attente,
-        calendrier...) ?
-      - boutons des addons : rangés dans une grille ou un tiroir (comme EllesmereUIMinimap aujourd'hui) ?
-      - taille réglable, et minicarte déplaçable avec le cadenas comme les cadres ?
-   3. Barres d'actions.
-   4. Barre d'incantation (cast).
-   5. Discussion (tchat).
-   6. Effets : améliorations et affaiblissements (buffs et débuffs).
-   7. Suivi des quêtes.
+   2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt). Codé (0.10.0), à tester
+      en jeu. Maquette validée le 26/11/2026 :
+      - interface sobre en jeu : pas de contour doré (l'or reste pour la fenêtre de CœurUI) ;
+      - carte rectangulaire seulement : largeur et hauteur réglables, option « garder un carré » (ratio 1) ;
+      - nom de la zone, coordonnées (centrées en bas de la carte), boutons du jeu (courrier, suivi, file
+        d'attente) ; zoom à la molette ; pas d'heure ni de calendrier ;
+      - boutons des addons rangés dans un tiroir (un petit bouton qui ouvre une grille) ;
+      - déplaçables avec le cadenas : la carte, le nom de la zone, le tiroir et chacun des boutons du jeu.
+   3. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
+      aimant ou pas. Maquette validée le 26/11/2026 ; code après la validation de la Minicarte en jeu :
+      - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;
+      - grille affichée seulement cadenas ouvert, à afficher ou cacher ; tailles 8, 16, 32 (défaut), 48, 64 ;
+        partie du centre de l'écran, axes du centre en doré ;
+      - aimant (actif par défaut) : grille (même cachée), bords des autres cadres (alignés ou collés), centre
+        de l'écran ; à moins de 8 points ; trait vert sur ce qui attire ; Maj enfoncée = déplacement libre.
+   4. Barres d'actions.
+   5. Barre d'incantation (cast).
+   6. Discussion (tchat).
+   7. Effets : améliorations et affaiblissements (buffs et débuffs).
+   8. Suivi des quêtes.
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

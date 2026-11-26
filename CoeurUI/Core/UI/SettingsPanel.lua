@@ -55,6 +55,9 @@ end
 -- { type = "custom", height = h, build = function(parent, largeur) return cadre end,
 --   refresh = function(cadre) end } : un cadre fourni par le module (un aperçu par exemple),
 -- rafraîchi à l'ouverture de la page et après chaque réglage changé.
+-- { type = "button", label = "...", description = "...", onClick = function() end } : un bouton d'action.
+-- enabledIf = function(lire) return lire("autreCle") end (sur un curseur ou un menu) : grisé quand
+-- la fonction renvoie false ; lire(cle) donne la valeur d'un autre réglage de la même page.
 -- Renvoie un cadre dont la hauteur suit le contenu, avec :Refresh() pour relire les valeurs.
 local COLUMN_GAP = 28
 
@@ -71,6 +74,7 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
 
     local function changed(item, value)
         set(item, value)
+        panel:RefreshEnabled()
         panel:RefreshCustoms() -- l'aperçu suit les réglages
     end
 
@@ -116,6 +120,12 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
                 onSelect = function(value) changed(item, value) end,
             })
             control:SetWidth(colW)
+        elseif item.type == "button" then
+            control = self:CreateButton(panel, self:Tr(item.label or ""))
+            control:SetScript("OnClick", function()
+                if item.onClick then CUI:SafeCall(self:Tr(item.label or ""), item.onClick) end
+                panel:Refresh()
+            end)
         elseif item.type == "custom" and item.build then
             control = item.build(panel, colW)
             control:SetSize(colW, item.height or control:GetHeight())
@@ -126,7 +136,7 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
         if control then
             control:ClearAllPoints()
             control:SetPoint("TOPLEFT", x, y)
-            if item.type == "slider" or item.type == "dropdown" then
+            if item.type == "slider" or item.type == "dropdown" or item.type == "button" then
                 extra = addNote(panel, control, item, colW)
             end
             y = y - control:GetHeight() - extra - GAP
@@ -147,10 +157,26 @@ function CUI:CreateSettingsPanel(parent, items, width, intro, get, set)
         end
     end
 
+    local function read(key)
+        for _, item in ipairs(items) do
+            if item.key == key then return get(item) end
+        end
+    end
+
+    function panel:RefreshEnabled()
+        for _, control in ipairs(self.controls) do
+            local test = control.item.enabledIf
+            if test and control.SetEnabled then
+                control:SetEnabled(test(read) and true or false)
+            end
+        end
+    end
+
     function panel:Refresh()
         for _, control in ipairs(self.controls) do
             control:SetValue(get(control.item))
         end
+        self:RefreshEnabled()
         self:RefreshCustoms()
     end
     return panel
