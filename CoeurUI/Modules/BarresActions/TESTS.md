@@ -28,3 +28,26 @@ barres du jeu). Le module ne dépend de rien chez EllesmereUI. Ne pas ouvrir le 
 13. « Valeurs par défaut » : seule la barre choisie dans le menu revient à ses réglages d'origine.
 14. Couper le module : « coupé au prochain /reload ». Après le rechargement : barres du jeu comme avant.
 15. Langue anglaise : « Action bars », « Bar 1 (main) ».
+
+## 0.15.0 · étape 2 : familier, postures, boutons spéciaux
+
+1. **Redémarrer le jeu** (nouvelle texture). Aucune erreur Lua. `/cui version` : « 0.15.0 ».
+2. Personnage avec postures ou formes (guerrier, druide, voleur...) : barre des postures au-dessus des barres, à
+   gauche, en carrés sobres ; clic ou raccourci : change de posture ; la posture active est éclairée.
+3. Personnage avec familier (chasseur, démoniste) : barre du familier au-dessus des barres, à droite ; attaque,
+   suivre, sorts du familier ; auto-incantation visible. Renvoyer le familier : la barre disparaît ; le rappeler :
+   elle revient. Les anciennes barres du jeu (familier, postures) ne s'affichent plus.
+4. Page de réglages, menu « Barre » : Familier, Postures et formes : mêmes réglages que les barres (nombre jusqu'à
+   10, sens, rangées, taille, visibilité, textes) ; la vraie barre suit.
+5. Menu « Barre » : Bouton d'action en plus, Quitter le véhicule : seule la taille est active, le reste grisé (y
+   compris les interrupteurs).
+6. Bouton d'action en plus (quête ou combat qui en donne un) : il apparaît à sa place CœurUI, sans son décor du
+   jeu, en carré sobre ; il marche (clic et raccourci).
+7. Monter dans un véhicule (ou une monture à deux places en passager) : le carré « Quitter » (porte et flèche)
+   apparaît ; survol : il s'éclaire ; clic : on descend. Hors véhicule : rien.
+8. Cadenas : Familier, Postures et formes, Bouton d'action en plus, Quitter le véhicule ont leur contour doré et
+   se placent (grille aimantée). `/reload` : places gardées.
+9. Entrer en combat, appeler un familier en combat : rien ne casse ; s'il est mal placé, il se replace à la sortie
+   du combat.
+10. Personnage sans posture ni forme (mage, chasseur...) : le menu « Barre » ne propose pas « Postures et formes » ;
+    au cadenas, pas d'étiquette « Postures et formes ». Personnage avec postures : les deux sont là.

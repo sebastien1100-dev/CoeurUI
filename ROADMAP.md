@@ -61,7 +61,7 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       - aimant (actif par défaut) : grille (même cachée), bords des autres cadres (alignés ou collés), centre
         de l'écran ; à moins de 8 points ; trait vert sur ce qui attire ; Maj enfoncée = déplacement libre.
    6. Barres d'actions. Maquette validée le 26/11/2026. En trois étapes : 1) ~~barres 1 à 8~~ validée en jeu (0.14.0) ;
-      2) familier, postures, boutons spéciaux ; 3) micro-menu et sacs. Choix du joueur :
+      2) ~~familier, postures, boutons spéciaux~~ validée en jeu (0.15.0) ; 3) micro-menu et sacs. Choix du joueur :
       - barres 1 à 8, familier, postures, boutons spéciaux (action en plus, quitter le véhicule), micro-menu et sacs ;
       - carrés sobres : icône rognée, liseré gris fin, coins à peine arrondis, pas d'or ; raccourci en petit ;
       - par barre : disposition (nombre de boutons, par ligne, taille, espacement), visibilité (toujours, survol,

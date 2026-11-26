@@ -1,7 +1,7 @@
 -- Module « Barres d'actions » (maquette validée) : barres 1 à 8 en carrés sobres (icône rognée,
 -- liseré gris fin, coins à peine arrondis, pas d'or), à la place des barres du jeu.
--- Étape 1 : barres 1 à 8. Plus tard (même module) : familier, postures, boutons spéciaux,
--- micro-menu et sacs.
+-- Étape 1 : barres 1 à 8. Étape 2 : familier, postures, bouton d'action en plus, quitter le
+-- véhicule (boutons du jeu réutilisés : le jeu les tient à jour). Plus tard : micro-menu et sacs.
 --
 -- Par barre : afficher ou non, nombre de boutons, boutons par rangée, sens (horizontale ou
 -- verticale), taille, espacement, visibilité (toujours, au survol, en combat, jamais), opacité hors
@@ -39,7 +39,25 @@ local POSITIONS = {
     b6 = { "CENTER", "CENTER", 0, 80 },
     b7 = { "CENTER", "CENTER", 0, 40 },
     b8 = { "CENTER", "CENTER", 0, 0 },
+    fam = { "BOTTOM", "BOTTOM", 170, 102 },
+    post = { "BOTTOM", "BOTTOM", -200, 102 },
+    extra = { "BOTTOM", "BOTTOM", 0, 230 },
+    vehicule = { "BOTTOM", "BOTTOM", 290, 16 },
 }
+
+-- Familier et postures : boutons du jeu réutilisés (le jeu montre ceux qui servent : familier
+-- présent, postures connues). CœurUI les range dans ses cadres, les habille et les place.
+local GROUPS = {
+    { key = "fam", name = "BA_FAMILIER", prefix = "PetActionButton", count = 10, blizzard = "PetActionBar", pet = true },
+    { key = "post", name = "BA_POSTURES", prefix = "StanceButton", count = 10, blizzard = "StanceBar" },
+}
+-- Boutons spéciaux : seulement la taille et la place (le jeu les montre quand il en a besoin).
+local SPECIAL = { extra = true, vehicule = true }
+
+-- Le personnage a-t-il des postures ou des formes ? Sinon, leur barre n'est ni proposée ni placée.
+local function hasStances()
+    return (_G.GetNumShapeshiftForms and _G.GetNumShapeshiftForms() or 0) > 0
+end
 
 local function barDefaults(shown, vertical)
     return {
@@ -53,23 +71,55 @@ local DEFAULTS = { choix = "b1" }
 for i, def in ipairs(BARS) do
     DEFAULTS[def.key] = barDefaults(i <= 4, i == 3 or i == 4)
 end
+for _, g in ipairs(GROUPS) do
+    DEFAULTS[g.key] = barDefaults(true, false)
+    DEFAULTS[g.key].taille = 30
+    DEFAULTS[g.key].nombre = 10
+    DEFAULTS[g.key].parLigne = 10
+end
+DEFAULTS.extra = barDefaults(true, false)
+DEFAULTS.extra.taille = 52
+DEFAULTS.vehicule = barDefaults(true, false)
+DEFAULTS.vehicule.taille = 32
 
 local M -- plus bas
 
--- Réglages de la barre choisie dans le menu « Barre ».
+-- Réglages de la barre choisie dans le menu « Barre » (postures choisies mais plus proposées :
+-- retour à la barre 1).
 local function barStore()
+    if M.db.choix == "post" and not hasStances() then M.db.choix = "b1" end
     local key = M.db.choix
     return M.db[key], M.defaults[key]
 end
 
+-- Boutons spéciaux choisis : seul le réglage de taille reste actif (keepEnabled), les autres grisés.
+local function layoutChoice(read)
+    return not SPECIAL[read("choix")]
+end
+
 local function barItem(t)
     t.store = barStore
+    if not t.keepEnabled then
+        local own = t.enabledIf
+        t.enabledIf = function(read) return layoutChoice(read) and (not own or own(read)) end
+    end
     return t
 end
 
-local BAR_OPTIONS = {}
-for _, def in ipairs(BARS) do
-    BAR_OPTIONS[#BAR_OPTIONS + 1] = { value = def.key, text = def.name }
+-- Choix du menu « Barre », calculés à l'ouverture de la page (sans postures si le personnage n'en a pas).
+local function barOptions()
+    local list = {}
+    for _, def in ipairs(BARS) do
+        list[#list + 1] = { value = def.key, text = def.name }
+    end
+    for _, g in ipairs(GROUPS) do
+        if g.key ~= "post" or hasStances() then
+            list[#list + 1] = { value = g.key, text = g.name }
+        end
+    end
+    list[#list + 1] = { value = "extra", text = "BA_EXTRA" }
+    list[#list + 1] = { value = "vehicule", text = "BA_VEHICULE" }
+    return list
 end
 
 M = CUI:RegisterModule({
@@ -80,7 +130,7 @@ M = CUI:RegisterModule({
     needsReload = true, -- les barres du jeu ne reviennent qu'après un /reload
     defaults = DEFAULTS,
     settings = {
-        { type = "dropdown", key = "choix", label = "BA_BARRE", options = BAR_OPTIONS, refreshAll = true,
+        { type = "dropdown", key = "choix", label = "BA_BARRE", options = barOptions, refreshAll = true,
           noReset = true },
         { type = "section", text = "BA_DISPOSITION" },
         barItem({ type = "toggle", key = "afficher", label = "BA_AFFICHER" }),
@@ -90,7 +140,8 @@ M = CUI:RegisterModule({
             { value = "horizontal", text = "BA_HORIZONTALE" },
             { value = "vertical", text = "BA_VERTICALE" },
         } }),
-        barItem({ type = "slider", key = "taille", label = "BA_TAILLE", min = 20, max = 64, step = 2, format = "%d" }),
+        barItem({ type = "slider", key = "taille", label = "BA_TAILLE", min = 20, max = 64, step = 2, format = "%d",
+                  keepEnabled = true }),
         barItem({ type = "slider", key = "espacement", label = "BA_ESPACEMENT", min = 0, max = 12, step = 1, format = "%d" }),
         { type = "column" },
         { type = "section", text = "BA_VISIBILITE" },
@@ -130,7 +181,8 @@ end
 local function refreshTexts(b)
     local s = M.db[ours[b].key]
     if b.HotKey then
-        b.HotKey:SetText(b.cuiKey or "")
+        -- Nos boutons : leur raccourci (redirigé). Boutons du jeu réutilisés : le texte du jeu.
+        if b.cuiKey then b.HotKey:SetText(b.cuiKey) end
         b.HotKey:SetAlpha(s.raccourci and 1 or 0)
     end
     if b.Name then b.Name:SetAlpha(s.macro and 1 or 0) end
@@ -304,44 +356,233 @@ local function visibilityCondition(s)
     return "show"
 end
 
--- Place les boutons d'une barre selon ses réglages. Hors combat.
-local function layoutBar(def)
-    local bar, s = bars[def.key], M.db[def.key]
-    local n = math.max(1, math.min(12, s.nombre))
+-- Range des boutons dans un cadre selon des réglages (nombre, rangées, sens, taille, espacement).
+-- Hors combat. Ceux en trop vont dans le cadre invisible.
+local layingOut = false
+local function placeButtons(bar, buttons, s, max)
+    layingOut = true
+    local n = math.max(1, math.min(max, s.nombre))
     local per = math.max(1, math.min(n, s.parLigne))
     local lines = math.ceil(n / per)
     local size, gap = s.taille, s.espacement
     local vertical = s.orientation == "vertical"
     local long, short = per * size + (per - 1) * gap, lines * size + (lines - 1) * gap
     bar:SetSize(vertical and short or long, vertical and long or short)
-    for i, b in ipairs(bar.buttons) do
-        if i <= n then
-            local a, c = (i - 1) % per, math.floor((i - 1) / per)
-            local col, row = a, c
-            if vertical then col, row = c, a end
-            if b:GetParent() ~= bar then b:SetParent(bar) end
-            b:ClearAllPoints()
-            b:SetSize(size, size)
-            b:SetPoint("TOPLEFT", bar, "TOPLEFT", col * (size + gap), -row * (size + gap))
-        else
-            b:SetParent(hiddenParent)
+    for i = 1, max do
+        local b = buttons[i]
+        if b then
+            if i <= n then
+                local a, c = (i - 1) % per, math.floor((i - 1) / per)
+                local col, row = a, c
+                if vertical then col, row = c, a end
+                if b:GetParent() ~= bar then b:SetParent(bar) end
+                b:ClearAllPoints()
+                b:SetSize(size, size)
+                b:SetPoint("TOPLEFT", bar, "TOPLEFT", col * (size + gap), -row * (size + gap))
+            else
+                b:SetParent(hiddenParent)
+            end
+            refreshTexts(b)
         end
-        refreshTexts(b)
     end
+    layingOut = false
+end
+
+-- Place les boutons d'une barre selon ses réglages. Hors combat.
+local function layoutBar(def)
+    local bar, s = bars[def.key], M.db[def.key]
+    placeButtons(bar, bar.buttons, s, 12)
     _G.RegisterStateDriver(bar, "visibility", visibilityCondition(s))
+end
+
+-- Familier et postures ----------------------------------------------------------------------------
+
+local function groupCondition(g, s)
+    if not s.afficher or s.visibilite == "cachee" then return "hide" end
+    local base = "[petbattle][overridebar][vehicleui] hide; "
+    if s.visibilite == "combat" then
+        return base .. (g.pet and "[pet,combat]" or "[combat]") .. " show; hide"
+    end
+    return base .. (g.pet and "[pet] show; hide" or "show")
+end
+
+local function layoutGroup(g)
+    local frame = bars[g.key]
+    if not frame or _G.InCombatLockdown() then return end
+    local s = M.db[g.key]
+    placeButtons(frame, frame.buttons, s, g.count)
+    _G.RegisterStateDriver(frame, "visibility", groupCondition(g, s))
+end
+
+-- Range un cadre du jeu dans le cadre invisible (et l'y garde).
+local function stash(frame)
+    if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+    frame:SetParent(hiddenParent)
+    _G.hooksecurefunc(frame, "SetParent", function(self, parent)
+        if parent ~= hiddenParent and M.enabled then
+            CUI:AfterCombat(function() self:SetParent(hiddenParent) end)
+        end
+    end)
+end
+
+local function createGroup(g)
+    local frame = _G.CreateFrame("Frame", "CoeurUIBarre_" .. g.key, _G.UIParent, "SecureHandlerStateTemplate")
+    frame:SetFrameStrata("LOW")
+    frame:SetSize(30, 30)
+    frame.buttons = {}
+    for i = 1, g.count do
+        local b = _G[g.prefix .. i]
+        if b and not (b.IsForbidden and b:IsForbidden()) then
+            ours[b] = g
+            skin(b)
+            -- Le jeu replace ses boutons dans sa propre barre : on les remet dans la nôtre.
+            _G.hooksecurefunc(b, "SetPoint", function()
+                if not layingOut and M.enabled then
+                    CUI:AfterCombat(function() layoutGroup(g) end)
+                end
+            end)
+            frame.buttons[i] = b
+        end
+    end
+    bars[g.key] = frame
+    stash(_G[g.blizzard])
+    frame.mover = { key = "barre_" .. g.key, frame = frame, label = g.name, default = POSITIONS[g.key] }
+    if g.key ~= "post" or hasStances() then
+        CUI:RegisterMover(frame.mover)
+        frame.moverOn = true
+    end
+end
+
+-- Postures apprises ou perdues : leur étiquette au cadenas apparaît ou disparaît.
+local function updateStanceMover()
+    local frame = bars.post
+    if not frame or _G.InCombatLockdown() then return end
+    local wanted = hasStances()
+    if wanted and not frame.moverOn then
+        CUI:RegisterMover(frame.mover)
+    elseif not wanted and frame.moverOn then
+        CUI:UnregisterMover(frame.mover.key)
+    end
+    frame.moverOn = wanted
+end
+
+-- Boutons spéciaux ----------------------------------------------------------------------------------
+
+local specials = {} -- clé -> cadre porteur (déplacé au cadenas)
+
+-- Bouton d'action en plus (combats de boss, quêtes) et capacité de zone : leur cadre du jeu est
+-- accroché au nôtre, à la taille voulue ; leur décor du jeu est rendu invisible.
+local function layoutExtra()
+    local holder, s = specials.extra, M.db.extra
+    local container = _G.ExtraAbilityContainer or _G.ExtraActionBarFrame
+    if not holder or not container or _G.InCombatLockdown() then return end
+    holder:SetSize(s.taille, s.taille)
+    layingOut = true
+    container:SetScale(s.taille / 52)
+    container:ClearAllPoints()
+    container:SetPoint("CENTER", holder, "CENTER", 0, 0)
+    layingOut = false
+end
+
+local function createExtra()
+    local holder = _G.CreateFrame("Frame", "CoeurUIBarre_extra", _G.UIParent)
+    holder:SetSize(52, 52)
+    specials.extra = holder
+    local container = _G.ExtraAbilityContainer or _G.ExtraActionBarFrame
+    if container then
+        _G.hooksecurefunc(container, "SetPoint", function()
+            if not layingOut and M.enabled then CUI:AfterCombat(layoutExtra) end
+        end)
+    end
+    local b = _G.ExtraActionButton1
+    if b then
+        if b.style then b.style:SetAlpha(0) end
+        ours[b] = { key = "extra" }
+        skin(b)
+    end
+    local zone = _G.ZoneAbilityFrame
+    if zone and zone.Style then zone.Style:SetAlpha(0) end
+    CUI:RegisterMover({ key = "barre_extra", frame = holder, label = "BA_EXTRA", default = POSITIONS.extra })
+end
+
+-- Quitter le véhicule : le bouton du jeu, invisible, posé sur notre carré avec l'icône CœurUI.
+-- Notre carré n'apparaît que quand le jeu montre le bouton.
+local function layoutVehicle()
+    local holder, s = specials.vehicule, M.db.vehicule
+    if not holder then return end
+    holder:SetSize(s.taille, s.taille)
+    holder.icon:SetSize(s.taille * 0.6, s.taille * 0.6)
+end
+
+local function createVehicle()
+    local holder = _G.CreateFrame("Frame", "CoeurUIBarre_vehicule", _G.UIParent)
+    holder:SetSize(32, 32)
+    holder:SetFrameStrata("LOW")
+    holder.border, holder.fill = CUI:CreateBorderedRect(holder, 3, C.bordureDiscrete, FOND)
+    holder.icon = holder:CreateTexture(nil, "ARTWORK")
+    holder.icon:SetTexture(CUI.MEDIA .. "Icones\\Sortie")
+    holder.icon:SetPoint("CENTER")
+    holder.icon:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3], 1)
+    specials.vehicule = holder
+
+    local b = _G.MainMenuBarVehicleLeaveButton
+    local function sync()
+        local shown = b ~= nil and b:IsShown()
+        holder.border:SetShown(shown)
+        holder.fill:SetShown(shown)
+        holder.icon:SetShown(shown)
+    end
+    if b then
+        local busy = false
+        local function pin()
+            if busy or _G.InCombatLockdown() then return end
+            busy = true
+            if b:GetParent() ~= holder then b:SetParent(holder) end
+            b:ClearAllPoints()
+            b:SetAllPoints(holder)
+            b:SetFrameLevel(holder:GetFrameLevel() + 2)
+            busy = false
+        end
+        _G.hooksecurefunc(b, "SetPoint", function() if M.enabled and not busy then CUI:AfterCombat(pin) end end)
+        _G.hooksecurefunc(b, "SetParent", function() if M.enabled and not busy then CUI:AfterCombat(pin) end end)
+        pin()
+        b:SetAlpha(0)
+        _G.hooksecurefunc(b, "SetAlpha", function(self, a)
+            if a ~= 0 and M.enabled then self:SetAlpha(0) end
+        end)
+        b:HookScript("OnShow", sync)
+        b:HookScript("OnHide", sync)
+        b:HookScript("OnEnter", function()
+            holder.icon:SetVertexColor(C.texte[1], C.texte[2], C.texte[3], 1)
+            holder.border:SetColor(C.texteSecondaire)
+        end)
+        b:HookScript("OnLeave", function()
+            holder.icon:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3], 1)
+            holder.border:SetColor(C.bordureDiscrete)
+        end)
+    end
+    sync()
+    CUI:RegisterMover({ key = "barre_vehicule", frame = holder, label = "BA_VEHICULE", default = POSITIONS.vehicule })
 end
 
 local function layoutAll()
     if not built then return end
     for _, def in ipairs(BARS) do layoutBar(def) end
+    for _, g in ipairs(GROUPS) do layoutGroup(g) end
+    layoutExtra()
+    layoutVehicle()
     updateBindings()
 end
 
 -- Opacité : au survol, pleine ; sinon celle du réglage (« au survol seulement » : invisible).
 -- L'opacité n'est pas protégée : elle change aussi en combat.
+local ALPHA_KEYS = {}
+for _, def in ipairs(BARS) do ALPHA_KEYS[#ALPHA_KEYS + 1] = def.key end
+for _, g in ipairs(GROUPS) do ALPHA_KEYS[#ALPHA_KEYS + 1] = g.key end
+
 local function updateAlpha()
-    for _, def in ipairs(BARS) do
-        local bar, s = bars[def.key], M.db[def.key]
+    for _, key in ipairs(ALPHA_KEYS) do
+        local bar, s = bars[key], M.db[key]
         if bar and bar:IsShown() then
             local over = bar:IsMouseOver(4, -4, -4, 4)
             local alpha = over and 1 or (s.visibilite == "survol" and 0 or s.opacite / 100)
@@ -386,6 +627,11 @@ local function build()
     for i, def in ipairs(BARS) do
         createBar(def, i)
     end
+    for _, g in ipairs(GROUPS) do
+        CUI:SafeCall(CUI:Tr(g.name), createGroup, g)
+    end
+    CUI:SafeCall(CUI:Tr("BA_EXTRA"), createExtra)
+    CUI:SafeCall(CUI:Tr("BA_VEHICULE"), createVehicle)
     if type(_G.ActionButton_UpdateRangeIndicator) == "function" then
         _G.hooksecurefunc("ActionButton_UpdateRangeIndicator", function(self, checksRange, inRange)
             if ours[self] then
@@ -423,6 +669,7 @@ end
 function CUI.BarresActions.RefreshPreview(box)
     local s = M.db[M.db.choix]
     local n = math.max(1, math.min(12, s.nombre))
+    if SPECIAL[M.db.choix] then n = 1 end
     local per = math.max(1, math.min(n, s.parLigne))
     local lines = math.ceil(n / per)
     local vertical = s.orientation == "vertical"
@@ -461,6 +708,7 @@ function M:OnEnable()
         self:On(event, function() self:After(0, refreshMainBar) end)
     end
     self:Every(0.1, updateAlpha)
+    self:On("UPDATE_SHAPESHIFT_FORMS", function() CUI:AfterCombat(updateStanceMover) end)
 end
 
 -- Coupé : tout reste en place jusqu'au /reload (needsReload).

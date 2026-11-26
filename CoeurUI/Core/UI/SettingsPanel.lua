@@ -33,6 +33,12 @@ local function createToggle(panel, item, width, set)
     function f:SetValue(value)
         self.switch:SetChecked(value)
     end
+
+    -- Grisé (enabledIf) : plus pâle et sans clic.
+    function f:SetEnabled(enabled)
+        self:SetAlpha(enabled and 1 or 0.4)
+        self.switch:EnableMouse(enabled)
+    end
     return f
 end
 
@@ -56,7 +62,7 @@ end
 --   refresh = function(cadre) end } : un cadre fourni par le module (un aperçu par exemple),
 -- rafraîchi à l'ouverture de la page et après chaque réglage changé.
 -- { type = "button", label = "...", description = "...", onClick = function() end } : un bouton d'action.
--- enabledIf = function(lire) return lire("autreCle") end (sur un curseur ou un menu) : grisé quand
+-- enabledIf = function(lire) return lire("autreCle") end (curseur, menu ou interrupteur) : grisé quand
 -- la fonction renvoie false ; lire(cle) donne la valeur d'un autre réglage de la même page.
 -- Renvoie un cadre dont la hauteur suit le contenu, avec :Refresh() pour relire les valeurs.
 local COLUMN_GAP = 28

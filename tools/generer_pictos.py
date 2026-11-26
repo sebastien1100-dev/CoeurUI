@@ -108,7 +108,15 @@ def recharger(d):
     ligne(d, (tx - 3.5 * dx - 3 * nx, ty - 3.5 * dy - 3 * ny), (tx + 0.6 * dx, ty + 0.6 * dy))
 
 
-ICONES = {"Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger}
+def sortie(d):
+    """Quitter (le véhicule) : porte ouverte à gauche, flèche qui sort vers la droite."""
+    ligne(d, (11, 4), (5, 4), (5, 20), (11, 20))
+    ligne(d, (10, 12), (20, 12))
+    ligne(d, (16, 8), (20, 12), (16, 16))
+
+
+ICONES = {"Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
+          "Sortie": sortie}
 
 
 def main():

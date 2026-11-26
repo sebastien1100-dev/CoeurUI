@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.15.0 · 26/11/2026
+
+- Barres d'actions, étape 2 : la barre du familier et celle des postures (ou formes) en carrés sobres, au-dessus des
+  barres ; mêmes réglages que les barres (jusqu'à 10 boutons). La barre du familier n'apparaît qu'avec un familier.
+- Un personnage sans posture ni forme ne voit pas « Postures et formes » (ni dans la page, ni au cadenas) ; elle
+  apparaît dès qu'il en apprend une.
+- Bouton d'action en plus (combats de boss, quêtes) et capacité de zone : sans leur décor du jeu, à la taille et à la
+  place voulues.
+- Quitter le véhicule : un carré sobre avec une icône CœurUI au trait, seulement en véhicule.
+- Chacun se place avec le cadenas ; ils se choisissent dans le menu « Barre » de la page (pour les deux boutons
+  spéciaux, seule la taille se règle).
+- Redémarrer le jeu (nouvelle texture).
+
 ## 0.14.0 · 26/11/2026
 
 - Nouveau module « Barres d'actions » (coupé d'office), première étape : les barres 1 à 8 en carrés sobres (icône
