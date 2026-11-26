@@ -119,6 +119,12 @@ function CUI:CreateButton(parent, text, principal)
     b:SetScript("OnEnable", updateButton)
     b:SetScript("OnDisable", updateButton)
 
+    -- Pour un bouton dont la souris est captée par un autre cadre posé dessus (bouton protégé).
+    function b:SetVisualState(hover, pressed)
+        self.hover, self.pressed = hover and true or false, pressed and true or false
+        updateButton(self)
+    end
+
     b:SetLabel(text or "")
     updateButton(b)
     return b

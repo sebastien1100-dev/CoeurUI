@@ -10,7 +10,7 @@ local TEXT_X = SWITCH_X + 44 + 14
 local STATE_WIDTH = 130
 local ROW_GAP = 2
 
-local window, intro, footer, summary, closeButton, emptyText
+local window, intro, footer, summary, closeButton, reloadButton, emptyText
 local rows = {}
 
 -- État affiché d'un module : texte, couleur, infobulle (titre, texte).
@@ -117,10 +117,14 @@ local function createWindow()
     closeButton:SetPoint("RIGHT", -12, 0)
     closeButton:SetScript("OnClick", function() window:Hide() end)
 
+    reloadButton = CUI:CreateReloadButton(footer)
+    reloadButton:SetPoint("RIGHT", closeButton, "LEFT", -8, 0)
+    reloadButton:Hide()
+
     summary = CUI:CreateText(footer, "petit", "texteDiscret")
     summary:SetJustifyV("MIDDLE")
     summary:SetPoint("LEFT", 16, 0)
-    summary:SetPoint("RIGHT", closeButton, "LEFT", -12, 0)
+    summary:SetPoint("RIGHT", reloadButton, "LEFT", -12, 0)
 
     window:HookScript("OnShow", function() CUI:RefreshModulesScreen() end)
 end
@@ -161,11 +165,13 @@ function CUI:RefreshModulesScreen()
         y = y - 24
     end
 
-    local text = plural(L.N_MODULES, #list) .. " · " .. plural(L.N_ACTIFS, active)
-    if waitReload then
-        text = text .. " · " .. self:ColorCode(C.or_) .. L.ECRAN_RELOAD_A_FAIRE .. "|r"
-    end
-    summary:SetText(text)
+    summary:SetText(plural(L.N_MODULES, #list) .. " · " .. plural(L.N_ACTIFS, active))
+    -- Le bouton visible n'est pas protégé : on peut le montrer ou le cacher même en combat.
+    -- Le bouton protégé qui le recouvre suit tout seul, hors combat.
+    reloadButton:SetShown(waitReload)
+    summary:ClearAllPoints()
+    summary:SetPoint("LEFT", 16, 0)
+    summary:SetPoint("RIGHT", waitReload and reloadButton or closeButton, "LEFT", -12, 0)
 
     window:SetHeight(1 + 40 + (-y) + 6 + footer:GetHeight() + 1)
 end

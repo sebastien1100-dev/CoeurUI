@@ -51,3 +51,23 @@ Avant de commencer : notez la valeur actuelle des plaques des PNJ amis avec
    l'explique. À la sortie du combat, l'état devient « actif » tout seul.
 10. `/cui aide` affiche l'aide, avec les deux nouvelles lignes (`/cui` et `/cui aide`).
 11. Les accents, « Œ/œ » et « · » s'affichent bien partout ; aucun carré à la place d'une lettre.
+
+## Étape 4 · bouton « Recharger l'interface » (0.3.0)
+
+Pour ces tests, remettre temporairement `needsReload = true` dans `Modules/Essai/Essai.lua` (retiré après la
+validation de la 0.3.0), puis redémarrer le jeu.
+
+1. **Redémarrer le jeu.** Aucune erreur Lua. `/cui version` affiche « version 0.3.0 ».
+2. `/cui`, activer Essai, puis le couper : l'état passe à « coupé au prochain /reload » (doré), le bouton doré
+   « Recharger l'interface » apparaît à gauche de « Fermer ». Essai continue de tourner (« cible changée »).
+3. Survoler le bouton : il s'éclaircit, infobulle « Recharger l'interface ».
+4. Réactiver Essai : le bouton disparaît, l'état repasse à « actif ». Le recouper : le bouton revient.
+5. Déplacer la fenêtre puis survoler le bouton : il réagit toujours à sa nouvelle place (le bouton invisible suit).
+6. Fermer la fenêtre (Échap), puis cliquer à l'endroit où était le bouton : **rien ne se passe** (pas de /reload).
+7. Rouvrir avec `/cui` et cliquer le bouton : l'interface se recharge, sans message « action bloquée ».
+   Après le rechargement : Essai est « coupé », la plaque des PNJ amis est revenue à sa valeur d'origine.
+8. En combat (mannequin), fenêtre ouverte avec le bouton visible : le bouton devient gris ; le cliquer ne fait rien ;
+   son infobulle dit « Indisponible en combat ». Aucun message « action bloquée ».
+9. Toujours en combat : fermer puis rouvrir la fenêtre, la déplacer. Aucun message « action bloquée ».
+10. Sortie du combat : le bouton redevient doré et marche de nouveau.
+11. En combat, fenêtre fermée, cliquer partout où le bouton a pu être : rien ne se passe.

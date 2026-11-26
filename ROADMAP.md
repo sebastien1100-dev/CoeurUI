@@ -6,7 +6,7 @@
   1. ~~Socle : chargement, évènements, minuteries, réglages, registre des modules, commande `/cui` (sans fenêtre).~~
      Validé en jeu (0.1.0).
   2. ~~Thème, fenêtre, bouton, interrupteur, infobulle, écran « Modules ».~~ Validé en jeu (0.2.0).
-  3. Bouton /reload protégé, report des changements en combat.
+  3. ~~Bouton /reload protégé, report des changements en combat.~~ Validé en jeu (0.3.0).
   4. Curseur et menu déroulant dans un panneau de réglages.
 
 ## Ensuite (dans l'ordre, un à la fois)

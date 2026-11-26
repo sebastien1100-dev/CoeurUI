@@ -2,6 +2,12 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.3.0 · 26/11/2026
+
+- Fenêtre « Modules » : bouton « Recharger l'interface » quand un module attend un /reload pour être coupé.
+- En combat, ce bouton est grisé et revient à la sortie du combat.
+- Redémarrer le jeu.
+
 ## 0.2.0 · 26/11/2026
 
 - Nouvelle fenêtre « Modules » : `/cui` l'ouvre, un interrupteur par module pour l'activer ou le couper.
