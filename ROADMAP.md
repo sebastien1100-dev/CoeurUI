@@ -41,6 +41,8 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
         d'attente) ; zoom à la molette ; pas d'heure ni de calendrier ;
       - boutons des addons rangés dans un tiroir (un petit bouton qui ouvre une grille) ;
       - déplaçables avec le cadenas : la carte, le nom de la zone, le tiroir et chacun des boutons du jeu.
+      Après les tests en jeu : icônes du courrier, du suivi, de la file d'attente et du tiroir redessinées dans la
+      direction « trait + pastille » (validée le 26/11/2026, voir CLAUDE.md), à la place de celles du jeu.
    3. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
       aimant ou pas. Maquette validée le 26/11/2026 ; code après la validation de la Minicarte en jeu :
       - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;

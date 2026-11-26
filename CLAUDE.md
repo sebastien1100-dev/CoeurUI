@@ -27,6 +27,12 @@ pour les mises à jour. Réponses au joueur en français.
 - Couleurs de base (relevées sur `tools/source/Icônes@2x.png`) : or `#D9AE5B`, cœur `#D2465A`, graphite `#2A2D34`,
   fond `#101218`, texte `#F2F2F2` (le « UI » de l'icône est blanc pur). Elles forment le thème par défaut.
   Textures de l'icône : `python tools/generer_icones.py` » `CoeurUI/Media/`.
+- **Icônes de l'interface** (direction validée le 26/11/2026, « trait + pastille », à garder pour tout le projet) :
+  dessin au trait de 1,75 px sur une grille de 24, bouts et angles arrondis, une seule couleur ; gris clair `#C4C6CC`
+  au repos, blanc `#F2F2F2` au survol, gris sombre `#5A5E68` désactivé ; une pastille rouge cœur `#D2465A` signale
+  ce qui demande attention (courrier arrivé...). Pas d'or (réservé à la fenêtre de CœurUI), pas d'icône pleine.
+  Textures blanches teintées dans le jeu, générées par un script de `tools/` (maquette de référence : « CœurUI ·
+  Maquette Icônes »).
 
 ## Structure du dépôt
 
