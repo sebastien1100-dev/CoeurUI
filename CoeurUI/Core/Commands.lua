@@ -74,12 +74,14 @@ _G.SlashCmdList.COEURUI = function(msg)
     local command, arg = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
     command = command:lower()
 
-    if CUI.resetPending and command ~= "" and command ~= "aide" and command ~= "version" then
+    if CUI.resetPending and command ~= "aide" and command ~= "version" then
         CUI:Print(L.RESET_ATTENTE)
         return
     end
 
-    if command == "" or command == "aide" then
+    if command == "" then
+        CUI:ToggleModulesScreen()
+    elseif command == "aide" then
         showHelp()
     elseif command == "version" then
         CUI:Print(L.VERSION:format(CUI.version))

@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.2.0 · 26/11/2026
+
+- Nouvelle fenêtre « Modules » : `/cui` l'ouvre, un interrupteur par module pour l'activer ou le couper.
+- La fenêtre se déplace par sa barre de titre et garde sa place ; Échap la ferme.
+- L'aide des commandes passe par `/cui aide`.
+- Redémarrer le jeu.
+
 ## 0.1.1 · 26/11/2026
 
 - CœurUI a maintenant son icône dans la liste des addons.

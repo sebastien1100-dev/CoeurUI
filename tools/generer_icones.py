@@ -9,6 +9,8 @@ Demande Pillow (pip install pillow).
 Sorties dans CoeurUI/Media/ :
 - Icone.tga           128 px, version A (C + cœur + « UI », carré arrondi, contour doré) : liste des addons.
 - IconeMinicarte.tga   64 px, rond, C + cœur sans « UI » : futur bouton de minicarte.
+- Logo.tga             64 px, C + cœur sans fond : barre de titre des fenêtres.
+- Cercle.tga           32 px, disque blanc : coins arrondis des cadres.
 """
 
 import math
@@ -123,9 +125,32 @@ def icone_minicarte(taille):
     return img.resize((taille, taille), Image.LANCZOS)
 
 
+def logo(taille):
+    """Logo seul, sans fond : C + cœur (barre de titre des fenêtres)."""
+    t = taille * SURECHANTILLON
+    img = Image.new("RGBA", (t, t), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    dessiner_c(d, t, 0.495, 0.5, 0.47, 0.30, 42, 318)
+    dessiner_coeur(img, t, 0.24, 0.30, 0.795, 0.762)
+    return img.resize((taille, taille), Image.LANCZOS)
+
+
+def cercle(taille):
+    """Disque blanc : ses quarts servent de coins arrondis aux cadres (teinté dans le jeu)."""
+    t = taille * SURECHANTILLON
+    img = Image.new("RGBA", (t, t), (255, 255, 255, 0))
+    ImageDraw.Draw(img).ellipse([0, 0, t - 1, t - 1], fill=(255, 255, 255, 255))
+    return img.resize((taille, taille), Image.LANCZOS)
+
+
 def main():
     SORTIE.mkdir(parents=True, exist_ok=True)
-    for nom, image in (("Icone.tga", icone_a(128)), ("IconeMinicarte.tga", icone_minicarte(64))):
+    for nom, image in (
+        ("Icone.tga", icone_a(128)),
+        ("IconeMinicarte.tga", icone_minicarte(64)),
+        ("Logo.tga", logo(64)),
+        ("Cercle.tga", cercle(32)),
+    ):
         chemin = SORTIE / nom
         image.save(chemin, compression=None)  # TGA 32 bits non compressé
         print(f"{chemin.relative_to(RACINE)}  {image.width}x{image.height}")

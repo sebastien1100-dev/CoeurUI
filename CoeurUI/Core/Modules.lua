@@ -171,6 +171,13 @@ local function start(m)
     return true
 end
 
+-- Prévient l'écran « Modules » (s'il est ouvert) qu'un état a changé.
+local function changed()
+    if CUI.OnModulesChanged then
+        CUI:SafeCall("écran Modules", CUI.OnModulesChanged, CUI)
+    end
+end
+
 -- Met le module dans l'état demandé par la sauvegarde.
 local function apply(m)
     if m.entry.enabled then
@@ -183,6 +190,7 @@ local function apply(m)
             stop(m)
         end
     end
+    changed()
 end
 
 -- Active ou coupe un module. Renvoie false s'il a fallu attendre la fin du combat.
@@ -204,6 +212,7 @@ function CUI:StopAllModules()
     for _, m in ipairs(order) do
         stop(m)
     end
+    changed()
 end
 
 -- Démarrage --------------------------------------------------------------------------------

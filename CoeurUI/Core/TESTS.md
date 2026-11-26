@@ -29,3 +29,25 @@ Avant de commencer : notez la valeur actuelle des plaques des PNJ amis avec
 1. **Redémarrer le jeu.** Dans la liste des addons (écran des personnages ou Échap » AddOns), CœurUI a son icône :
    carré graphite à contour doré, C doré, cœur rouge, « UI » blanc. Pas de carré vert ni de point d'interrogation.
 2. `/cui version` affiche « version 0.1.1 ». Le « Cœur » du préfixe est doré.
+
+## Étape 3 · fenêtre « Modules » (0.2.0)
+
+À comparer avec la maquette validée. Depuis cette version, `/cui` ouvre la fenêtre et l'aide passe par `/cui aide`.
+
+1. **Redémarrer le jeu.** Aucune erreur Lua. `/cui version` affiche « version 0.2.0 ».
+2. `/cui` ouvre la fenêtre : contour doré à coins arrondis, barre de titre avec le logo (C + cœur) et
+   « CœurUI · Modules », texte d'introduction, une ligne « Essai », pied avec « 1 module · 0 actif » et « Fermer ».
+   `/cui` une deuxième fois la ferme.
+3. Survoler la croix : fond plus clair, croix blanche, infobulle « Fermer ». Survoler « Fermer » : contour doré.
+   Appuyer sans relâcher : texte doré.
+4. Cliquer l'interrupteur d'Essai : il glisse à droite et devient doré, la ligne prend un fond, l'état passe à
+   « actif » (vert), le pied affiche « 1 actif ». Les messages d'Essai arrivent dans la discussion.
+5. Le recliquer : « coupé », « Essai : arrêté. » dans la discussion.
+6. Avec la fenêtre ouverte, taper `/cui activer essai` : la fenêtre se met à jour toute seule. Puis `/cui couper essai`.
+7. Déplacer la fenêtre par la barre de titre, la fermer, la rouvrir : elle revient au même endroit. Encore après
+   un `/reload`.
+8. Fenêtre ouverte, Échap la ferme. Croix et « Fermer » la ferment aussi.
+9. En combat (mannequin) : cliquer l'interrupteur. L'état affiche « à la sortie du combat » ; son infobulle
+   l'explique. À la sortie du combat, l'état devient « actif » tout seul.
+10. `/cui aide` affiche l'aide, avec les deux nouvelles lignes (`/cui` et `/cui aide`).
+11. Les accents, « Œ/œ » et « · » s'affichent bien partout ; aucun carré à la place d'une lettre.

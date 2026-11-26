@@ -8,6 +8,8 @@ L.ERREUR = "erreur dans « %s » (détails dans le message d'erreur du jeu)."
 -- Commande /cui
 L.AIDE_TITRE = "commandes :"
 L.AIDE = {
+    "/cui · ouvre ou ferme la fenêtre des modules",
+    "/cui aide · cette aide",
     "/cui version · version de l'addon",
     "/cui modules · liste des modules et leur état",
     "/cui activer <module> · active un module",
@@ -34,6 +36,28 @@ L.RESET_CONFIRMER = "tous les réglages de CœurUI seront effacés. Tapez /cui r
 L.RESET_FAIT = "réglages effacés. Faites /reload pour terminer."
 L.RESET_ATTENTE = "réglages effacés : faites /reload avant toute autre commande."
 L.COMMANDE_INCONNUE = "commande inconnue : « %s »."
+
+-- Fenêtres
+L.FERMER = "Fermer"
+
+-- Écran « Modules »
+L.ECRAN_MODULES_TITRE = "Modules"
+L.ECRAN_MODULES_INTRO = "Activez ou coupez chaque module. Un module coupé ne charge rien et rend au jeu ce qu'il avait changé."
+L.MODULES_AUCUN_ECRAN = "Aucun module."
+L.ECRAN_ETAT_ACTIF = "actif"
+L.ECRAN_ETAT_COUPE = "coupé"
+L.ECRAN_ETAT_RELOAD = "coupé au prochain /reload"
+L.ECRAN_ETAT_ERREUR = "erreur au démarrage"
+L.ECRAN_ETAT_COMBAT = "à la sortie du combat"
+L.N_MODULES = { "%d module", "%d modules" }
+L.N_ACTIFS = { "%d actif", "%d actifs" }
+L.ECRAN_RELOAD_A_FAIRE = "faites /reload pour finir"
+L.INFOBULLE_RELOAD_TITRE = "Coupé au prochain /reload"
+L.INFOBULLE_RELOAD = "Ce module ne peut pas s'arrêter en cours de jeu. Faites /reload pour finir de le couper."
+L.INFOBULLE_ERREUR_TITRE = "Erreur au démarrage"
+L.INFOBULLE_ERREUR = "Le module n'a pas pu démarrer. Les détails sont dans le message d'erreur du jeu."
+L.INFOBULLE_COMBAT_TITRE = "En combat"
+L.INFOBULLE_COMBAT = "Le changement sera fait à la sortie du combat."
 
 -- Réglages du jeu (CVars)
 L.CVAR_INCONNUE = "réglage du jeu inconnu : %s."
