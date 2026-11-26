@@ -36,3 +36,19 @@ Le module ne dépend de rien chez EllesmereUI.
 14. Couper le module : « coupé au prochain /reload » et bouton « Recharger l'interface ». Après le rechargement, la
     minicarte du jeu est revenue telle quelle (ronde, boutons, heure, calendrier).
 15. Langue anglaise (Paramètres) puis rechargement : module « Minimap », réglages et étiquettes du cadenas en anglais.
+
+## 0.10.1 · icônes CœurUI et tiroir sans doublon
+
+1. **Redémarrer le jeu** (nouvelles textures). `/cui version` : « 0.10.1 ».
+2. Suivi : loupe au trait gris clair dans son petit carré sombre ; blanche au survol ; clic : menu de suivi du jeu.
+3. Courrier en attente : enveloppe avec une pastille rouge ; survol : expéditeurs. Sans courrier : rien.
+4. En file d'attente : oeil au trait ; clic : état de la file. Hors file : rien.
+5. Bouton du tiroir : icône à quatre carrés au trait, blanche au survol.
+6. Tiroir ouvert : chaque addon une seule fois ; plus de bouton « 3 ». Polestar (sans bouton à lui) y a son icône ;
+   clic dessus : comme dans le menu des addons du jeu.
+7. Plus aucun texte ni décor de l'ancienne minicarte sous la carte (ex. les coordonnées en double).
+8. Cadenas ouvert : glisser l'étiquette « Suivi » (ou « Courrier », « File d'attente », « Tiroir des addons »,
+   « Nom de la zone ») : seul cet élément bouge, pas la carte. L'étiquette s'éclaircit au survol ; clic droit
+   dessus : place d'origine. L'étiquette « Minicarte » est sous la carte, à gauche ; la glisser déplace la carte et
+   tous ses éléments.
+9. Cadres d'unité : glisser leur étiquette les déplace aussi (comme avant en glissant le cadre).

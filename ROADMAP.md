@@ -33,28 +33,32 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 2. ~~Premier module d'interface : bouton de minicarte.~~ Validé en jeu (0.5.0).
 3. Modules d'interface, un à la fois (chacun : maquette validée, puis code, puis tests en jeu) :
    1. ~~Barres de vie : module « Cadres d'unité » (joueur, cible, cible de la cible).~~ Validé en jeu (0.9.0).
-   2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt). Codé (0.10.0), à tester
-      en jeu. Maquette validée le 26/11/2026 :
+   2. ~~Minicarte~~ Validé en jeu (0.10.1). Maquette validée le 26/11/2026 :
       - interface sobre en jeu : pas de contour doré (l'or reste pour la fenêtre de CœurUI) ;
       - carte rectangulaire seulement : largeur et hauteur réglables, option « garder un carré » (ratio 1) ;
       - nom de la zone, coordonnées (centrées en bas de la carte), boutons du jeu (courrier, suivi, file
         d'attente) ; zoom à la molette ; pas d'heure ni de calendrier ;
       - boutons des addons rangés dans un tiroir (un petit bouton qui ouvre une grille) ;
       - déplaçables avec le cadenas : la carte, le nom de la zone, le tiroir et chacun des boutons du jeu.
-      Après les tests en jeu : icônes du courrier, du suivi, de la file d'attente et du tiroir redessinées dans la
-      direction « trait + pastille » (validée le 26/11/2026, voir CLAUDE.md), à la place de celles du jeu.
-   3. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
+      0.10.1 : icônes du courrier, du suivi, de la file d'attente et du tiroir dans la direction « trait + pastille »
+      (tools/generer_pictos.py) ; tiroir sans doublon (menu des addons du jeu retiré) ; étiquettes du cadenas
+      qui servent de poignée.
+   3. Noyau : entrée « Général » en haut de la colonne de gauche, au-dessus de « Cadres d'unité » (demandée le
+      26/11/2026). Prochaine étape. Pour commencer : la police de tout CœurUI (fenêtres,
+      panneaux et textes de tous les modules). Le réglage « Police » de Cadres d'unité > Général y est déplacé (un
+      seul endroit ; la police déjà choisie est reprise) ; les tailles restent dans Cadres d'unité.
+   4. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
       aimant ou pas. Maquette validée le 26/11/2026 ; code après la validation de la Minicarte en jeu :
       - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;
       - grille affichée seulement cadenas ouvert, à afficher ou cacher ; tailles 8, 16, 32 (défaut), 48, 64 ;
         partie du centre de l'écran, axes du centre en doré ;
       - aimant (actif par défaut) : grille (même cachée), bords des autres cadres (alignés ou collés), centre
         de l'écran ; à moins de 8 points ; trait vert sur ce qui attire ; Maj enfoncée = déplacement libre.
-   4. Barres d'actions.
-   5. Barre d'incantation (cast).
-   6. Discussion (tchat).
-   7. Effets : améliorations et affaiblissements (buffs et débuffs).
-   8. Suivi des quêtes.
+   5. Barres d'actions.
+   6. Barre d'incantation (cast).
+   7. Discussion (tchat).
+   8. Effets : améliorations et affaiblissements (buffs et débuffs).
+   9. Suivi des quêtes.
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

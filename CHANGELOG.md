@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.10.1 · 26/11/2026
+
+- Minicarte : courrier, suivi, file d'attente et tiroir ont leurs icônes CœurUI (trait fin, gris clair, blanc au
+  survol) ; une pastille rouge signale le courrier arrivé.
+- Correction : le tiroir montrait deux fois certains addons (leur bouton, plus le menu des addons du jeu « 3 »). Le
+  menu du jeu n'y est plus ; seuls les addons qui n'ont pas de bouton y gardent une place.
+- Correction : des restes de la minicarte du jeu (textes, décors) restaient visibles à son ancienne place.
+- Correction : une erreur Lua (Blizzard_Minimap) apparaissait à chaque arrivée de courrier.
+- Cadenas ouvert : on peut aussi déplacer un élément en glissant son étiquette (son nom), plus simple pour les petits
+  éléments de la minicarte ; un élément posé sur la carte s'attrape sans entraîner la carte. L'étiquette de la carte
+  passe en dessous, pour ne plus cacher celle du nom de la zone.
+- Redémarrer le jeu (nouvelles textures).
+
 ## 0.10.0 · 26/11/2026
 
 - Nouveau module « Minicarte » (coupé d'office) : minicarte sobre, carrée ou rectangulaire (largeur et hauteur

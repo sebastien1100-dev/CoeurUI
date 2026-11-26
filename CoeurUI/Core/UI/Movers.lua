@@ -6,6 +6,8 @@
 --       default = { "CENTER", "CENTER", -200, -150 },                   -- point, point de UIParent, x, y
 --       onUnlock = function(cadre) end, onLock = function(cadre) end,   -- ex. montrer un exemple
 --       parent = autreCadre,  -- facultatif : position rattachée à ce cadre (default aussi), qu'il suit
+--       tagPoint = { "TOPLEFT", "BOTTOMLEFT", 0, -3 },  -- facultatif : étiquette ailleurs qu'au-dessus
+--   On déplace un cadre en le glissant, ou en glissant son étiquette (son nom).
 --   })
 --   CUI:ResetMover("joueur")        -- remet un seul cadre à sa place d'origine
 --   CUI:UnregisterMover("joueur")   -- quand le module est coupé
@@ -80,8 +82,15 @@ local function createOverlay(def)
         if side[3] then t:SetWidth(side[3]) else t:SetHeight(side[4]) end
     end
 
-    local tag = _G.CreateFrame("Frame", nil, o)
-    tag:SetPoint("BOTTOMLEFT", o, "TOPLEFT", 0, 3)
+    -- Un cadre rattaché à un autre (def.parent) passe au-dessus de lui : on peut l'attraper même
+    -- posé sur son parent.
+    o:SetFrameLevel(def.parent and 30 or 10)
+
+    -- Étiquette avec le nom : c'est aussi une poignée (pratique pour les petits éléments).
+    -- def.tagPoint = { point, point du calque, x, y } : sa place (par défaut au-dessus, à gauche).
+    local tag = _G.CreateFrame("Button", nil, o)
+    local tp = def.tagPoint or { "BOTTOMLEFT", "TOPLEFT", 0, 3 }
+    tag:SetPoint(tp[1], o, tp[2], tp[3], tp[4])
     tag:SetHeight(16)
     local tagBg = solid(tag, "BACKGROUND", C.or_)
     tagBg:SetAllPoints()
@@ -90,24 +99,31 @@ local function createOverlay(def)
     tagText:SetPoint("LEFT", 6, 0)
     o.tag, o.tagText = tag, tagText
 
-    o:RegisterForDrag("LeftButton")
-    o:RegisterForClicks("RightButtonUp")
-    o:SetScript("OnDragStart", function()
+    local function dragStart()
         if _G.InCombatLockdown() then return end
         def.frame:SetMovable(true)
         def.frame:SetClampedToScreen(true)
         def.frame:StartMoving()
-    end)
-    o:SetScript("OnDragStop", function()
+    end
+    local function dragStop()
         def.frame:StopMovingOrSizing()
         def.frame:SetUserPlaced(false) -- la position est gardée par CœurUI, pas par le jeu
         savePosition(def)
-    end)
-    o:SetScript("OnClick", function() -- clic droit : place d'origine
+    end
+    local function reset() -- clic droit : place d'origine
         if _G.InCombatLockdown() then return end
         saved()[def.key] = nil
         applyPosition(def)
-    end)
+    end
+    for _, handle in ipairs({ o, tag }) do
+        handle:RegisterForDrag("LeftButton")
+        handle:RegisterForClicks("RightButtonUp")
+        handle:SetScript("OnDragStart", dragStart)
+        handle:SetScript("OnDragStop", dragStop)
+        handle:SetScript("OnClick", reset)
+    end
+    tag:SetScript("OnEnter", function() tagBg:SetVertexColor(C.orClair[1], C.orClair[2], C.orClair[3], 1) end)
+    tag:SetScript("OnLeave", function() tagBg:SetVertexColor(C.or_[1], C.or_[2], C.or_[3], 1) end)
     def.overlay = o
 end
 

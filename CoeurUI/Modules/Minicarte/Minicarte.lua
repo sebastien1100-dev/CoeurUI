@@ -121,6 +121,52 @@ local function pin(frame, target, place)
     return apply
 end
 
+-- Icônes de CœurUI (direction « trait + pastille », Media/Icones, tools/generer_pictos.py) ------------
+
+local ICON_REPOS = { 0.77, 0.78, 0.8 }   -- #C4C6CC
+local ICON_SURVOL = { 0.95, 0.95, 0.95 } -- #F2F2F2
+
+local function newIcon(parent, name, size)
+    local t = parent:CreateTexture(nil, "ARTWORK")
+    t:SetTexture(CUI.MEDIA .. "Icones\\" .. name)
+    t:SetSize(size, size)
+    t:SetPoint("CENTER")
+    t:SetVertexColor(unpack(ICON_REPOS))
+    return t
+end
+
+local function setHover(icon, on)
+    icon:SetVertexColor(unpack(on and ICON_SURVOL or ICON_REPOS))
+end
+
+-- Pastille d'alerte (rouge cœur, cerclée de sombre), en haut à droite d'une icône.
+local function newDot(parent, icon)
+    local ring = parent:CreateTexture(nil, "OVERLAY", nil, 1)
+    ring:SetTexture(CUI.MEDIA .. "Cercle")
+    ring:SetVertexColor(0.08, 0.09, 0.1, 1)
+    ring:SetSize(9, 9)
+    ring:SetPoint("CENTER", icon, "TOPRIGHT", -1, -1)
+    local dot = parent:CreateTexture(nil, "OVERLAY", nil, 2)
+    dot:SetTexture(CUI.MEDIA .. "Cercle")
+    dot:SetVertexColor(C.coeur[1], C.coeur[2], C.coeur[3], 1)
+    dot:SetSize(6, 6)
+    dot:SetPoint("CENTER", ring)
+    return ring, dot
+end
+
+-- Rend un cadre du jeu invisible (il garde ses clics et ses infobulles) : notre icône le remplace.
+local function ghost(frame, icon)
+    if not frame then return end
+    frame:SetAlpha(0)
+    _G.hooksecurefunc(frame, "SetAlpha", function(self, a)
+        if a ~= 0 and M.enabled then self:SetAlpha(0) end
+    end)
+    if icon and frame.HookScript then
+        frame:HookScript("OnEnter", function() setHover(icon, true) end)
+        frame:HookScript("OnLeave", function() setHover(icon, false) end)
+    end
+end
+
 -- Taille ---------------------------------------------------------------------------------------
 
 -- Taille visible, côté du carré de la carte, bande cachée (k/64 du côté) et sens du masque.
@@ -279,6 +325,64 @@ local function collect(b)
     b.cuiApply()
 end
 
+-- Nom simplifié pour comparer un bouton d'addon et une entrée du menu des addons du jeu.
+local function simplify(text)
+    text = text:lower():gsub("^libdbicon10_", ""):gsub("minimapbutton", ""):gsub("minimap", "")
+    return (text:gsub("button", ""):gsub("[^%w]", ""))
+end
+
+-- Menu des addons du jeu (le bouton « 3 ») : caché ; ses entrées qui n'ont pas déjà un bouton
+-- dans le tiroir y deviennent un bouton CœurUI (même icône, même clic).
+local compartmentButtons = {} -- texte de l'entrée -> notre bouton
+local function collectCompartment()
+    local frame = _G.AddonCompartmentFrame
+    if not frame then return end
+    if not frame.cuiHidden then
+        frame.cuiHidden = true
+        hide(frame)
+    end
+    local entries = type(frame.registeredAddons) == "table" and frame.registeredAddons or {}
+    for _, entry in ipairs(entries) do
+        local text = type(entry) == "table" and entry.text
+        if type(text) == "string" and known(text) and not compartmentButtons[text] then
+            local key = simplify(text)
+            local double = key == ""
+            for _, b in ipairs(collected) do
+                local other = simplify(b:GetName() or "")
+                if other ~= "" and (other:find(key, 1, true) or key:find(other, 1, true)) then
+                    double = true
+                    break
+                end
+            end
+            if not double then
+                local b = _G.CreateFrame("Button", nil, drawer)
+                b:SetSize(CELL, CELL)
+                b.cuiIgnore = true
+                local icon = b:CreateTexture(nil, "ARTWORK")
+                icon:SetAllPoints()
+                if entry.icon then icon:SetTexture(entry.icon) end
+                local hl = solid(b, "HIGHLIGHT", { 1, 1, 1, 0.12 })
+                hl:SetAllPoints()
+                b:RegisterForClicks("AnyUp")
+                b:SetScript("OnClick", function(self, mouseButton)
+                    if type(entry.func) == "function" then
+                        CUI:SafeCall(text, entry.func, self, { buttonName = mouseButton }, nil)
+                    end
+                end)
+                b:SetScript("OnEnter", function(self) CUI:ShowTooltip(self, text) end)
+                b:SetScript("OnLeave", function(self) CUI:HideTooltip(self) end)
+                b.cuiApply = function()
+                    b:ClearAllPoints()
+                    local p = b.cuiPlace or { "TOPLEFT", 6, -6 }
+                    b:SetPoint(p[1], drawer, p[1], p[2], p[3])
+                end
+                compartmentButtons[text] = b
+                collected[#collected + 1] = b
+            end
+        end
+    end
+end
+
 local function scanButtons()
     if not M.db.tiroir then return end
     for _, parent in ipairs({ _G.Minimap, _G.MinimapBackdrop }) do
@@ -288,7 +392,7 @@ local function scanButtons()
             end
         end
     end
-    if _G.AddonCompartmentFrame then collect(_G.AddonCompartmentFrame) end
+    collectCompartment()
     if drawer:IsShown() then layoutDrawer() end
 end
 
@@ -301,7 +405,8 @@ local function releaseButtons()
         for _, p in ipairs(orig.points) do b:SetPoint(unpack(p)) end
         if b.RegisterForDrag then b:RegisterForDrag("LeftButton") end
     end
-    collected, origins = {}, {}
+    for _, b in pairs(compartmentButtons) do b:Hide() end
+    collected, origins, compartmentButtons = {}, {}, {}
 end
 
 local function placeDrawer()
@@ -332,20 +437,17 @@ local function buildDrawer()
     drawerButton.cuiIgnore = true
     drawerButton.bg = solid(drawerButton, "BACKGROUND", { 0.06, 0.07, 0.09, 0.75 })
     drawerButton.bg:SetAllPoints()
-    -- Petite grille de 4 carrés (icône du tiroir).
-    for i = 0, 3 do
-        local t = solid(drawerButton, "ARTWORK", C.texteSecondaire)
-        t:SetSize(5, 5)
-        t:SetPoint("CENTER", (i % 2 == 0) and -3.5 or 3.5, (i < 2) and 3.5 or -3.5)
-    end
-    local hl = solid(drawerButton, "HIGHLIGHT", { 1, 1, 1, 0.08 })
-    hl:SetAllPoints()
+    drawerButton.icon = newIcon(drawerButton, "Tiroir", 16)
     drawerButton:RegisterForClicks("LeftButtonUp")
     drawerButton:SetScript("OnClick", function() toggleDrawer() end)
     drawerButton:SetScript("OnEnter", function(self)
+        setHover(self.icon, true)
         CUI:ShowTooltip(self, L.MC_TIROIR_TITRE, L.MC_TIROIR_AIDE)
     end)
-    drawerButton:SetScript("OnLeave", function(self) CUI:HideTooltip(self) end)
+    drawerButton:SetScript("OnLeave", function(self)
+        setHover(self.icon, false)
+        CUI:HideTooltip(self)
+    end)
 
     drawer = _G.CreateFrame("Frame", "CoeurUIMinicarteTiroirGrille", _G.UIParent)
     drawer:SetFrameStrata("MEDIUM")
@@ -362,38 +464,80 @@ end
 
 -- Boutons du jeu ---------------------------------------------------------------------------------
 
-local function newGameHolder(key, w, h)
+local function newGameHolder(key, iconName)
     local f = _G.CreateFrame("Frame", "CoeurUIMinicarte_" .. key, holder)
-    f:SetSize(w, h)
+    f:SetSize(24, 24)
     f:SetFrameLevel(_G.Minimap:GetFrameLevel() + 10)
+    f.bg = solid(f, "BACKGROUND", { 0.06, 0.07, 0.09, 0.7 })
+    f.bg:SetAllPoints()
+    f.icon = newIcon(f, iconName, 18)
     gameHolders[key] = f
     return f
 end
 
+-- Notre icône (et son fond) n'apparaît que quand le bouton du jeu est montré.
+local function followShown(f, frame)
+    local function sync()
+        local shown = frame:IsShown()
+        f.bg:SetShown(shown)
+        f.icon:SetShown(shown)
+        if f.ring then
+            f.ring:SetShown(shown)
+            f.dot:SetShown(shown)
+        end
+    end
+    frame:HookScript("OnShow", sync)
+    frame:HookScript("OnHide", sync)
+    sync()
+end
+
+local function centerOn(f, t)
+    f:SetPoint("CENTER", t, "CENTER")
+end
+
 local function buildGameButtons()
     local cluster = _G.MinimapCluster
+    local indicator = cluster and cluster.IndicatorFrame
 
-    -- Courrier (et commandes d'artisanat) : le cadre d'indicateurs du jeu, qui ne se montre que
-    -- quand il y a quelque chose.
-    local mail = newGameHolder("courrier", 24, 24)
-    pin(cluster and cluster.IndicatorFrame, mail, function(f, t) f:SetPoint("CENTER", t, "CENTER") end)
-
-    -- Suivi : le bouton du jeu, sans son fond rond.
-    local tracking = newGameHolder("suivi", 24, 24)
-    local track = cluster and cluster.Tracking
-    if track then
-        if track.Background then track.Background:SetAlpha(0) end
-        pin(track, tracking, function(f, t) f:SetPoint("CENTER", t, "CENTER") end)
+    -- Courrier : le cadre du courrier du jeu (survol : expéditeurs), invisible sous notre icône,
+    -- avec la pastille rouge. Montré seulement avec du courrier en attente.
+    local mail = newGameHolder("courrier", "Courrier")
+    mail.ring, mail.dot = newDot(mail, mail.icon)
+    -- On déplace tout le cadre d'indicateurs (le jeu lui demande de se réarranger à chaque
+    -- courrier : le cadre du courrier ne doit pas changer de parent). Les commandes d'artisanat,
+    -- qui y vivent aussi, n'ont pas encore d'icône CœurUI : invisibles avec lui.
+    local mailFrame = indicator and indicator.MailFrame
+    if mailFrame then
+        pin(indicator, mail, centerOn)
+        ghost(indicator, nil)
+        mailFrame:HookScript("OnEnter", function() setHover(mail.icon, true) end)
+        mailFrame:HookScript("OnLeave", function() setHover(mail.icon, false) end)
+        followShown(mail, mailFrame)
     end
 
-    -- File d'attente : l'œil du jeu (montré seulement en file), ramené à la taille des autres.
-    local queue = newGameHolder("file", 28, 28)
+    -- Suivi : le bouton du jeu (clic : menu de suivi), invisible sous notre icône.
+    local tracking = newGameHolder("suivi", "Suivi")
+    local track = cluster and cluster.Tracking
+    if track then
+        pin(track, tracking, centerOn)
+        ghost(track, nil)
+        if track.Button then
+            track.Button:HookScript("OnEnter", function() setHover(tracking.icon, true) end)
+            track.Button:HookScript("OnLeave", function() setHover(tracking.icon, false) end)
+        end
+    end
+
+    -- File d'attente : l'œil du jeu (clic : état de la file), invisible sous notre icône, montré
+    -- seulement en file.
+    local queue = newGameHolder("file", "File")
     local eye = _G.QueueStatusButton
     if eye then
         pin(eye, queue, function(f, t)
-            f:SetScale(28 / math.max(1, f:GetWidth()))
+            f:SetScale(24 / math.max(1, f:GetWidth()))
             f:SetPoint("CENTER", t, "CENTER")
         end)
+        ghost(eye, queue.icon)
+        followShown(queue, eye)
     end
 
     -- Difficulté de l'instance : petite bannière en haut de la carte (seulement en instance).
@@ -421,6 +565,22 @@ local function hideBlizzardPieces()
     hide(_G.ExpansionLandingPageMinimapButton)
     if minimap.SetArchBlobRingScalar then minimap:SetArchBlobRingScalar(0) end
     if minimap.SetQuestBlobRingScalar then minimap:SetQuestBlobRingScalar(0) end
+end
+
+-- Ce qui reste dans le cadre de la minicarte du jeu (resté à son ancienne place) : textes et
+-- décors rendus invisibles et sans souris. Le cadre de sélection du mode édition du jeu est gardé.
+local function cleanCluster()
+    local cluster = _G.MinimapCluster
+    if not cluster then return end
+    for _, region in ipairs({ cluster:GetRegions() }) do
+        region:SetAlpha(0)
+    end
+    for _, child in ipairs({ cluster:GetChildren() }) do
+        if child ~= cluster.Selection and not (child.IsForbidden and child:IsForbidden()) then
+            child:SetAlpha(0)
+            if child.EnableMouse then child:EnableMouse(false) end
+        end
+    end
 end
 
 local function build()
@@ -481,10 +641,13 @@ local function build()
 
     buildGameButtons()
     buildDrawer()
+    cleanCluster() -- après : les pièces gardées ont déjà quitté ce cadre
 
     -- Cadenas : la carte (à l'écran), puis les éléments rattachés à la carte.
+    -- Étiquette de la carte en dessous, à gauche : au-dessus, il y a celle du nom de la zone.
     CUI:RegisterMover({ key = "minicarte", frame = holder, label = "MC_M_CARTE",
-                        default = { "TOPRIGHT", "TOPRIGHT", -20, -24 } })
+                        default = { "TOPRIGHT", "TOPRIGHT", -20, -24 },
+                        tagPoint = { "TOPLEFT", "BOTTOMLEFT", 0, -3 } })
     local function attach(key, frame, label, default)
         CUI:RegisterMover({ key = key, frame = frame, label = label, default = default, parent = holder })
     end
