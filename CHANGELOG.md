@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.5.0 · 26/11/2026
+
+- Nouveau module « Bouton de minicarte », actif d'office : un clic ouvre la fenêtre des modules, on le glisse
+  autour de la minicarte pour le déplacer.
+- Correction : rangé par un addon de minicarte (EllesmereUIMinimap), le contour doré du bouton était coupé.
+- Redémarrer le jeu.
+
 ## 0.4.0 · 26/11/2026
 
 - Fenêtre « Modules » : bouton « Réglages » sur la ligne d'un module qui a des réglages ; son panneau s'ouvre dans

@@ -13,7 +13,7 @@
 
 1. ~~Icône et logo : script `tools/` qui génère les TGA à partir de la planche du joueur, `IconTexture` dans le `.toc`,
    couleurs du thème affinées sur la planche.~~ Validé en jeu (0.1.1).
-2. Premier module d'interface (à choisir par le joueur).
+2. ~~Premier module d'interface : bouton de minicarte.~~ Validé en jeu (0.5.0).
 3. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication
@@ -24,4 +24,3 @@
 
 Idées notées pendant le travail, pas encore commencées.
 
-- Bouton de minicarte (C + cœur, sans « UI »).

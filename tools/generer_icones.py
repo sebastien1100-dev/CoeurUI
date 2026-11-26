@@ -109,8 +109,21 @@ def icone_a(taille):
     return img.resize((taille, taille), Image.LANCZOS)
 
 
+MARGE_MINICARTE = 4  # px transparents autour du rond (sur 64) : voir icone_minicarte
+
+
 def icone_minicarte(taille):
-    """Bouton de minicarte : rond graphite, contour doré, C + cœur sans « UI »."""
+    """Bouton de minicarte : rond graphite, contour doré, C + cœur sans « UI ».
+    Le rond est entouré d'une marge transparente de MARGE_MINICARTE px : les addons de
+    minicarte qui rangent les boutons rognent souvent les bords de l'icône (5 % pour
+    EllesmereUIMinimap). Le jeu affiche l'icône sans la marge (SetTexCoord dans le module)."""
+    rond = _rond_minicarte(taille - 2 * MARGE_MINICARTE)
+    img = Image.new("RGBA", (taille, taille), (0, 0, 0, 0))
+    img.paste(rond, (MARGE_MINICARTE, MARGE_MINICARTE))
+    return img
+
+
+def _rond_minicarte(taille):
     t = taille * SURECHANTILLON
     img = Image.new("RGBA", (t, t), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
