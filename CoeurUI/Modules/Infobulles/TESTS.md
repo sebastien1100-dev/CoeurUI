@@ -42,3 +42,11 @@ fait). Le module ne dépend de rien chez EllesmereUI.
 1. `/reload`. Survol d'un PNJ, d'un joueur, de son propre cadre : l'infobulle n'a plus de barre de vie dessous.
 2. Survol d'un joueur (dans le monde ou son cadre) : la ligne de sa classe est dans la couleur de la classe
    (démoniste violet, paladin rose...), la ligne « Alliance » en bleu ou « Horde » en rouge. PNJ : rien ne change.
+
+## 0.18.0 · place des infobulles
+
+1. Module Tooltips actif. Cadenas : un cadre « Infobulles » en bas à droite ; le déplacer en haut à gauche, verrouiller.
+2. Survol d'un PNJ dans le monde, d'un cadre d'unité, d'un bouton du micro-menu : l'infobulle s'ouvre en haut à gauche
+   et descend. Remettre le cadre en bas à droite : elles s'ouvrent là et montent.
+3. Survol d'un sort sur une barre : l'infobulle reste à côté du bouton (pas déplacée).
+4. `/reload` : place gardée.

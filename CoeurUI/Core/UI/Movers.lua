@@ -26,13 +26,14 @@ local L = CUI.L
 local C = CUI.Colors
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
-local GRID_SIZES = { 8, 16, 32, 48, 64 }
+local GRID_SIZES = { 4, 8, 16, 32, 48, 64 }
 local SNAP = 8
 local GRID_LINE = { 0.95, 0.95, 0.95, 0.07 }
 local GRID_AXIS = { C.or_[1], C.or_[2], C.or_[3], 0.55 }
 
 local movers = {}   -- clé -> définition
 local unlocked = false
+local reopenWindow = false -- la fenêtre de CœurUI était ouverte au déverrouillage
 local panel
 local drawGrid, stopDrag -- plus bas
 
@@ -504,6 +505,14 @@ function CUI:SetMoversUnlocked(on)
     end
     drawGrid()
     showPanel(on)
+    -- La fenêtre de CœurUI laisse la place pendant qu'on place les cadres, puis revient.
+    if on then
+        reopenWindow = self:IsModulesScreenShown()
+        if reopenWindow then self:SetModulesScreenShown(false, true) end
+    elseif reopenWindow then
+        reopenWindow = false
+        self:SetModulesScreenShown(true)
+    end
     self:RefreshModulesScreen()
 end
 

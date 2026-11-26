@@ -218,3 +218,12 @@ Avec au moins un module à cadres actif (Cadres d'unité, Minicarte).
 10. Verrouiller : grille et traits disparaissent. `/reload` puis cadenas : taille, grille et aimant sont gardés.
 11. Déverrouiller puis entrer en combat : tout se verrouille, la grille disparaît.
 12. Langue anglaise : « Grid », « Size », « Snap ».
+
+## 0.18.0 · fenêtre et cadenas
+
+1. Fenêtre CœurUI ouverte sur une page (ex. Cadres d'unité > Joueur) : clic sur le cadenas : la fenêtre se cache,
+   le panneau « Déplacement des cadres » et la grille apparaissent. « Verrouiller » : la fenêtre revient sur la même
+   page.
+2. Entrer en combat pendant le déverrouillage : tout se verrouille et la fenêtre revient.
+3. Panneau « Déplacement des cadres » : tailles de grille 4 8 16 32 48 64 ; 4 : grille très serrée, l'aimant colle
+   les cadres tous les 4 points.

@@ -71,10 +71,18 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
         vertical et nombre de boutons (demandés à la validation) ;
       - une seule page de réglages : un menu pour choisir la barre, ses réglages dessous ;
       - placées avec le cadenas (grille aimantée) ; rien ne bouge en combat (boutons protégés).
-   7. Barre d'incantation (cast).
-   8. Discussion (tchat).
-   9. Effets : améliorations et affaiblissements (buffs et débuffs).
-   10. Suivi des quêtes.
+   7. ~~Suivi des quêtes~~ Validé en jeu (0.18.0). Choix du joueur :
+      - on habille le suivi des quêtes du jeu (il sait tout suivre), au style sobre de CœurUI ;
+      - titres de section en petites capitales grises, titre de quête coloré selon la difficulté, objectifs gris
+        clair (faits en vert), barres de progression fines ;
+      - réglages : place (cadenas) et taille maximale, tailles des titres et objectifs, repli automatique (combat,
+        donjon/raid), fond sombre léger et son opacité ;
+      - clics comme le jeu (journal, menu, lien dans la discussion) ; en plus, « Lien Wowhead » dans le menu : une
+        petite fenêtre avec l'adresse de la quête prête à copier et un bouton « Sélectionner » (un addon ne peut
+        ni ouvrir de page web ni écrire dans le presse-papiers).
+   8. Barre d'incantation (cast). Prochain module.
+   9. Discussion (tchat).
+   10. Effets : améliorations et affaiblissements (buffs et débuffs).
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

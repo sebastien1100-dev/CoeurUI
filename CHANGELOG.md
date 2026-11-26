@@ -2,6 +2,29 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.18.0 · 26/11/2026
+
+- Nouveau module « Suivi des quêtes » (coupé d'office) : le suivi des quêtes du jeu au style sobre de CœurUI. Titres
+  de section gris, titre de quête dans la couleur de sa difficulté, objectifs gris clair (faits : en vert), barres
+  de progression sobres, fond sombre léger réglable.
+- Placé avec le cadenas ; largeur et hauteur maximale réglables ; tailles des titres et des objectifs.
+- Repli automatique en combat et en donjon ou raid (il se déplie tout seul après ; jamais un suivi replié à la main).
+- Objectifs colorés selon leur avancée : rouge (pas commencé), jaune (à moitié), vert (fait), en dégradé ; « À rendre »
+  en vert quand la quête est terminée.
+- La ligne « Tous les objectifs » du jeu est retirée ; chaque section garde son bouton de repli. Le fond est centré
+  sur les quêtes, icônes comprises.
+- Clic droit sur une quête : « Lien Wowhead », une petite fenêtre avec l'adresse de la quête prête à copier (Ctrl+C).
+- Couper le module demande un rechargement de l'interface.
+- Tooltips : les infobulles de survol (unités dans le monde, cadres, boutons du jeu...) se placent avec le cadenas
+  (cadre « Infobulles », en bas à droite par défaut) ; elles grandissent depuis le coin le plus proche du bord.
+- Correction (Minicarte) : le contour de la carte était irrégulier (côtés plus épais, coins flous) ; il est maintenant
+  d'un pixel d'écran exactement, à toute échelle d'interface.
+- Minicarte : le menu du suivi s'ouvre contre la carte, aligné sur son haut (du côté du centre de l'écran).
+- Grille du cadenas : nouvelle taille 4 (en plus de 8, 16, 32, 48 et 64), pour placer au plus près.
+- Cadenas : la fenêtre de CœurUI se cache quand on déverrouille les cadres, et revient sur la même page au
+  verrouillage.
+- Redémarrer le jeu.
+
 ## 0.17.1 · 26/11/2026
 
 - Correction (Cadres d'unité) : aucune infobulle ne s'affichait au survol des cadres du joueur, de la cible et de la

@@ -71,14 +71,23 @@ local function solid(parent, layer, color, sublevel)
     return t
 end
 
--- Contour de 1 px autour d'un cadre, à l'extérieur (offset = écart au bord).
+-- Taille d'un pixel de l'écran dans les unités d'un cadre (pour des traits nets à toute échelle).
+local function pixelOf(frame)
+    local _, physicalHeight = _G.GetPhysicalScreenSize()
+    if not physicalHeight or physicalHeight == 0 then return 1 end
+    return 768 / physicalHeight / frame:GetEffectiveScale()
+end
+
+-- Contour d'un pixel d'écran autour d'un cadre, à l'extérieur, à offset pixels du bord. Les traits
+-- tombent sur les pixels : même épaisseur des quatre côtés, coins nets.
 local function outline(frame, color, offset, layer)
-    local o = offset
+    local px = pixelOf(frame)
+    local o, w = (offset or 0) * px, px
     local sides = {
-        { "TOPLEFT", -o - 1, o + 1, "TOPRIGHT", o + 1, o },
-        { "BOTTOMLEFT", -o - 1, -o, "BOTTOMRIGHT", o + 1, -o - 1 },
-        { "TOPLEFT", -o - 1, o, "BOTTOMLEFT", -o, -o },
-        { "TOPRIGHT", o, o, "BOTTOMRIGHT", o + 1, -o },
+        { "TOPLEFT", -o - w, o + w, "TOPRIGHT", o + w, o },
+        { "BOTTOMLEFT", -o - w, -o, "BOTTOMRIGHT", o + w, -o - w },
+        { "TOPLEFT", -o - w, o, "BOTTOMLEFT", -o, -o },
+        { "TOPRIGHT", o, o, "BOTTOMRIGHT", o + w, -o },
     }
     for _, s in ipairs(sides) do
         local t = solid(frame, layer or "BACKGROUND", color)
@@ -708,9 +717,24 @@ local function buildGameButtons()
         pin(track, tracking, centerOn)
         ghost(track, nil)
         if track.Button then
+            -- Le menu de suivi s'ouvre contre la carte, haut aligné sur le haut de la carte, du côté du
+            -- centre de l'écran (recalculé au survol : la carte a pu être déplacée).
+            local function anchorMenu(button)
+                if not button.SetMenuAnchor or not _G.AnchorUtil or not _G.AnchorUtil.CreateAnchor then return end
+                local x = holder:GetCenter()
+                local anchor
+                if not x or x > _G.UIParent:GetWidth() / 2 then
+                    anchor = _G.AnchorUtil.CreateAnchor("TOPRIGHT", holder, "TOPLEFT", -6, 0)
+                else
+                    anchor = _G.AnchorUtil.CreateAnchor("TOPLEFT", holder, "TOPRIGHT", 6, 0)
+                end
+                button:SetMenuAnchor(anchor)
+            end
+            anchorMenu(track.Button)
             track.Button:HookScript("OnEnter", function(self)
                 setHover(tracking.icon, true)
                 noTooltip(self)
+                anchorMenu(self)
             end)
             track.Button:HookScript("OnLeave", function() setHover(tracking.icon, false) end)
         end

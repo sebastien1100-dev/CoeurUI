@@ -280,6 +280,39 @@ end
 
 -- Marche / arrêt -------------------------------------------------------------------------------
 
+-- Place des infobulles ---------------------------------------------------------------------------
+
+-- Les infobulles que le jeu pose à sa place habituelle (GameTooltip_SetDefaultAnchor : unités dans
+-- le monde, cadres, nombreux boutons) s'ouvrent sur ce cadre, placé au cadenas. Elles grandissent
+-- depuis le coin le plus proche du bord de l'écran.
+local anchorFrame
+
+local function anchorPoint()
+    local x, y = anchorFrame:GetCenter()
+    local w, h = _G.UIParent:GetSize()
+    local vertical = (y and y > h / 2) and "TOP" or "BOTTOM"
+    local horizontal = (x and x > w / 2) and "RIGHT" or "LEFT"
+    return vertical .. horizontal
+end
+
+local anchorHooked = false
+local function setupAnchor()
+    if not anchorFrame then
+        anchorFrame = _G.CreateFrame("Frame", "CoeurUIPlaceInfobulles", _G.UIParent)
+        anchorFrame:SetSize(220, 90)
+        CUI:RegisterMover({ key = "infobulles", frame = anchorFrame, label = "IM_PLACE",
+                            default = { "BOTTOMRIGHT", "BOTTOMRIGHT", -40, 120 } })
+    end
+    if anchorHooked or type(_G.GameTooltip_SetDefaultAnchor) ~= "function" then return end
+    anchorHooked = true
+    _G.hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tip)
+        if not M.enabled or not tip or forbidden(tip) then return end
+        local point = anchorPoint()
+        tip:ClearAllPoints()
+        tip:SetPoint(point, anchorFrame, point, 0, 0)
+    end)
+end
+
 local hooked = false
 
 function M:OnEnable()
@@ -289,6 +322,7 @@ function M:OnEnable()
     skinStatusBar()
     applyTooltipFonts()
     hookIds()
+    setupAnchor()
     if not hooked then
         hooked = true
         -- Chaque infobulle du modèle commun passe par là à son affichage (crochet seulement).

@@ -77,3 +77,10 @@ Le module ne dépend de rien chez EllesmereUI.
    même rond.
 7. Décocher « Ranger les boutons des addons dans un tiroir » : les boutons reviennent autour de la carte avec leur
    habit d'origine.
+
+## 0.18.0 · menu du suivi
+
+1. Clic sur la loupe du suivi : le menu s'ouvre à gauche de la carte (carte à droite de l'écran), son haut aligné sur
+   le haut de la carte. Déplacer la carte à gauche de l'écran (cadenas) : le menu s'ouvre à sa droite.
+2. Contour de la carte : un trait noir puis un trait graphite, d'un pixel chacun, réguliers sur les quatre côtés,
+   coins nets ; pareil après avoir changé l'échelle de l'interface (options du jeu) puis /reload.

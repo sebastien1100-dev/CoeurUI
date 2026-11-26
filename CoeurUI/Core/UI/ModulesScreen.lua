@@ -23,6 +23,7 @@ local footer, summary, closeButton, reloadButton, defaultsButton
 local settingsItem, generalPanel, lookPanel, lockButton, lockLabel, versionText, reloadIcon
 local navItems, cards, panels = {}, {}, {}
 local paintLock, createLockButton -- plus bas (cadenas)
+local keepPage = false -- fermée pour le mode déplacement : rouverte sur la même page
 local selected = {}   -- { module = m, sub = s }, { settings = true } ou { general = true } ; vide : l'accueil
 local expanded = {}   -- clé du module -> tiroir ouvert
 
@@ -568,7 +569,11 @@ local function createWindow()
     summary:SetJustifyV("MIDDLE")
 
     window:HookScript("OnShow", function() CUI:RefreshModulesScreen() end)
-    window:HookScript("OnHide", function() selected = {} end) -- on rouvre sur l'accueil
+    -- On rouvre sur l'accueil, sauf après le mode déplacement (même page qu'avant).
+    window:HookScript("OnHide", function()
+        if not keepPage then selected = {} end
+        keepPage = false
+    end)
 end
 
 local function plural(forms, n)
@@ -696,6 +701,20 @@ end
 function CUI:ToggleModulesScreen()
     if not window then createWindow() end
     window:SetShown(not window:IsShown())
+end
+
+-- Mode déplacement : la fenêtre se cache (en gardant sa page) puis revient au verrouillage.
+function CUI:IsModulesScreenShown()
+    return window ~= nil and window:IsShown()
+end
+
+function CUI:SetModulesScreenShown(shown, samePage)
+    if not window then
+        if not shown then return end
+        createWindow()
+    end
+    if not shown and samePage then keepPage = true end
+    window:SetShown(shown)
 end
 
 -- Rafraîchit la fenêtre quand un module change d'état (commande /cui, sortie de combat...).
