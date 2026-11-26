@@ -46,12 +46,17 @@ function CUI:ColorCode(color)
     return ("|cff%02x%02x%02x"):format(byte(color[1]), byte(color[2]), byte(color[3]))
 end
 
--- Polices : celle du jeu (Windows-1252 seulement), en trois tailles.
+-- Polices du thème (Windows-1252 seulement), en quatre tailles.
+-- La police elle-même (fichier) est celle de la page « Général », posée par CUI:ApplyFont() au
+-- chargement de la sauvegarde ; d'ici là, celle du jeu.
+local FONT_SIZES = {} -- police du thème -> taille
+
 local function makeFont(name, size)
     local font = _G.CreateFont(name)
     font:SetFont(_G.STANDARD_TEXT_FONT, size, "")
     font:SetShadowColor(0, 0, 0, 0.6)
     font:SetShadowOffset(1, -1)
+    FONT_SIZES[font] = size
     return font
 end
 
@@ -61,6 +66,25 @@ CUI.Fonts = {
     normal = makeFont("CoeurUIPoliceNormale", 12),
     petit = makeFont("CoeurUIPolicePetite", 11),
 }
+
+-- Fichier de la police de CœurUI (page « Général »), pour les textes des modules.
+function CUI:GetFont()
+    return self:GetFontFile(self.db and self.db.general.police)
+end
+
+-- Pose la police choisie sur les polices du thème (tous les textes des fenêtres la suivent) et
+-- prévient les modules actifs : function M:OnFontChanged() end.
+function CUI:ApplyFont()
+    local file = self:GetFont()
+    for _, font in pairs(self.Fonts) do
+        font:SetFont(file, FONT_SIZES[font], "")
+    end
+    for _, m in ipairs(self:GetModules()) do
+        if m.enabled and m.OnFontChanged then
+            self:SafeCall(self:Tr(m.name), m.OnFontChanged, m)
+        end
+    end
+end
 
 -- Crée un texte avec la police et la couleur du thème.
 --   font : "grand", "titre", "normal" ou "petit" ; color : une clé de CUI.Colors

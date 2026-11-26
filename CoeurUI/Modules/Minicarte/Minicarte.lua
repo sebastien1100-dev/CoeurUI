@@ -440,14 +440,8 @@ local function buildDrawer()
     drawerButton.icon = newIcon(drawerButton, "Tiroir", 16)
     drawerButton:RegisterForClicks("LeftButtonUp")
     drawerButton:SetScript("OnClick", function() toggleDrawer() end)
-    drawerButton:SetScript("OnEnter", function(self)
-        setHover(self.icon, true)
-        CUI:ShowTooltip(self, L.MC_TIROIR_TITRE, L.MC_TIROIR_AIDE)
-    end)
-    drawerButton:SetScript("OnLeave", function(self)
-        setHover(self.icon, false)
-        CUI:HideTooltip(self)
-    end)
+    drawerButton:SetScript("OnEnter", function(self) setHover(self.icon, true) end)
+    drawerButton:SetScript("OnLeave", function(self) setHover(self.icon, false) end)
 
     drawer = _G.CreateFrame("Frame", "CoeurUIMinicarteTiroirGrille", _G.UIParent)
     drawer:SetFrameStrata("MEDIUM")
@@ -491,6 +485,15 @@ local function followShown(f, frame)
     sync()
 end
 
+-- Pas d'infobulle sur nos icônes : celle que le bouton du jeu vient d'ouvrir est refermée
+-- (crochet après son survol ; on ne remplace pas son script).
+local function noTooltip(owner)
+    local tip = _G.GameTooltip
+    if tip and tip:IsShown() and tip:GetOwner() == owner then
+        tip:Hide()
+    end
+end
+
 local function centerOn(f, t)
     f:SetPoint("CENTER", t, "CENTER")
 end
@@ -510,7 +513,10 @@ local function buildGameButtons()
     if mailFrame then
         pin(indicator, mail, centerOn)
         ghost(indicator, nil)
-        mailFrame:HookScript("OnEnter", function() setHover(mail.icon, true) end)
+        mailFrame:HookScript("OnEnter", function(self)
+            setHover(mail.icon, true)
+            noTooltip(self)
+        end)
         mailFrame:HookScript("OnLeave", function() setHover(mail.icon, false) end)
         followShown(mail, mailFrame)
     end
@@ -522,7 +528,10 @@ local function buildGameButtons()
         pin(track, tracking, centerOn)
         ghost(track, nil)
         if track.Button then
-            track.Button:HookScript("OnEnter", function() setHover(tracking.icon, true) end)
+            track.Button:HookScript("OnEnter", function(self)
+                setHover(tracking.icon, true)
+                noTooltip(self)
+            end)
             track.Button:HookScript("OnLeave", function() setHover(tracking.icon, false) end)
         end
     end
@@ -711,4 +720,13 @@ end
 
 function M:OnSettingChanged()
     applyAll()
+end
+
+-- Police de CœurUI changée (page « Général ») : le nom de la zone la reprend.
+function M:OnFontChanged()
+    if zoneText then
+        zoneText:SetFontObject(CUI.Fonts.normal)
+        zoneText:SetShadowColor(0, 0, 0, 1)
+        zoneText:SetShadowOffset(1, -1)
+    end
 end

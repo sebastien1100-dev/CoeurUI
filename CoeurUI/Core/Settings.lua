@@ -4,13 +4,14 @@
 --   version = n°
 --   modules = { [clé] = { enabled = bool, settings = {...}, cvars = { [nom] = valeur d'origine } } }
 --   ui      = { positions = {...} }
---   general = { langue = "auto" | code, boutonMinicarte = bool, angleMinicarte = degrés }
+--   general = { langue = "auto" | code, boutonMinicarte = bool, angleMinicarte = degrés,
+--               police = clé de police (page « Général ») }
 -- CoeurUICharDB (personnage) :
 --   version = n°
 --   modules = { [clé] = {...réglages par perso...} }
 local _, CUI = ...
 
-local DB_VERSION = 2
+local DB_VERSION = 3
 local CHAR_VERSION = 1
 
 -- Une fonction par passage de version, par exemple [2] = function(db) ... end pour passer de 1 à 2.
@@ -29,8 +30,19 @@ migrations[2] = function(db)
     db.modules.Minicarte = nil
 end
 
--- Paramètres généraux (page « Paramètres »).
-local GENERAL_DEFAULTS = { langue = "auto", boutonMinicarte = true, angleMinicarte = 200 }
+-- 3 (0.11.0) : la police n'est plus un réglage des Cadres d'unité mais celle de tout CœurUI
+-- (page « Général »). La police déjà choisie est reprise.
+migrations[3] = function(db)
+    local cu = type(db.modules) == "table" and db.modules.CadresUnite
+    local g = cu and type(cu.settings) == "table" and cu.settings.general
+    if type(g) ~= "table" or g.police == nil then return end
+    if type(db.general) ~= "table" then db.general = {} end
+    if db.general.police == nil then db.general.police = g.police end
+    g.police = nil
+end
+
+-- Paramètres généraux : pages « Paramètres » (langue, bouton de minicarte) et « Général » (police).
+local GENERAL_DEFAULTS = { langue = "auto", boutonMinicarte = true, angleMinicarte = 200, police = "friz" }
 
 -- Ajoute dans target les valeurs de defaults qui manquent, sans toucher à ce qui existe.
 local function fillDefaults(target, defaults)
@@ -77,6 +89,7 @@ function CUI:LoadSettings()
     self.db = db
     self.charDb = char
     self:SetLanguage(db.general.langue)
+    self:ApplyFont()
 end
 
 -- Paramètres généraux -----------------------------------------------------------------------
@@ -91,14 +104,15 @@ function CUI:SetGeneral(key, value)
     self.db.general[key] = value
     if key == "boutonMinicarte" and self.UpdateMinimapButton then
         self:UpdateMinimapButton()
+    elseif key == "police" then
+        self:ApplyFont()
     end
 end
 
-function CUI:ResetGeneral()
-    for key, value in pairs(GENERAL_DEFAULTS) do
-        if key ~= "angleMinicarte" then -- la place du bouton n'est pas un réglage de la page
-            self:SetGeneral(key, value)
-        end
+-- Remet à leur valeur par défaut les paramètres généraux nommés (ceux d'une page).
+function CUI:ResetGeneral(keys)
+    for _, key in ipairs(keys) do
+        self:SetGeneral(key, GENERAL_DEFAULTS[key])
     end
 end
 

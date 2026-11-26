@@ -1,6 +1,7 @@
 -- Module « Cadres d'unité » : cadres du joueur, de la cible et de la cible de la cible (maquette validée).
 -- Remplace les cadres du jeu (cachés tant que le module est actif ; le couper demande un /reload).
--- Sous-onglets : Général (police, tailles des libellés, texture : communs à tous les cadres), Joueur,
+-- Sous-onglets : Général (tailles des libellés, texture : communs à tous les cadres ; la police est
+-- celle de CœurUI, page « Général » de la fenêtre), Joueur,
 -- Cible, Cible de la cible. Les cadres se placent avec le cadenas de la fenêtre (mode déplacement).
 --
 -- Valeurs « secrètes » : sur ce client, la vie, le nom, le niveau... d'une unité peuvent être cachés
@@ -68,7 +69,7 @@ local M = CUI:RegisterModule({
     defaultEnabled = false,
     needsReload = true, -- les cadres du jeu ne reviennent qu'après un /reload
     defaults = {
-        general = { police = "friz", tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "lisse" },
+        general = { tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "lisse" },
         joueur = { largeur = 230, hauteur = 34, texteVie = "vp", couleur = "classe",
                    ressource = true, niveau = true, portrait = false, chef = true },
         cible = { largeur = 230, hauteur = 34, texteVie = "p", couleur = "classe",
@@ -78,7 +79,6 @@ local M = CUI:RegisterModule({
     subs = {
         { key = "general", name = "CU_GENERAL", intro = false, settings = {
             { type = "section", text = "CU_TEXTE" },
-            { type = "dropdown", key = "police", label = "CU_POLICE", options = function() return CUI:FontOptions() end },
             { type = "slider", key = "tailleNom", label = "CU_TAILLE_NOM", min = 8, max = 20, step = 1, format = "%d pt" },
             { type = "slider", key = "tailleNiveau", label = "CU_TAILLE_NIVEAU", min = 8, max = 20, step = 1, format = "%d pt" },
             { type = "slider", key = "tailleVie", label = "CU_TAILLE_VIE", min = 8, max = 20, step = 1, format = "%d pt" },
@@ -204,7 +204,7 @@ local function layout(v, s, g, kind)
     v.health:SetStatusBarTexture(texture)
     v.power:SetStatusBarTexture(texture)
 
-    local font = CUI:GetFontFile(g.police)
+    local font = CUI:GetFont()
     v.level:SetFont(font, g.tailleNiveau, "")
     v.name:SetFont(font, g.tailleNom, "")
     v.hp:SetFont(font, g.tailleVie, "")
@@ -494,5 +494,10 @@ function M:OnDisable()
 end
 
 function M:OnSettingChanged()
+    relayoutAll()
+end
+
+-- Police de CœurUI changée (page « Général »).
+function M:OnFontChanged()
     relayoutAll()
 end

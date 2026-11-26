@@ -33,6 +33,10 @@ pour les mises à jour. Réponses au joueur en français.
   ce qui demande attention (courrier arrivé...). Pas d'or (réservé à la fenêtre de CœurUI), pas d'icône pleine.
   Textures blanches teintées dans le jeu, générées par un script de `tools/` (maquette de référence : « CœurUI ·
   Maquette Icônes »).
+- **Infobulles et menus** (direction « sobre » validée le 26/11/2026, pour tout le projet) : toutes les infobulles
+  (CœurUI et jeu) et tous les menus ont le même cadre : fond sombre `#14161A` presque opaque, liseré gris fin
+  `#3A3E47`, coins à peine arrondis, pas d'or ; titre blanc (ou couleur du jeu : qualité, attitude), texte gris
+  clair `#C4C6CC`. Maquette de référence : « CœurUI · Maquette Infobulles et menus ».
 
 ## Structure du dépôt
 

@@ -44,21 +44,27 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       (tools/generer_pictos.py) ; tiroir sans doublon (menu des addons du jeu retiré) ; étiquettes du cadenas
       qui servent de poignée.
    3. Noyau : entrée « Général » en haut de la colonne de gauche, au-dessus de « Cadres d'unité » (demandée le
-      26/11/2026). Prochaine étape. Pour commencer : la police de tout CœurUI (fenêtres,
+      26/11/2026). Codée (0.11.0), à tester en jeu. Pour commencer : la police de tout CœurUI (fenêtres,
       panneaux et textes de tous les modules). Le réglage « Police » de Cadres d'unité > Général y est déplacé (un
       seul endroit ; la police déjà choisie est reprise) ; les tailles restent dans Cadres d'unité.
-   4. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
+   4. Module « Infobulles et menus » (demandé le 26/11/2026) : habiller au style de CœurUI toutes les infobulles
+      de l'interface (celles du jeu : unités, objets, sorts... et celles de CœurUI, toutes pareilles) et les menus
+      déroulants du jeu (ex. menu du suivi de la minicarte). Un module (il touche aux cadres du jeu), coupé = rendu
+      au jeu. Maquette validée le 26/11/2026 (direction « sobre ») : fond sombre, liseré gris fin, pas d'or ;
+      couleurs du jeu gardées sur le nom (qualité, attitude) ; barre de vie en trait fin ; menus : cases CœurUI
+      (coche blanche au trait), ligne survolée plus claire, icônes du jeu à droite, chevron gris.
+   5. Noyau : grille aimantée pour le déplacement des cadres (demandée le 26/11/2026) : taille de la grille,
       aimant ou pas. Maquette validée le 26/11/2026 ; code après la validation de la Minicarte en jeu :
       - réglages dans le panneau « Déplacement des cadres » (cadenas ouvert), gardés pour le compte ;
       - grille affichée seulement cadenas ouvert, à afficher ou cacher ; tailles 8, 16, 32 (défaut), 48, 64 ;
         partie du centre de l'écran, axes du centre en doré ;
       - aimant (actif par défaut) : grille (même cachée), bords des autres cadres (alignés ou collés), centre
         de l'écran ; à moins de 8 points ; trait vert sur ce qui attire ; Maj enfoncée = déplacement libre.
-   5. Barres d'actions.
-   6. Barre d'incantation (cast).
-   7. Discussion (tchat).
-   8. Effets : améliorations et affaiblissements (buffs et débuffs).
-   9. Suivi des quêtes.
+   6. Barres d'actions.
+   7. Barre d'incantation (cast).
+   8. Discussion (tchat).
+   9. Effets : améliorations et affaiblissements (buffs et débuffs).
+   10. Suivi des quêtes.
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

@@ -93,7 +93,22 @@ def tiroir(d):
         rect_arrondi(d, x, y, 6.5, 6.5, 1.2)
 
 
-ICONES = {"Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir}
+def recharger(d):
+    """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
+    cx, cy, r = 12, 12, 7
+    debut, fin = 40, 340  # degrés, sens horaire à l'écran (y vers le bas)
+    arc = [(cx + r * math.cos(math.radians(a)), cy + r * math.sin(math.radians(a)))
+           for a in [debut + (fin - debut) * i / 80 for i in range(81)]]
+    tampon(d, [p(*q) for q in arc])
+    a = math.radians(fin)
+    tx, ty = arc[-1]
+    dx, dy = -math.sin(a), math.cos(a)      # sens de la flèche (tangente)
+    nx, ny = -dy, dx                        # perpendiculaire
+    ligne(d, (tx - 3.5 * dx + 3 * nx, ty - 3.5 * dy + 3 * ny), (tx + 0.6 * dx, ty + 0.6 * dy))
+    ligne(d, (tx - 3.5 * dx - 3 * nx, ty - 3.5 * dy - 3 * ny), (tx + 0.6 * dx, ty + 0.6 * dy))
+
+
+ICONES = {"Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger}
 
 
 def main():

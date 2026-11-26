@@ -1,6 +1,7 @@
 -- Fenêtre principale de CœurUI (maquettes A et C validées). S'ouvre avec /cui.
---   À gauche : « Tous les modules », puis un tiroir par module ; un tiroir s'ouvre sur ses
---   sous-modules ; tout en bas, « Paramètres » (réglages généraux, pas un module).
+--   À gauche : « Tous les modules », « Général » (réglages communs à tout CœurUI : la police),
+--   puis un tiroir par module ; un tiroir s'ouvre sur ses sous-modules ; tout en bas,
+--   « Paramètres » (langue, bouton de minicarte). Ni « Général » ni « Paramètres » ne sont des modules.
 --   À droite : l'accueil (une carte par module) ou la page de réglages choisie.
 local _, CUI = ...
 local L = CUI.L
@@ -19,10 +20,10 @@ local NAV_H = 32                  -- hauteur d'une ligne de la colonne de gauche
 local window, side, sideScroll, main, body
 local homeTitle, homeIntro, pageCrumb, pageTitle, pageState, pageSwitch, pageLine, emptyText
 local footer, summary, closeButton, reloadButton, defaultsButton
-local settingsItem, generalPanel, lockButton, lockLabel, versionText
+local settingsItem, generalPanel, lookPanel, lockButton, lockLabel, versionText, reloadIcon
 local navItems, cards, panels = {}, {}, {}
 local paintLock, createLockButton -- plus bas (cadenas)
-local selected = {}   -- { module = m, sub = s }, ou { settings = true } ; vide : l'accueil
+local selected = {}   -- { module = m, sub = s }, { settings = true } ou { general = true } ; vide : l'accueil
 local expanded = {}   -- clé du module -> tiroir ouvert
 
 -- Outils ----------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ local function openPage(m, sub)
     if m and sub then
         expanded[m.key] = true
     end
-    local changed = selected.settings or selected.module ~= m or selected.sub ~= sub
+    local changed = selected.settings or selected.general or selected.module ~= m or selected.sub ~= sub
     selected = { module = m, sub = sub }
     if changed and body then body:ScrollToTop() end
     CUI:RefreshModulesScreen()
@@ -84,6 +85,25 @@ local function openSettings()
     if not selected.settings and body then body:ScrollToTop() end
     selected = { settings = true }
     CUI:RefreshModulesScreen()
+end
+
+local function openGeneral()
+    if not selected.general and body then body:ScrollToTop() end
+    selected = { general = true }
+    CUI:RefreshModulesScreen()
+end
+
+-- Clés de chaque page (pour « Valeurs par défaut »).
+local SETTINGS_KEYS = { "langue", "boutonMinicarte" }
+local GENERAL_KEYS = { "police" }
+
+-- Réglages de la page « Général » (valeurs dans CUI.db.general) : communs à tout CœurUI.
+local function lookItems()
+    return {
+        { type = "section", text = "SECTION_POLICE" },
+        { type = "dropdown", key = "police", label = "POLICE", description = "POLICE_NOTE",
+          options = function() return CUI:FontOptions() end },
+    }
 end
 
 -- Réglages de la page « Paramètres » (valeurs dans CUI.db.general).
@@ -143,6 +163,7 @@ end
 local function refreshSide()
     local entries = {}
     entries[1] = { kind = "home" }
+    entries[2] = { kind = "general" }
     for _, m in ipairs(CUI:GetModules()) do
         local subs = CUI:GetModuleSubs(m)
         entries[#entries + 1] = { kind = "module", module = m, subs = subs }
@@ -172,8 +193,16 @@ local function refreshSide()
             b.text:SetText(L.TOUS_LES_MODULES)
             b.text:SetPoint("LEFT", 10, 0)
             b.text:SetPoint("RIGHT", -10, 0)
-            b.isSelected = selected.module == nil and not selected.settings
+            b.isSelected = selected.module == nil and not selected.settings and not selected.general
             b.onClick = function() openPage() end
+        elseif e.kind == "general" then
+            b.level = 0
+            b:SetHeight(32)
+            b.text:SetText(L.GENERAL)
+            b.text:SetPoint("LEFT", 26, 0)
+            b.text:SetPoint("RIGHT", -10, 0)
+            b.isSelected = selected.general or false
+            b.onClick = openGeneral
         elseif e.kind == "module" then
             local m = e.module
             b.level = 0
@@ -359,10 +388,38 @@ createLockButton = function()
     lockButton.icon = lockButton:CreateTexture(nil, "ARTWORK")
     lockButton.icon:SetSize(16, 16)
     lockButton.icon:SetPoint("CENTER")
+
+    -- Recharger l'interface : icône à gauche du cadenas. Le clic est reçu par un bouton protégé
+    -- posé dessus (ReloadButton.lua) ; en combat, l'icône est grisée.
+    reloadIcon = _G.CreateFrame("Button", nil, window.header)
+    reloadIcon:SetSize(28, 28)
+    reloadIcon:SetPoint("RIGHT", lockButton, "LEFT", -2, 0)
+    reloadIcon.hoverBg = CUI:CreateRoundRect(reloadIcon, 4, C.graphiteClair)
+    reloadIcon.icon = reloadIcon:CreateTexture(nil, "ARTWORK")
+    reloadIcon.icon:SetTexture(CUI.MEDIA .. "Icones\\Recharger")
+    reloadIcon.icon:SetSize(16, 16)
+    reloadIcon.icon:SetPoint("CENTER")
+    local function paintReload()
+        local usable = reloadIcon:IsEnabled()
+        local color = not usable and C.bordure or (reloadIcon.hover and C.texte or C.texteDiscret)
+        reloadIcon.icon:SetVertexColor(color[1], color[2], color[3], 1)
+        reloadIcon.hoverBg:SetShown(reloadIcon.hover and usable)
+    end
+    function reloadIcon:SetVisualState(hover, pressed)
+        self.hover, self.pressed = hover and true or false, pressed and true or false
+        paintReload()
+    end
+    reloadIcon:SetScript("OnEnter", function(self) self:SetVisualState(true, false) end)
+    reloadIcon:SetScript("OnLeave", function(self) self:SetVisualState(false, false) end)
+    reloadIcon:SetScript("OnEnable", paintReload)
+    reloadIcon:SetScript("OnDisable", paintReload)
+    CUI:AttachReload(reloadIcon)
+    paintReload()
+
     -- Version de CœurUI, discrète, pour savoir laquelle tourne.
     versionText = CUI:CreateText(window.header, "petit", "texteDiscret")
     versionText:SetJustifyV("MIDDLE")
-    versionText:SetPoint("RIGHT", lockButton, "LEFT", -8, 0)
+    versionText:SetPoint("RIGHT", reloadIcon, "LEFT", -8, 0)
     versionText:SetText("v" .. CUI.version)
     lockLabel = CUI:CreateText(window.header, "petit", "or_")
     lockLabel:SetJustifyV("MIDDLE")
@@ -499,7 +556,9 @@ local function createWindow()
     defaultsButton = CUI:CreateButton(footer, L.VALEURS_DEFAUT)
     defaultsButton:SetScript("OnClick", function()
         if selected.settings then
-            CUI:ResetGeneral()
+            CUI:ResetGeneral(SETTINGS_KEYS)
+        elseif selected.general then
+            CUI:ResetGeneral(GENERAL_KEYS)
         elseif selected.module then
             CUI:ResetModuleSettings(selected.module, selected.sub)
         end
@@ -556,7 +615,8 @@ function CUI:RefreshModulesScreen()
 
     local m, sub = selected.module, selected.sub
     local settings = selected.settings
-    local home = m == nil and not settings
+    local general = selected.general
+    local home = m == nil and not settings and not general
     -- En-tête : titre + texte (accueil, Paramètres) ou fil + titre + état (page d'un module).
     homeTitle:SetShown(m == nil)
     homeIntro:SetShown(m == nil)
@@ -573,6 +633,9 @@ function CUI:RefreshModulesScreen()
     end
     if generalPanel then
         generalPanel:SetShown(settings or false)
+    end
+    if lookPanel then
+        lookPanel:SetShown(general or false)
     end
 
     local height
@@ -600,6 +663,21 @@ function CUI:RefreshModulesScreen()
         generalPanel:Refresh()
         generalPanel:Show()
         height = generalPanel:GetHeight() + 24
+        layoutFooter(waitReload, true, nil)
+    elseif general then
+        window:SetTitle(L.GENERAL)
+        homeTitle:SetText(L.GENERAL)
+        homeIntro:SetText(L.GENERAL_INTRO)
+        emptyText:Hide()
+        if not lookPanel then
+            lookPanel = self:CreateSettingsPanel(body.child, lookItems(), PANEL_W, nil,
+                function(item) return CUI:GetGeneral(item.key) end,
+                function(item, value) CUI:SetGeneral(item.key, value) end)
+            lookPanel:SetPoint("TOPLEFT", PAD, -4)
+        end
+        lookPanel:Refresh()
+        lookPanel:Show()
+        height = lookPanel:GetHeight() + 24
         layoutFooter(waitReload, true, nil)
     else
         local name = self:Tr(m.name)

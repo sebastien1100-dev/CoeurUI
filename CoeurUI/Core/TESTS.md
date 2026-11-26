@@ -175,3 +175,23 @@ pas encore de module qui s'en sert : ils seront testés avec le module « Cadres
 6. Page « Paramètres » : inchangée (langue, bouton de minicarte), tout marche comme avant.
 7. Barre de titre : « v0.8.0 » en petit et en gris, à gauche du cadenas.
 8. « Paramètres » non choisi : pas de trait doré à gauche ; choisi : fond plus clair, texte et engrenage dorés.
+
+## 0.11.0 · page « Général » (police de tout CœurUI)
+
+1. **Redémarrer le jeu** (nouvelle texture). Aucune erreur Lua. `/cui version` : « 0.11.0 ».
+2. `/cui` : à gauche, « Général » juste sous « Tous les modules » (sous le trait), au-dessus de « Cadres d'unité »,
+   sans pastille ni interrupteur. Clic : page « Général », section POLICE, menu « Police ».
+3. La police montrée est celle choisie avant dans Cadres d'unité > Général (reprise toute seule).
+4. Choisir « Morpheus » : tout de suite, les textes de la fenêtre, les cadres d'unité (nom, niveau, vie), le nom de
+   la zone et les coordonnées de la minicarte, les étiquettes du cadenas changent. Revenir à « Friz Quadrata ».
+5. Cadres d'unité > Général : plus de menu « Police » ; les trois tailles et la texture sont toujours là.
+6. « Valeurs par défaut » sur la page « Général » : la police revient à Friz Quadrata ; la langue et le bouton de
+   minicarte (page « Paramètres ») ne bougent pas. Et l'inverse depuis « Paramètres ».
+7. Police changée, `/reload` : elle est gardée.
+8. Langue anglaise : l'entrée s'appelle « General », la section « FONT ».
+9. Barre de titre : de droite à gauche, la croix, le cadenas, une flèche en cercle grise, puis « v0.11.0 ». Survol de
+   la flèche : elle blanchit, infobulle « Recharger l'interface ». Clic : l'interface se recharge (aucun message
+   « action bloquée »).
+10. En combat : la flèche est gris sombre ; survol : infobulle qui dit pourquoi ; clic : rien. Après le combat, elle
+    remarche.
+11. Le bouton « Recharger l'interface » du pied de page (langue changée, module coupé) marche toujours.

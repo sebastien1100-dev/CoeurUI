@@ -52,3 +52,8 @@ Le module ne dépend de rien chez EllesmereUI.
    dessus : place d'origine. L'étiquette « Minicarte » est sous la carte, à gauche ; la glisser déplace la carte et
    tous ses éléments.
 9. Cadres d'unité : glisser leur étiquette les déplace aussi (comme avant en glissant le cadre).
+
+## 0.11.0 · sans infobulles
+
+1. `/reload`. Survol de l'icône du courrier (avec du courrier), du suivi et du tiroir : l'icône devient blanche, mais
+   aucune infobulle n'apparaît. Les clics marchent toujours (menu de suivi, tiroir).

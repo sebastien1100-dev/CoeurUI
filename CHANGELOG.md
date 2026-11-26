@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.11.0 · 26/11/2026
+
+- Nouvelle entrée « Général » dans la fenêtre, juste sous « Tous les modules » : les réglages communs à tout
+  CœurUI.
+- Pour commencer, la police : elle change d'un coup les fenêtres de CœurUI et les textes de tous les modules
+  (cadres d'unité, minicarte...).
+- La police n'est plus réglée dans Cadres d'unité > Général (les tailles y restent) ; celle que vous aviez choisie
+  y est reprise.
+- Minicarte : plus d'infobulle au survol des icônes du courrier, du suivi et du tiroir.
+- Nouvelle icône dans la barre de titre de la fenêtre, à gauche du cadenas : recharger l'interface d'un clic
+  (grisée en combat).
+- Redémarrer le jeu (nouvelle texture).
+
 ## 0.10.1 · 26/11/2026
 
 - Minicarte : courrier, suivi, file d'attente et tiroir ont leurs icônes CœurUI (trait fin, gris clair, blanc au
