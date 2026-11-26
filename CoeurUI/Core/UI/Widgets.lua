@@ -98,18 +98,20 @@ local function updateButton(b)
     b.label:SetTextColor(text[1], text[2], text[3], text[4] or 1)
 end
 
-function CUI:CreateButton(parent, text, principal)
+-- petit = true : bouton bas, petite police (ex. « Réglages » sur une ligne de liste).
+function CUI:CreateButton(parent, text, principal, petit)
     local b = _G.CreateFrame("Button", nil, parent)
-    b:SetHeight(26)
+    b:SetHeight(petit and 22 or 26)
     b.principal = principal and true or false
     b.border, b.fill = self:CreateBorderedRect(b, 4, C.bordure, C.graphite)
-    b.label = self:CreateText(b, "normal", "texte")
+    b.label = self:CreateText(b, petit and "petit" or "normal", "texte")
     b.label:SetJustifyV("MIDDLE")
     b.label:SetPoint("CENTER")
+    local minWidth, padding = petit and 0 or 80, petit and 20 or 28
 
     function b:SetLabel(value)
         self.label:SetText(value)
-        self:SetWidth(math.max(80, math.ceil(self.label:GetStringWidth()) + 28))
+        self:SetWidth(math.max(minWidth, math.ceil(self.label:GetStringWidth()) + padding))
     end
 
     b:SetScript("OnEnter", function(btn) btn.hover = true; updateButton(btn) end)

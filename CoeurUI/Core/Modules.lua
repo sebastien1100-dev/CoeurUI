@@ -10,6 +10,17 @@
 --   function M:OnEnable() end
 --   function M:OnDisable() end
 --
+-- Réglages affichés dans son panneau (bouton « Réglages » de l'écran Modules), facultatif :
+--       settings = {
+--           { type = "section", text = "AFFICHAGE" },
+--           { type = "toggle", key = "x", label = "...", description = "..." },
+--           { type = "slider", key = "y", label = "...", min = 1, max = 10, step = 1, format = "%d s" },
+--           { type = "dropdown", key = "z", label = "...", options = { { value = "a", text = "..." } } },
+--       },
+--   Chaque key est lue dans M.db (ou M.charDb avec char = true) ; sa valeur par défaut vient de
+--   defaults (ou charDefaults). Un changement s'applique tout de suite :
+--   function M:OnSettingChanged(key, value) end  -- appelée seulement quand le module est actif
+--
 -- Tant qu'il n'est pas activé, un module ne fait rien. Ses évènements (M:On), minuteries
 -- (M:After, M:Every) et réglages du jeu (M:SetCVar) sont retirés ou rendus automatiquement
 -- quand on le coupe.
@@ -33,6 +44,7 @@ function CUI:RegisterModule(def)
         needsReload = def.needsReload and true or false,
         defaults = def.defaults or {},
         charDefaults = def.charDefaults or {},
+        settings = def.settings,
         enabled = false,       -- en marche en ce moment
         pendingReload = false, -- coupé, mais encore en marche jusqu'au prochain /reload
         failed = false,        -- erreur au dernier démarrage
@@ -205,6 +217,38 @@ function CUI:ModuleState(m)
     if m.enabled then return "actif" end
     if m.failed then return "erreur" end
     return "coupe"
+end
+
+-- Réglages d'un module ----------------------------------------------------------------------
+
+function CUI:HasModuleSettings(m)
+    return type(m.settings) == "table" and #m.settings > 0
+end
+
+function CUI:GetModuleSetting(m, item)
+    local store = item.char and m.charDb or m.db
+    return store[item.key]
+end
+
+-- Change un réglage et prévient le module s'il est actif.
+function CUI:SetModuleSetting(m, item, value)
+    local store = item.char and m.charDb or m.db
+    if store[item.key] == value then return end
+    store[item.key] = value
+    if m.enabled and m.OnSettingChanged then
+        self:SafeCall(m.name, m.OnSettingChanged, m, item.key, value)
+    end
+end
+
+-- Remet tous les réglages du panneau à leur valeur par défaut.
+function CUI:ResetModuleSettings(m)
+    if not self:HasModuleSettings(m) then return end
+    for _, item in ipairs(m.settings) do
+        if item.key then
+            local defaults = item.char and m.charDefaults or m.defaults
+            self:SetModuleSetting(m, item, defaults[item.key])
+        end
+    end
 end
 
 -- Arrête tout (utilisé par /cui reset).

@@ -71,3 +71,31 @@ validation de la 0.3.0), puis redémarrer le jeu.
 9. Toujours en combat : fermer puis rouvrir la fenêtre, la déplacer. Aucun message « action bloquée ».
 10. Sortie du combat : le bouton redevient doré et marche de nouveau.
 11. En combat, fenêtre fermée, cliquer partout où le bouton a pu être : rien ne se passe.
+
+## Étape 5 · panneau de réglages, curseur, menu déroulant (0.4.0)
+
+À comparer avec la maquette validée (planches « Panneau de réglages » et « Curseur et menu déroulant »).
+Essai a maintenant trois réglages pour tester le panneau.
+
+1. **Redémarrer le jeu.** Aucune erreur Lua. `/cui version` affiche « version 0.4.0 ».
+2. `/cui` : la ligne d'Essai a un petit bouton « Réglages » entre la description et l'état (même Essai coupé).
+3. Cliquer « Réglages » : la fenêtre devient « CœurUI · Essai », avec « « Modules » en haut à gauche, l'état et
+   l'interrupteur d'Essai à droite, puis les sections MESSAGES et MINUTERIE. En bas : « Valeurs par défaut » et
+   « Fermer ».
+4. Activer Essai depuis l'interrupteur du panneau : l'état passe à « actif ». Revenir avec « « Modules » : la liste
+   montre aussi Essai actif.
+5. Essai actif. Interrupteur « Message au démarrage » : « Essai : réglage « messageDemarrage » = false. »
+6. Menu « Message quand la cible change » : il s'ouvre sous le bouton (contour doré, chevron vers le haut), l'option
+   choisie est dorée avec un •, l'option survolée a un fond plus clair. Choisir « Long » : la liste se ferme, le
+   message de réglage arrive, et changer de cible donne le message long. « Aucun » : plus de message.
+7. Ouvrir le menu puis cliquer ailleurs (dans la fenêtre ou hors de la fenêtre) : il se ferme sans rien changer.
+   Recliquer sur le menu ouvert le ferme aussi.
+8. Curseur « Délai de la minuterie » : le glisser change la valeur en doré (par pas de 1 s) ; la molette sur le
+   curseur avance d'un cran ; survol : le bouton s'éclaircit. Un message de réglage à chaque cran.
+9. Délai à 2 s, couper puis réactiver Essai : « minuterie de 2 s terminée » arrive après 2 s.
+10. « Valeurs par défaut » : interrupteur activé, « Court », 5 s ; un message par réglage changé.
+11. `/reload`, rouvrir le panneau : les valeurs choisies sont gardées.
+12. Essai coupé : changer un réglage n'écrit rien dans la discussion (le module ne tourne pas), mais la valeur est
+    gardée.
+13. Échap avec le menu ouvert : fenêtre et menu se ferment. `/cui` rouvre sur la liste.
+14. En combat : le panneau s'ouvre, les réglages se changent, aucun message « action bloquée ».

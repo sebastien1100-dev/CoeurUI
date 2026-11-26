@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.4.0 · 26/11/2026
+
+- Fenêtre « Modules » : bouton « Réglages » sur la ligne d'un module qui a des réglages ; son panneau s'ouvre dans
+  la même fenêtre, retour par « « Modules ».
+- Les réglages s'appliquent tout de suite ; « Valeurs par défaut » remet tout à zéro.
+- Nouveaux curseur et menu déroulant.
+- Correction : le bouton rond du curseur était caché sous son liseré (on ne voyait qu'un trou).
+- Redémarrer le jeu.
+
 ## 0.3.0 · 26/11/2026
 
 - Fenêtre « Modules » : bouton « Recharger l'interface » quand un module attend un /reload pour être coupé.

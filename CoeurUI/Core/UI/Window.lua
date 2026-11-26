@@ -3,7 +3,7 @@
 --
 --   local f = CUI:CreateWindow("Modules", "Modules", 560)
 --   f.content : zone sous la barre de titre, où placer le contenu
---   f:SetHeight(...) selon le contenu ; f:Show() / f:Hide() / f:SetShown()
+--   f:SetHeight(...) selon le contenu ; f:SetTitle(texte) ; f:Show() / f:Hide() / f:SetShown()
 local _, CUI = ...
 local C = CUI.Colors
 
@@ -108,8 +108,11 @@ function CUI:CreateWindow(key, title, width)
     local titleText = self:CreateText(header, "titre", "texte")
     titleText:SetJustifyV("MIDDLE")
     titleText:SetPoint("LEFT", logo, "RIGHT", 9, 0)
-    titleText:SetText(self:ColorCode(C.or_) .. "Cœur|rUI " .. self:ColorCode(C.texteDiscret) .. "· " .. title .. "|r")
     f.titleText = titleText
+    function f:SetTitle(value)
+        titleText:SetText(CUI:ColorCode(C.or_) .. "Cœur|rUI " .. CUI:ColorCode(C.texteDiscret) .. "· " .. value .. "|r")
+    end
+    f:SetTitle(title)
 
     f.closeButton = createCloseButton(f, header)
 
