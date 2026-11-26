@@ -163,6 +163,9 @@ function CUI:BuildSettingsPanel(parent, m, width, sub)
     if description ~= "" then
         intro = self:Tr(description) .. " " .. intro
     end
+    if sub and sub.intro == false then -- page sans texte d'introduction (choix de la maquette)
+        intro = nil
+    end
     return self:CreateSettingsPanel(parent, self:GetPageSettings(m, sub), width, intro,
         function(item) return CUI:GetModuleSetting(m, item, sub) end,
         function(item, value) CUI:SetModuleSetting(m, item, value, sub) end)

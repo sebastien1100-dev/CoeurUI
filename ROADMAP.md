@@ -17,8 +17,7 @@
      - réglage du bouton de minicarte (afficher ou non) rangé là ;
      - tous les textes, ceux des modules compris, passent par les fichiers de `Locales/` (`frFR.lua`, `enUS.lua`).
      Autres langues : un fichier de plus dans `Locales/` (voir `enUS.lua`).
-  7. Pièces pour les modules à cadres (maquettes validées ; codé en 0.8.0, la plupart testées avec le module
-     « Cadres d'unité ») :
+  7. ~~Pièces pour les modules à cadres~~ Validé en jeu (0.8.0, avec le module « Cadres d'unité » en 0.9.0) :
      cadenas « Déverrouiller les cadres » dans la barre de titre et mode déplacement commun ; pages de réglages sur
      deux colonnes ; aperçu fourni par un module ; textures de barre et polices du jeu à disposition des modules.
      (Police, taille du texte et texture des barres se règlent dans le module « Cadres d'unité », sous-onglet
@@ -26,11 +25,14 @@
 
 ## Ensuite (dans l'ordre, un à la fois)
 
+EllesmereUI (et ses modules) sera retiré quand les modules de CœurUI seront prêts : CœurUI ne doit dépendre de rien
+chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait la même chose.
+
 1. ~~Icône et logo : script `tools/` qui génère les TGA à partir de la planche du joueur, `IconTexture` dans le `.toc`,
    couleurs du thème affinées sur la planche.~~ Validé en jeu (0.1.1).
 2. ~~Premier module d'interface : bouton de minicarte.~~ Validé en jeu (0.5.0).
 3. Modules d'interface, un à la fois (chacun : maquette validée, puis code, puis tests en jeu) :
-   1. Barres de vie.
+   1. ~~Barres de vie : module « Cadres d'unité » (joueur, cible, cible de la cible).~~ Validé en jeu (0.9.0).
    2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt).
    3. Barres d'actions.
    4. Barre d'incantation (cast).

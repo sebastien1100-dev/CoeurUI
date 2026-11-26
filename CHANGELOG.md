@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.9.0 · 26/11/2026
+
+- Nouveau module « Cadres d'unité » (coupé d'office) : cadres du joueur, de la cible et de la cible de la cible, à
+  la place de ceux du jeu. Couper le module demande un rechargement de l'interface.
+- Page « Général » : police, taille de chaque libellé (nom, niveau, vie) et texture des barres, pour tous les cadres.
+- Pages Joueur, Cible, Cible de la cible : taille, texte et couleur de la vie, éléments, avec un aperçu.
+- Le cadenas de la fenêtre déverrouille les cadres pour les placer à la souris.
+- Redémarrer le jeu.
+
 ## 0.8.0 · 26/11/2026
 
 - Le module « Essai », qui servait aux tests, est retiré. S'il était actif, la plaque des PNJ amis revient à son

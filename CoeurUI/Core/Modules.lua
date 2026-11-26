@@ -22,6 +22,7 @@
 -- Soit des sous-modules (un tiroir dans la fenêtre, une page chacun) :
 --       subs = {
 --           { key = "joueur", name = "Joueur", description = "...", settings = { ... } },
+--           (intro = false : pas de texte d'introduction en haut de la page)
 --       },
 --   Les réglages d'un sous-module sont rangés dans M.db[sous.key] (défauts : defaults[sous.key]).
 -- Un changement s'applique tout de suite :
