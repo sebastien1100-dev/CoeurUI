@@ -33,7 +33,13 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 2. ~~Premier module d'interface : bouton de minicarte.~~ Validé en jeu (0.5.0).
 3. Modules d'interface, un à la fois (chacun : maquette validée, puis code, puis tests en jeu) :
    1. ~~Barres de vie : module « Cadres d'unité » (joueur, cible, cible de la cible).~~ Validé en jeu (0.9.0).
-   2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt).
+   2. Minicarte (le joueur désactivera EllesmereUIMinimap quand ce module sera prêt). Prochain module.
+      Questions posées au joueur, à trancher avant la maquette (sans réponse : propositions de Claude) :
+      - forme : ronde, carrée, ou au choix dans les réglages ?
+      - autour : nom de la zone, heure, coordonnées, zoom à la molette, boutons du jeu (courrier, file d'attente,
+        calendrier...) ?
+      - boutons des addons : rangés dans une grille ou un tiroir (comme EllesmereUIMinimap aujourd'hui) ?
+      - taille réglable, et minicarte déplaçable avec le cadenas comme les cadres ?
    3. Barres d'actions.
    4. Barre d'incantation (cast).
    5. Discussion (tchat).
