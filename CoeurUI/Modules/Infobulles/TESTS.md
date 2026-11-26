@@ -36,3 +36,9 @@ fait). Le module ne dépend de rien chez EllesmereUI.
 7. Couper « Afficher les identifiants » : les lignes d'ID disparaissent des infobulles suivantes ; le remettre : elles
    reviennent.
 8. Langue anglaise : « Show IDs », « Spell ID: … », « Item ID: … ».
+
+## 0.17.1 · sans barre de vie
+
+1. `/reload`. Survol d'un PNJ, d'un joueur, de son propre cadre : l'infobulle n'a plus de barre de vie dessous.
+2. Survol d'un joueur (dans le monde ou son cadre) : la ligne de sa classe est dans la couleur de la classe
+   (démoniste violet, paladin rose...), la ligne « Alliance » en bleu ou « Horde » en rouge. PNJ : rien ne change.

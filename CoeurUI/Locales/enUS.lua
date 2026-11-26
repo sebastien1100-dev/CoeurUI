@@ -112,11 +112,12 @@ L.TEXTURE_RAID = "Raid (game)"
 
 -- "Unit frames" module
 L.CU_NOM = "Unit frames"
-L.CU_DESC = "Player, target and target of target, replacing the game's frames."
+L.CU_DESC = "Player, target, target of target and pet, replacing the game's frames."
 L.CU_GENERAL = "General"
 L.CU_JOUEUR = "Player"
 L.CU_CIBLE = "Target"
 L.CU_CIBLE_CIBLE = "Target of target"
+L.CU_FAMILIER = "Pet"
 L.CU_TEXTE = "TEXT"
 L.CU_TAILLE_NOM = "Name size"
 L.CU_TAILLE_NIVEAU = "Level size"

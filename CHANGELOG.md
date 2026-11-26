@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.17.1 · 26/11/2026
+
+- Correction (Cadres d'unité) : aucune infobulle ne s'affichait au survol des cadres du joueur, de la cible et de la
+  cible de la cible ; le survol montre maintenant l'infobulle de l'unité, comme sur les cadres du jeu.
+- Correction (Cadres d'unité) : le cadre du familier avait disparu avec celui du joueur. Nouveau cadre « Familier »,
+  petit comme celui de la cible de la cible (nom et barre de vie), avec son sous-onglet de réglages et sa place au
+  cadenas ; il n'apparaît qu'avec un familier.
+- Tooltips : plus de barre de vie sous l'infobulle d'une unité.
+- Tooltips : dans l'infobulle d'un joueur, la classe est écrite dans sa couleur et la faction dans la sienne (Alliance
+  en bleu, Horde en rouge).
+- Cadres d'unité : l'infobulle n'a plus la consigne verte « Clic droit pour les paramètres de bordure ».
+- Un /reload suffit.
+
 ## 0.17.0 · 26/11/2026
 
 - Tooltips : nouvelle page de réglages avec l'option « Afficher les identifiants » (activée d'office) : en bas des

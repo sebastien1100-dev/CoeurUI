@@ -111,11 +111,12 @@ L.TEXTURE_RAID = "Raid du jeu"
 
 -- Module « Cadres d'unité »
 L.CU_NOM = "Cadres d'unité"
-L.CU_DESC = "Joueur, cible et cible de la cible, à la place des cadres du jeu."
+L.CU_DESC = "Joueur, cible, cible de la cible et familier, à la place des cadres du jeu."
 L.CU_GENERAL = "Général"
 L.CU_JOUEUR = "Joueur"
 L.CU_CIBLE = "Cible"
 L.CU_CIBLE_CIBLE = "Cible de la cible"
+L.CU_FAMILIER = "Familier"
 L.CU_TEXTE = "TEXTE"
 L.CU_TAILLE_NOM = "Taille du nom"
 L.CU_TAILLE_NIVEAU = "Taille du niveau"

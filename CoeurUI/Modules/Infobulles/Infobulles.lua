@@ -1,7 +1,7 @@
 -- Module « Infobulles et menus » (maquette validée, direction « sobre ») : les infobulles et les
 -- menus déroulants du jeu prennent le cadre de CœurUI : fond sombre, liseré gris fin, coins à peine
 -- arrondis, pas d'or. Les couleurs du jeu (qualité d'un objet, attitude d'une unité) restent sur le
--- nom ; la barre de vie devient un trait fin ; les textes prennent la police de CœurUI.
+-- nom ; pas de barre de vie sous l'infobulle ; les textes prennent la police de CœurUI.
 --
 -- Infobulles : le cadre du jeu (NineSlice) est rendu invisible et le nôtre est posé dessous. Toute
 -- infobulle construite sur le modèle commun du jeu est habillée à son affichage, celles des autres
@@ -28,7 +28,6 @@ local M = CUI:RegisterModule({
     },
 })
 
-local WHITE = "Interface\\Buttons\\WHITE8x8"
 local FOND = { C.fond[1], C.fond[2], C.fond[3], 0.96 }
 local LISERE = C.bordureDiscrete
 
@@ -60,19 +59,11 @@ local function skinTooltip(tip)
     addBox(tip)
 end
 
--- Barre de vie sous une infobulle d'unité : un trait fin juste sous le cadre.
+-- Barre de vie sous une infobulle d'unité : retirée (choix du joueur), rendue invisible pour de bon.
 local function skinStatusBar()
     local bar = _G.GameTooltipStatusBar
     if not bar or forbidden(bar) then return end
-    bar:SetStatusBarTexture(WHITE)
-    bar:SetHeight(3)
-    bar:ClearAllPoints()
-    bar:SetPoint("TOPLEFT", _G.GameTooltip, "BOTTOMLEFT", 1, -2)
-    bar:SetPoint("TOPRIGHT", _G.GameTooltip, "BOTTOMRIGHT", -1, -2)
-    local bg = bar:CreateTexture(nil, "BACKGROUND")
-    bg:SetTexture(WHITE)
-    bg:SetVertexColor(C.graphite[1], C.graphite[2], C.graphite[3], 0.9)
-    bg:SetAllPoints()
+    vanish(bar)
 end
 
 -- Police de CœurUI sur les polices des infobulles du jeu (tailles gardées).
@@ -226,6 +217,44 @@ local function addId(tip, data, format)
     tip:AddLine(format:format(id), c[1], c[2], c[3])
 end
 
+-- Infobulle d'un joueur : la ligne de la classe dans la couleur de la classe, celle de la faction
+-- dans la sienne (Alliance bleue, Horde rouge). Valeurs cachées par le jeu : rien n'est touché.
+local FACTION_COLORS = { Alliance = { 0.29, 0.56, 1.0 }, Horde = { 0.9, 0.22, 0.22 } }
+
+local function classColorOf(classFile)
+    if not classFile or issecret(classFile) then return nil end
+    local c = _G.C_ClassColor and _G.C_ClassColor.GetClassColor and _G.C_ClassColor.GetClassColor(classFile)
+    if not c and _G.RAID_CLASS_COLORS then c = _G.RAID_CLASS_COLORS[classFile] end
+    return c
+end
+
+local function colorUnit(tip)
+    if not M.enabled or not tip or forbidden(tip) or not tip.GetUnit then return end
+    local _, unit = tip:GetUnit()
+    if not unit or issecret(unit) then return end
+    local isPlayer = _G.UnitIsPlayer(unit)
+    if issecret(isPlayer) or not isPlayer then return end
+    local className, classFile = _G.UnitClass(unit)
+    local faction, factionName = _G.UnitFactionGroup(unit)
+    local classColor = classColorOf(classFile)
+    if issecret(className) then className = nil end
+    if issecret(faction) or issecret(factionName) then faction, factionName = nil, nil end
+    local tipName = tip:GetName()
+    if not tipName then return end
+    for i = 2, tip:NumLines() do
+        local line = _G[tipName .. "TextLeft" .. i]
+        local text = line and line:GetText()
+        if text and not issecret(text) then
+            if classColor and className and text == className then
+                line:SetTextColor(classColor.r, classColor.g, classColor.b)
+            elseif factionName and text == factionName and FACTION_COLORS[faction] then
+                local c = FACTION_COLORS[faction]
+                line:SetTextColor(c[1], c[2], c[3])
+            end
+        end
+    end
+end
+
 local idsHooked = false
 local function hookIds()
     if idsHooked then return end
@@ -242,6 +271,11 @@ local function hookIds()
     on("Spell", "IM_ID_SORT")
     on("UnitAura", "IM_ID_SORT")
     on("Item", "IM_ID_OBJET")
+    if types.Unit then
+        processor.AddTooltipPostCall(types.Unit, function(tip)
+            CUI:SafeCall(CUI:Tr("IM_NOM"), colorUnit, tip)
+        end)
+    end
 end
 
 -- Marche / arrêt -------------------------------------------------------------------------------

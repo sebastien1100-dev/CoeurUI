@@ -75,6 +75,7 @@ local M = CUI:RegisterModule({
         cible = { largeur = 230, hauteur = 34, texteVie = "p", couleur = "classe",
                   ressource = true, niveau = true, portrait = false, chef = true },
         tot = { largeur = 130, hauteur = 20, texteVie = "aucun", couleur = "classe" },
+        fam = { largeur = 130, hauteur = 20, texteVie = "aucun", couleur = "classe" },
     },
     subs = {
         { key = "general", name = "CU_GENERAL", intro = false, settings = {
@@ -93,6 +94,8 @@ local M = CUI:RegisterModule({
           settings = framePage("cible", 120, 300, 20, 60, "CU_COULEUR_ATTITUDE", true) },
         { key = "tot", name = "CU_CIBLE_CIBLE", intro = false,
           settings = framePage("tot", 80, 200, 14, 40, "CU_COULEUR_ATTITUDE", false) },
+        { key = "fam", name = "CU_FAMILIER", intro = false,
+          settings = framePage("fam", 80, 200, 14, 40, "CU_COULEUR_ATTITUDE", false) },
     },
 })
 
@@ -180,9 +183,12 @@ end
 
 -- Taille et place des pièces selon les réglages (s : réglages du cadre, g : réglages généraux).
 -- Renvoie la largeur et la hauteur totales.
+-- Petits cadres (cible de la cible, familier) : nom et barre de vie, sans le reste.
+local SMALL = { tot = true, fam = true }
+
 local function layout(v, s, g, kind)
-    local portrait = kind ~= "tot" and s.portrait
-    local power = kind ~= "tot" and s.ressource
+    local portrait = not SMALL[kind] and s.portrait
+    local power = not SMALL[kind] and s.ressource
     local w, h = s.largeur, s.hauteur
     local x = portrait and (h + 4) or 0
 
@@ -209,7 +215,7 @@ local function layout(v, s, g, kind)
     v.name:SetFont(font, g.tailleNom, "")
     v.hp:SetFont(font, g.tailleVie, "")
 
-    local showLevel = kind ~= "tot" and s.niveau
+    local showLevel = not SMALL[kind] and s.niveau
     v.level:SetShown(showLevel)
     v.level:ClearAllPoints()
     v.level:SetPoint("LEFT", v.health, "LEFT", 7, 0)
@@ -221,7 +227,7 @@ local function layout(v, s, g, kind)
 
     v.leader:ClearAllPoints()
     v.leader:SetPoint("CENTER", v.healthBox, "TOPLEFT", 2, 1)
-    v.showLeader = kind ~= "tot" and s.chef
+    v.showLeader = not SMALL[kind] and s.chef
 
     return x + w, h + (power and 9 or 0)
 end
@@ -260,7 +266,8 @@ local function fillExample(v, s, kind, grey)
         leader = kind == "joueur"
     end
     if grey then
-        name, color = L.CU_EXEMPLE:format(CUI:Tr(kind == "cible" and "CU_CIBLE" or "CU_CIBLE_CIBLE")), GRIS
+        local label = ({ cible = "CU_CIBLE", tot = "CU_CIBLE_CIBLE", fam = "CU_FAMILIER" })[kind] or "CU_CIBLE_CIBLE"
+        name, color = L.CU_EXEMPLE:format(CUI:Tr(label)), GRIS
     end
     v.name:SetText(name)
     v.level:SetText(level)
@@ -287,6 +294,8 @@ local UNITS = {
       default = { "CENTER", "CENTER", 250, -180 } },
     { kind = "tot", unit = "targettarget", name = "CoeurUICadreCibleCible", label = "CU_CIBLE_CIBLE",
       default = { "CENTER", "CENTER", 300, -222 } },
+    { kind = "fam", unit = "pet", name = "CoeurUICadreFamilier", label = "CU_FAMILIER",
+      default = { "CENTER", "CENTER", -300, -222 } },
 }
 local frames = {}   -- kind -> bouton
 local built = false
@@ -383,6 +392,18 @@ local function createFrame(def)
     f:RegisterForClicks("AnyUp")
     f:SetFrameStrata("LOW")
     f.visual = createVisual(f)
+    -- Survol : l'infobulle de l'unité (crochet ; pas sur un exemple). Sans la consigne verte des
+    -- cadres du jeu (« Clic droit pour les paramètres de bordure »), qui ne vaut pas pour les nôtres.
+    f:HookScript("OnEnter", function(self)
+        local tip = _G.GameTooltip
+        if self.example or not tip then return end
+        _G.GameTooltip_SetDefaultAnchor(tip, self)
+        tip:SetUnit(self.unit)
+        tip:Show()
+    end)
+    f:HookScript("OnLeave", function()
+        if _G.GameTooltip then _G.GameTooltip:Hide() end
+    end)
     _G.RegisterUnitWatch(f) -- montré seulement quand l'unité existe (géré par le jeu, même en combat)
     frames[def.kind] = f
     relayout(f) -- police et tailles posées avant tout texte
@@ -466,6 +487,10 @@ function M:OnEnable()
     self:On("PLAYER_TARGET_CHANGED", function()
         if frames.cible then update(frames.cible) end
         if frames.tot then update(frames.tot) end
+    end)
+    -- Familier appelé, renvoyé ou changé.
+    self:On("UNIT_PET", function(_, unit)
+        if unit == "player" and frames.fam then update(frames.fam) end
     end)
     self:On("UNIT_TARGET", function(_, unit)
         if unit == "target" and frames.tot then update(frames.tot) end

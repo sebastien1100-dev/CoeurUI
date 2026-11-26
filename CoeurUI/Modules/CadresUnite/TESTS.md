@@ -38,3 +38,16 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 16. Couper le module : « coupé au prochain /reload » et bouton « Recharger l'interface ». Après le rechargement :
     les cadres du jeu sont revenus, ceux de CœurUI ont disparu.
 17. Langue anglaise (Paramètres) puis rechargement : module « Unit frames », pages et cadres en anglais.
+
+## 0.17.1 · infobulles et familier
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.17.1 ».
+2. Survol du cadre du joueur, de la cible, de la cible de la cible : l'infobulle de l'unité s'affiche (nom, niveau,
+   guilde...) ; elle disparaît en quittant le cadre. Module Tooltips actif : même style que les autres infobulles.
+3. Chasseur ou démoniste : appeler le familier : un petit cadre « Familier » (nom, barre de vie) apparaît à gauche,
+   sous le joueur ; clic gauche : cible le familier ; clic droit : son menu ; survol : son infobulle. Le renvoyer :
+   le cadre disparaît.
+4. Tiroir « Cadres d'unité » : nouveau sous-onglet « Familier » (largeur, hauteur, texte et couleur de la vie, aperçu).
+5. Cadenas : le cadre « Familier » a son contour doré (exemple gris sans familier) et se place.
+6. Langue anglaise : « Pet ».
+7. Survol de son propre cadre : plus de ligne verte « Clic droit pour les paramètres de bordure ».
