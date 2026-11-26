@@ -2,6 +2,22 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.12.0 · 26/11/2026
+
+- Nouveau module « Infobulles et menus » (coupé d'office) : les infobulles du jeu (unités, objets, sorts...) et ses
+  menus déroulants (ex. menu du suivi de la minicarte) prennent le style sobre de CœurUI : fond sombre, liseré gris
+  fin, pas d'or. La barre de vie sous une infobulle devient un trait fin ; les textes prennent la police de CœurUI.
+- Les infobulles et les menus de CœurUI passent aussi au style sobre (plus de contour ni de titre dorés).
+- Correction (Minicarte) : certains addons apparaissaient encore deux fois dans le tiroir (leur bouton, plus une
+  copie tirée du menu des addons du jeu).
+- Correction (Minicarte) : posé sur la carte avec le cadenas, le bouton du tiroir ne répondait pas au clic.
+- Minicarte : le tiroir s'ouvre sur le côté de la carte (vers le centre de l'écran) et a le cadre sobre de CœurUI
+  (fond sombre, liseré gris fin) au lieu d'un rectangle noir.
+- Minicarte : dans le tiroir, chaque bouton d'addon a le même habit, un rond sobre CœurUI (image en rond, fond
+  graphite, liseré gris fin qui s'éclaircit au survol) ; les addons ajoutés plus tard le prennent aussi.
+- Couper le module demande un rechargement de l'interface.
+- Redémarrer le jeu.
+
 ## 0.11.0 · 26/11/2026
 
 - Nouvelle entrée « Général » dans la fenêtre, juste sous « Tous les modules » : les réglages communs à tout

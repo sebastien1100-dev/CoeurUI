@@ -319,7 +319,8 @@ local function createMenu()
     menu:SetClampedToScreen(true)
     menu:EnableMouse(true)
     menu:Hide()
-    CUI:CreateBorderedRect(menu, 4, C.or_, C.fond)
+    -- Direction « sobre » des menus (CLAUDE.md) : liseré gris fin, pas d'or.
+    CUI:CreateBorderedRect(menu, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
     menu.items = {}
 end
 
@@ -329,7 +330,7 @@ local function menuItem(i)
     item = _G.CreateFrame("Button", nil, menu)
     item:SetHeight(26)
     item.bg = CUI:CreateRoundRect(item, 3, C.graphite)
-    item.bullet = CUI:CreateText(item, "normal", "or_")
+    item.bullet = CUI:CreateText(item, "normal", "texte")
     item.bullet:SetJustifyV("MIDDLE")
     item.bullet:SetPoint("LEFT", 8, 0)
     item.bullet:SetText("•")
@@ -352,7 +353,7 @@ local function menuItem(i)
         else
             item.bg:SetShown(false)
         end
-        local color = item.selected and C.or_ or C.texte
+        local color = item.selected and C.texte or C.texteSecondaire
         item.text:SetTextColor(color[1], color[2], color[3], 1)
         item.bullet:SetShown(item.selected)
     end

@@ -181,3 +181,7 @@ L.GENERAL_INTRO = "Réglages communs à tout CœurUI : fenêtres, panneaux et te
 L.SECTION_POLICE = "POLICE"
 L.POLICE = "Police"
 L.POLICE_NOTE = "Utilisée partout dans CœurUI. Les tailles se règlent dans chaque module."
+
+-- Module « Infobulles et menus »
+L.IM_NOM = "Infobulles et menus"
+L.IM_DESC = "Les infobulles et les menus du jeu au style de CœurUI : fond sombre, liseré fin, pas d'or."

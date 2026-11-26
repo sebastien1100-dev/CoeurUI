@@ -1,0 +1,240 @@
+-- Module « Infobulles et menus » (maquette validée, direction « sobre ») : les infobulles et les
+-- menus déroulants du jeu prennent le cadre de CœurUI : fond sombre, liseré gris fin, coins à peine
+-- arrondis, pas d'or. Les couleurs du jeu (qualité d'un objet, attitude d'une unité) restent sur le
+-- nom ; la barre de vie devient un trait fin ; les textes prennent la police de CœurUI.
+--
+-- Infobulles : le cadre du jeu (NineSlice) est rendu invisible et le nôtre est posé dessous. Toute
+-- infobulle construite sur le modèle commun du jeu est habillée à son affichage, celles des autres
+-- addons comprises.
+-- Menus (système de menus du jeu) : tant qu'un menu est ouvert, son fond est remplacé et ses cases,
+-- coches et flèches passent en gris et blanc. Les icônes du jeu ne sont pas touchées.
+-- Couper le module demande un /reload (le jeu ne sait pas reprendre son ancien habillage seul).
+local _, CUI = ...
+local C = CUI.Colors
+
+local M = CUI:RegisterModule({
+    key = "Infobulles",
+    name = "IM_NOM",
+    description = "IM_DESC",
+    defaultEnabled = false,
+    needsReload = true,
+})
+
+local WHITE = "Interface\\Buttons\\WHITE8x8"
+local FOND = { C.fond[1], C.fond[2], C.fond[3], 0.96 }
+local LISERE = C.bordureDiscrete
+
+local function forbidden(f)
+    return f.IsForbidden and f:IsForbidden()
+end
+
+-- Fond et liseré CœurUI, sous tout le contenu du cadre.
+local function addBox(frame)
+    CUI:CreateBorderedRect(frame, 3, LISERE, FOND, "BACKGROUND", -8)
+end
+
+-- Rend un cadre du jeu invisible pour de bon (le jeu ne peut plus le faire réapparaître).
+local function vanish(frame)
+    frame:SetAlpha(0)
+    _G.hooksecurefunc(frame, "SetAlpha", function(self, a)
+        if a ~= 0 and M.enabled then self:SetAlpha(0) end
+    end)
+end
+
+-- Infobulles ------------------------------------------------------------------------------------
+
+local skinnedTips = setmetatable({}, { __mode = "k" })
+
+local function skinTooltip(tip)
+    if not tip or skinnedTips[tip] or forbidden(tip) then return end
+    skinnedTips[tip] = true
+    if tip.NineSlice then vanish(tip.NineSlice) end
+    addBox(tip)
+end
+
+-- Barre de vie sous une infobulle d'unité : un trait fin juste sous le cadre.
+local function skinStatusBar()
+    local bar = _G.GameTooltipStatusBar
+    if not bar or forbidden(bar) then return end
+    bar:SetStatusBarTexture(WHITE)
+    bar:SetHeight(3)
+    bar:ClearAllPoints()
+    bar:SetPoint("TOPLEFT", _G.GameTooltip, "BOTTOMLEFT", 1, -2)
+    bar:SetPoint("TOPRIGHT", _G.GameTooltip, "BOTTOMRIGHT", -1, -2)
+    local bg = bar:CreateTexture(nil, "BACKGROUND")
+    bg:SetTexture(WHITE)
+    bg:SetVertexColor(C.graphite[1], C.graphite[2], C.graphite[3], 0.9)
+    bg:SetAllPoints()
+end
+
+-- Police de CœurUI sur les polices des infobulles du jeu (tailles gardées).
+local TOOLTIP_FONTS = { "GameTooltipHeaderText", "GameTooltipText", "GameTooltipTextSmall" }
+local function applyTooltipFonts()
+    local file = CUI:GetFont()
+    for _, name in ipairs(TOOLTIP_FONTS) do
+        local font = _G[name]
+        if font and font.GetFont then
+            local _, size, flags = font:GetFont()
+            if size then font:SetFont(file, size, flags or "") end
+        end
+    end
+end
+
+local KNOWN_TIPS = { "GameTooltip", "ItemRefTooltip", "ShoppingTooltip1", "ShoppingTooltip2",
+                     "ItemRefShoppingTooltip1", "ItemRefShoppingTooltip2", "FriendsTooltip" }
+
+-- Menus du jeu --------------------------------------------------------------------------------------
+
+local skinnedMenus = setmetatable({}, { __mode = "k" }) -- menu -> notre fond
+
+-- Une texture d'un menu : selon son atlas (les icônes du jeu n'en ont pas de ce genre). Repassé à
+-- chaque instant tant que le menu est ouvert : le jeu remet ses couleurs au survol.
+local function skinMenuTexture(tex)
+    local atlas = tex.GetAtlas and tex:GetAtlas()
+    if type(atlas) ~= "string" then return end
+    local a = atlas:lower()
+    if not (a:find("dropdown") or a:find("menu") or a:find("arrow") or a:find("next")
+            or a:find("expand") or a:find("highlight")) then
+        return
+    end
+    if a:find("bg") or a:find("background") or a:find("border") then
+        tex:SetAlpha(0)                                  -- le fond du jeu : le nôtre est dessous
+    elseif a:find("checkmark") then
+        tex:SetDesaturated(true)                         -- coche : blanche
+        tex:SetVertexColor(C.texte[1], C.texte[2], C.texte[3], 1)
+    elseif a:find("highlight") or a:find("hover") then
+        tex:SetDesaturated(true)                         -- ligne survolée : un peu plus claire
+        tex:SetVertexColor(1, 1, 1, 0.12)
+    else
+        tex:SetDesaturated(true)                         -- cases, flèches, traits : gris
+        tex:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3], 1)
+    end
+end
+
+-- Cadre en 9 morceaux du jeu (coins, bords, centre) : le menu lui-même en est un.
+local PIECES = { "TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner",
+                 "TopEdge", "BottomEdge", "LeftEdge", "RightEdge", "Center" }
+local function hidePieces(frame)
+    for _, key in ipairs(PIECES) do
+        local piece = frame[key]
+        if type(piece) == "table" and piece.SetAlpha then piece:SetAlpha(0) end
+    end
+end
+
+-- Surbrillance d'une ligne survolée : gris très clair au lieu du dégradé doré.
+local function skinHighlight(button)
+    local hl = button.GetHighlightTexture and button:GetHighlightTexture()
+    if hl then
+        hl:SetDesaturated(true)
+        hl:SetVertexColor(1, 1, 1, 0.12)
+    end
+end
+
+local function walk(frame, depth)
+    if depth > 6 or forbidden(frame) then return end
+    hidePieces(frame)
+    if frame.GetObjectType and frame:GetObjectType() == "Button" then
+        skinHighlight(frame)
+    end
+    for _, region in ipairs({ frame:GetRegions() }) do
+        if region.GetObjectType and region:GetObjectType() == "Texture" then
+            skinMenuTexture(region)
+        end
+    end
+    for _, child in ipairs({ frame:GetChildren() }) do
+        walk(child, depth + 1)
+    end
+end
+
+local function skinMenu(menu)
+    if not menu or forbidden(menu) then return end
+    local back = skinnedMenus[menu]
+    if not back then
+        if menu.NineSlice then vanish(menu.NineSlice) end
+        -- Le jeu surveille ses menus (CreateTexture refusé dessus et sur ce qu'on y accroche) :
+        -- notre fond est un cadre à part, posé sur l'écran juste sous le menu, à sa taille.
+        back = _G.CreateFrame("Frame", nil, _G.UIParent)
+        back:SetAllPoints(menu)
+        addBox(back)
+        menu:HookScript("OnHide", function() back:Hide() end)
+        skinnedMenus[menu] = back
+    end
+    back:SetFrameStrata(menu:GetFrameStrata())
+    back:SetFrameLevel(math.max(0, menu:GetFrameLevel() - 1))
+    back:Show()
+    walk(menu, 0)
+end
+
+-- Tous les menus du jeu connus : chaque cadre de menu porte la marque isMenuProxy. Les cadres sont
+-- parcourus une seule fois chacun (on reprend après le dernier vu : les nouveaux sont à la fin),
+-- par paquets, et seulement quand un menu est ouvert. Les menus du jeu sont réutilisés : une fois
+-- connus, plus de recherche.
+local menus = {}
+local lastSeen
+local function discover()
+    local enumerate = _G.EnumerateFrames
+    if not enumerate then return end
+    local f = enumerate(lastSeen)
+    local n = 0
+    while f and n < 4000 do
+        lastSeen = f
+        if rawget(f, "isMenuProxy") and not skinnedMenus[f] then
+            menus[#menus + 1] = f
+        end
+        n = n + 1
+        f = enumerate(f)
+    end
+end
+
+-- Les menus ouverts : le menu principal (donné par le jeu) et tout menu connu à l'écran.
+local function openMenus()
+    local manager = _G.Menu and _G.Menu.GetManager and _G.Menu.GetManager()
+    if not manager or not (manager.IsAnyMenuOpen and manager:IsAnyMenuOpen()) then return {} end
+    discover()
+    local list, seen = {}, {}
+    local root = (manager.GetOpenMenu and manager:GetOpenMenu()) or manager.openMenu
+    if root then
+        list[1], seen[root] = root, true
+    end
+    for _, menu in ipairs(menus) do
+        if not seen[menu] and not forbidden(menu) and menu:IsShown() then
+            list[#list + 1], seen[menu] = menu, true
+        end
+    end
+    return list
+end
+
+-- Marche / arrêt -------------------------------------------------------------------------------
+
+local hooked = false
+
+function M:OnEnable()
+    for _, name in ipairs(KNOWN_TIPS) do
+        skinTooltip(_G[name])
+    end
+    skinStatusBar()
+    applyTooltipFonts()
+    if not hooked then
+        hooked = true
+        -- Chaque infobulle du modèle commun passe par là à son affichage (crochet seulement).
+        if type(_G.SharedTooltip_SetBackdropStyle) == "function" then
+            _G.hooksecurefunc("SharedTooltip_SetBackdropStyle", function(tip, _, embedded)
+                if M.enabled and not embedded then skinTooltip(tip) end
+            end)
+        end
+    end
+    -- Menus : on regarde souvent, mais seulement si un menu est ouvert (sinon rien à faire).
+    self:Every(0.05, function()
+        for _, menu in ipairs(openMenus()) do
+            CUI:SafeCall(CUI:Tr("IM_NOM"), skinMenu, menu)
+        end
+    end)
+end
+
+-- Coupé : l'habillage reste jusqu'au /reload (needsReload).
+function M:OnDisable()
+end
+
+function M:OnFontChanged()
+    applyTooltipFonts()
+end

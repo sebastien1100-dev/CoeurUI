@@ -198,9 +198,10 @@ local function createTooltip()
     tip:SetFrameStrata("TOOLTIP")
     tip:SetClampedToScreen(true)
     tip:Hide()
-    CUI:CreateBorderedRect(tip, 4, C.or_, C.fond)
-    tip.title = CUI:CreateText(tip, "normal", "or_")
-    tip.text = CUI:CreateText(tip, "petit", "texte")
+    -- Direction « sobre » (CLAUDE.md) : la même pour toutes les infobulles et tous les menus.
+    CUI:CreateBorderedRect(tip, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
+    tip.title = CUI:CreateText(tip, "normal", "texte")
+    tip.text = CUI:CreateText(tip, "petit", "texteSecondaire")
     tip.extra = CUI:CreateText(tip, "petit", "texteDiscret")
     for _, fs in ipairs({ tip.title, tip.text, tip.extra }) do
         fs:SetWordWrap(true)

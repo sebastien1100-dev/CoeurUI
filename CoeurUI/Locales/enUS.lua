@@ -182,3 +182,7 @@ L.GENERAL_INTRO = "Settings shared by all of CœurUI: windows, panels and the te
 L.SECTION_POLICE = "FONT"
 L.POLICE = "Font"
 L.POLICE_NOTE = "Used everywhere in CœurUI. Sizes are set in each module."
+
+-- "Tooltips and menus" module
+L.IM_NOM = "Tooltips and menus"
+L.IM_DESC = "The game's tooltips and menus in the CœurUI style: dark background, thin edge, no gold."

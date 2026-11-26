@@ -44,10 +44,10 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       (tools/generer_pictos.py) ; tiroir sans doublon (menu des addons du jeu retiré) ; étiquettes du cadenas
       qui servent de poignée.
    3. Noyau : entrée « Général » en haut de la colonne de gauche, au-dessus de « Cadres d'unité » (demandée le
-      26/11/2026). Codée (0.11.0), à tester en jeu. Pour commencer : la police de tout CœurUI (fenêtres,
+      26/11/2026). Validée en jeu (0.11.0). Pour commencer : la police de tout CœurUI (fenêtres,
       panneaux et textes de tous les modules). Le réglage « Police » de Cadres d'unité > Général y est déplacé (un
       seul endroit ; la police déjà choisie est reprise) ; les tailles restent dans Cadres d'unité.
-   4. Module « Infobulles et menus » (demandé le 26/11/2026) : habiller au style de CœurUI toutes les infobulles
+   4. ~~Module « Infobulles et menus »~~ Validé en jeu (0.12.0) : habiller au style de CœurUI toutes les infobulles
       de l'interface (celles du jeu : unités, objets, sorts... et celles de CœurUI, toutes pareilles) et les menus
       déroulants du jeu (ex. menu du suivi de la minicarte). Un module (il touche aux cadres du jeu), coupé = rendu
       au jeu. Maquette validée le 26/11/2026 (direction « sobre ») : fond sombre, liseré gris fin, pas d'or ;

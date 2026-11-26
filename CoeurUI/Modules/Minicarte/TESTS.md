@@ -57,3 +57,23 @@ Le module ne dépend de rien chez EllesmereUI.
 
 1. `/reload`. Survol de l'icône du courrier (avec du courrier), du suivi et du tiroir : l'icône devient blanche, mais
    aucune infobulle n'apparaît. Les clics marchent toujours (menu de suivi, tiroir).
+
+## 0.12.0 · tiroir sans doublon (suite)
+
+1. Tiroir ouvert : chaque addon une seule fois (Forever Bestiary Pet Hunter, Naowh... : seulement leur bouton rond,
+   plus de copie carrée). Les addons sans bouton à eux (Polestar...) ont toujours leur icône carrée ; survol : leur
+   nom ; clic : comme dans le menu des addons du jeu.
+2. Rester 1 minute en jeu puis rouvrir le tiroir : toujours pas de doublon (un addon qui crée son bouton en retard
+   fait disparaître la copie).
+3. Cadenas : poser le bouton du tiroir sur la carte, verrouiller. Clic dessus : le tiroir s'ouvre (la carte ne
+   prend plus le clic).
+4. Clic sur le tiroir : la grille s'ouvre à gauche de la carte (carte à droite de l'écran), alignée sur le bas de la
+   carte ; carte déplacée à gauche de l'écran : la grille s'ouvre à sa droite. Cadre : fond sombre, liseré gris fin,
+   coins à peine arrondis (comme les infobulles).
+5. Tiroir ouvert : tous les boutons ont le même rond (même taille, fond graphite, liseré gris fin), sans leurs anciens
+   anneaux dorés ou bleus ; l'image de chaque addon est gardée, découpée en rond. Survol : le liseré s'éclaircit,
+   l'infobulle de l'addon s'affiche ; clic : l'addon réagit comme avant.
+6. Installer (ou activer) un autre addon qui a un bouton de minicarte, redémarrer : il arrive dans le tiroir avec le
+   même rond.
+7. Décocher « Ranger les boutons des addons dans un tiroir » : les boutons reviennent autour de la carte avec leur
+   habit d'origine.
