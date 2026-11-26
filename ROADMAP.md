@@ -2,13 +2,26 @@
 
 ## En cours
 
-- Noyau : chargement, réglages, registre des modules, thème CœurUI, écran « Modules », commande `/cui`.
+- Noyau, en 4 étapes testées une par une :
+  1. ~~Socle : chargement, évènements, minuteries, réglages, registre des modules, commande `/cui` (sans fenêtre).~~
+     Validé en jeu (0.1.0).
+  2. Thème, fenêtre, bouton, interrupteur, infobulle, écran « Modules ».
+  3. Bouton /reload protégé, report des changements en combat.
+  4. Curseur et menu déroulant dans un panneau de réglages.
 
 ## Ensuite (dans l'ordre, un à la fois)
 
-1. Premier module d'interface (à choisir par le joueur).
-2. Client PC minimal : mises à jour de l'addon.
+1. ~~Icône et logo : script `tools/` qui génère les TGA à partir de la planche du joueur, `IconTexture` dans le `.toc`,
+   couleurs du thème affinées sur la planche.~~ Validé en jeu (0.1.1).
+2. Premier module d'interface (à choisir par le joueur).
+3. Client PC minimal : mises à jour de l'addon.
+
+## Avant la première publication
+
+- Retirer le module « Essai » (sert seulement à tester le noyau).
 
 ## Plus tard
 
 Idées notées pendant le travail, pas encore commencées.
+
+- Bouton de minicarte (C + cœur, sans « UI »).

@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: CœurUI
+## Notes: Interface minimaliste, en modules qu'on active un par un.
+## Author: sebastien1100-dev
+## Version: 0.1.1
+## IconTexture: Interface\AddOns\CoeurUI\Media\Icone
+## SavedVariables: CoeurUIDB
+## SavedVariablesPerCharacter: CoeurUICharDB
+
+Core\Init.lua
+Locales\frFR.lua
+Core\Events.lua
+Core\Settings.lua
+Core\Modules.lua
+Core\Commands.lua
+
+Modules\Essai\Essai.lua

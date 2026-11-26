@@ -12,8 +12,9 @@ pour les mises à jour. Toute l'interface et les textes sont en **français**. R
 - Icône : C doré ouvert + cœur rouge + « UI » blanc, sur carré graphite arrondi à contour doré (version A = principale :
   liste des addons, client PC). Petites tailles et bouton de minicarte : le C + le cœur sans « UI ».
   Textures du jeu en TGA 64 ou 128 px (puissance de 2), générées par un script de `tools/`.
-- Couleurs de base (à affiner sur les fichiers de l'icône) : or `#D9AE52`, cœur `#D9455A`, graphite `#2A2D33`,
-  fond `#14161A`, texte `#F2F2F2`. Elles forment le thème par défaut.
+- Couleurs de base (relevées sur `tools/source/Icônes@2x.png`) : or `#D9AE5B`, cœur `#D2465A`, graphite `#2A2D34`,
+  fond `#101218`, texte `#F2F2F2` (le « UI » de l'icône est blanc pur). Elles forment le thème par défaut.
+  Textures de l'icône : `python tools/generer_icones.py` » `CoeurUI/Media/`.
 
 ## Structure du dépôt
 
@@ -24,8 +25,9 @@ tools/        outils : zip de publication, génération des icônes, tests
 CLAUDE.md     ce fichier
 ```
 
-Sur le PC du joueur, `C:\Dev\CoeurUI\CoeurUI` est relié au dossier `Interface\AddOns\CoeurUI` du jeu par une jonction
-(`mklink /J`) : une modification est en jeu après un simple **/reload**, sans copie ni zip. Ne jamais proposer de
+Sur le PC du joueur, WoW Forever est installé dans `E:\World of Warcraft\_forever_`. Le dossier de l'addon
+`D:\GitHub\CoeurUI\CoeurUI` (celui qui contient `CoeurUI.toc`, pas la racine du dépôt) est relié à
+`E:\World of Warcraft\_forever_\Interface\AddOns\CoeurUI` par une jonction (`mklink /J`) : une modification est en jeu après un simple **/reload**, sans copie ni zip. Ne jamais proposer de
 copier l'addon à la main dans AddOns.
 
 ## Architecture : un noyau, des modules indépendants
