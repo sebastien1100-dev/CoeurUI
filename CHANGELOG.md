@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.17.0 · 26/11/2026
+
+- Tooltips : nouvelle page de réglages avec l'option « Afficher les identifiants » (activée d'office) : en bas des
+  infobulles, l'ID des sorts (barres, grimoire, talents), des effets (améliorations, affaiblissements) et des objets
+  (sacs, équipement, liens, marchands), en gris discret.
+- Un /reload suffit.
+
 ## 0.16.0 · 26/11/2026
 
 - Barres d'actions, étape 3 : le micro-menu (personnage, métiers, sorts et talents, hauts faits, quêtes, guilde,

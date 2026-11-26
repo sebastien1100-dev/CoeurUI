@@ -184,6 +184,11 @@ L.POLICE_NOTE = "Utilisée partout dans CœurUI. Les tailles se règlent dans ch
 
 -- Module « Infobulles et menus »
 L.IM_NOM = "Tooltips"
+L.IM_INFOS = "INFORMATIONS"
+L.IM_IDS = "Afficher les identifiants"
+L.IM_IDS_DESC = "En bas des infobulles : l'identifiant des sorts, des effets et des objets."
+L.IM_ID_SORT = "ID du sort : %d"
+L.IM_ID_OBJET = "ID de l'objet : %d"
 L.IM_DESC = "Les infobulles et les menus du jeu au style de CœurUI : fond sombre, liseré fin, pas d'or."
 
 -- Grille aimantée (panneau « Déplacement des cadres »)

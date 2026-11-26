@@ -8,8 +8,11 @@
 -- addons comprises.
 -- Menus (système de menus du jeu) : tant qu'un menu est ouvert, son fond est remplacé et ses cases,
 -- coches et flèches passent en gris et blanc. Les icônes du jeu ne sont pas touchées.
+-- Option « Afficher les identifiants » : en bas des infobulles, l'ID des sorts, des effets et des
+-- objets (TooltipDataProcessor, lignes ajoutées après celles du jeu ; rien n'est remplacé).
 -- Couper le module demande un /reload (le jeu ne sait pas reprendre son ancien habillage seul).
 local _, CUI = ...
+local L = CUI.L
 local C = CUI.Colors
 
 local M = CUI:RegisterModule({
@@ -18,6 +21,11 @@ local M = CUI:RegisterModule({
     description = "IM_DESC",
     defaultEnabled = false,
     needsReload = true,
+    defaults = { ids = true },
+    settings = {
+        { type = "section", text = "IM_INFOS" },
+        { type = "toggle", key = "ids", label = "IM_IDS", description = "IM_IDS_DESC" },
+    },
 })
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
@@ -204,6 +212,38 @@ local function openMenus()
     return list
 end
 
+-- Identifiants -----------------------------------------------------------------------------------
+
+local issecret = _G.issecretvalue or function() return false end
+
+-- Ajoute « ID du sort : 123 » (ou de l'objet) en bas de l'infobulle, en gris discret. Rien si
+-- l'option est coupée, si l'infobulle est interdite ou si le jeu cache la valeur (combat).
+local function addId(tip, data, format)
+    if not M.enabled or not M.db.ids or not tip or (tip.IsForbidden and tip:IsForbidden()) then return end
+    local id = type(data) == "table" and data.id
+    if id == nil or issecret(id) or type(id) ~= "number" then return end
+    local c = C.texteDiscret
+    tip:AddLine(format:format(id), c[1], c[2], c[3])
+end
+
+local idsHooked = false
+local function hookIds()
+    if idsHooked then return end
+    local processor, types = _G.TooltipDataProcessor, _G.Enum and _G.Enum.TooltipDataType
+    if not processor or not processor.AddTooltipPostCall or not types then return end
+    idsHooked = true
+    local function on(kind, key)
+        if types[kind] then
+            processor.AddTooltipPostCall(types[kind], function(tip, data)
+                CUI:SafeCall(CUI:Tr("IM_NOM"), addId, tip, data, L[key])
+            end)
+        end
+    end
+    on("Spell", "IM_ID_SORT")
+    on("UnitAura", "IM_ID_SORT")
+    on("Item", "IM_ID_OBJET")
+end
+
 -- Marche / arrêt -------------------------------------------------------------------------------
 
 local hooked = false
@@ -214,6 +254,7 @@ function M:OnEnable()
     end
     skinStatusBar()
     applyTooltipFonts()
+    hookIds()
     if not hooked then
         hooked = true
         -- Chaque infobulle du modèle commun passe par là à son affichage (crochet seulement).

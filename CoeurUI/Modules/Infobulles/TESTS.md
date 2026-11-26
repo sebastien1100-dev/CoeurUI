@@ -22,3 +22,17 @@ fait). Le module ne dépend de rien chez EllesmereUI.
 9. Si un menu garde son style du jeu : `/fstack`, survol du menu, capture d'écran pour Claude.
 10. Couper le module : « coupé au prochain /reload ». Après le rechargement : infobulles et menus du jeu comme avant.
 11. Langue anglaise : le module s'appelle « Tooltips and menus ».
+
+## 0.17.0 · identifiants
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.17.0 ».
+2. Fenêtre CœurUI : « Tooltips » a maintenant une page : section INFORMATIONS, interrupteur « Afficher les
+   identifiants » (activé), avec sa phrase d'explication.
+3. Survol d'un sort sur une barre, dans le grimoire, dans les talents : dernière ligne « ID du sort : 12345 » en gris.
+4. Survol d'une amélioration ou d'un affaiblissement (sur un cadre d'unité ou les effets du jeu) : « ID du sort : … ».
+5. Survol d'un objet dans les sacs, sur le personnage, chez un marchand ; clic sur un lien d'objet dans la discussion :
+   « ID de l'objet : 6948 » (par exemple pour la pierre de foyer).
+6. En combat : pas d'erreur ; si le jeu cache la valeur, simplement pas de ligne d'ID.
+7. Couper « Afficher les identifiants » : les lignes d'ID disparaissent des infobulles suivantes ; le remettre : elles
+   reviennent.
+8. Langue anglaise : « Show IDs », « Spell ID: … », « Item ID: … ».

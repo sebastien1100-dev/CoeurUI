@@ -53,8 +53,7 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
       au jeu. Maquette validée le 26/11/2026 (direction « sobre ») : fond sombre, liseré gris fin, pas d'or ;
       couleurs du jeu gardées sur le nom (qualité, attitude) ; barre de vie en trait fin ; menus : cases CœurUI
       (coche blanche au trait), ligne survolée plus claire, icônes du jeu à droite, chevron gris.
-   4b. Tooltips (ex-« Infobulles et menus ») : option « Afficher les identifiants » (demandée le 26/11/2026, prochaine
-      étape) : ID des sorts et des effets (améliorations, affaiblissements), ID
+   4b. ~~Tooltips : option « Afficher les identifiants »~~ Validée en jeu (0.17.0) : ID des sorts et des effets (améliorations, affaiblissements), ID
       des objets, en bas de leur infobulle. Interrupteur dans une page de réglages du module (il n'en a pas encore).
    5. ~~Noyau : grille aimantée~~ Validée en jeu (0.13.0). Pour le déplacement des cadres : taille de la grille,
       aimant ou pas. Maquette validée le 26/11/2026 :

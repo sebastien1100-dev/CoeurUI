@@ -185,6 +185,11 @@ L.POLICE_NOTE = "Used everywhere in CœurUI. Sizes are set in each module."
 
 -- "Tooltips and menus" module
 L.IM_NOM = "Tooltips"
+L.IM_INFOS = "INFORMATION"
+L.IM_IDS = "Show IDs"
+L.IM_IDS_DESC = "At the bottom of tooltips: the ID of spells, auras and items."
+L.IM_ID_SORT = "Spell ID: %d"
+L.IM_ID_OBJET = "Item ID: %d"
 L.IM_DESC = "The game's tooltips and menus in the CœurUI style: dark background, thin edge, no gold."
 
 -- Snapping grid ("Moving frames" panel)
