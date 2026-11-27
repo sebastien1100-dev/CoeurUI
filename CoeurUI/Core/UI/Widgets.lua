@@ -13,8 +13,11 @@ local WHITE = "Interface\\Buttons\\WHITE8x8"
 local RoundRect = {}
 RoundRect.__index = RoundRect
 
+-- inset : un nombre (le même retrait partout) ou { x, y } (retrait à gauche et à droite, en haut et en
+-- bas ; négatif : déborde du parent).
 function CUI:CreateRoundRect(parent, radius, color, inset, layer, sublevel)
-    inset = inset or 0
+    local ix, iy
+    if type(inset) == "table" then ix, iy = inset[1] or 0, inset[2] or 0 else ix = inset or 0; iy = ix end
     layer = layer or "BACKGROUND"
     sublevel = sublevel or 0
     local parts = {}
@@ -26,10 +29,10 @@ function CUI:CreateRoundRect(parent, radius, color, inset, layer, sublevel)
     end
 
     local corners = {
-        { "TOPLEFT", inset, -inset, 0, 0.5, 0, 0.5 },
-        { "TOPRIGHT", -inset, -inset, 0.5, 1, 0, 0.5 },
-        { "BOTTOMLEFT", inset, inset, 0, 0.5, 0.5, 1 },
-        { "BOTTOMRIGHT", -inset, inset, 0.5, 1, 0.5, 1 },
+        { "TOPLEFT", ix, -iy, 0, 0.5, 0, 0.5 },
+        { "TOPRIGHT", -ix, -iy, 0.5, 1, 0, 0.5 },
+        { "BOTTOMLEFT", ix, iy, 0, 0.5, 0.5, 1 },
+        { "BOTTOMRIGHT", -ix, iy, 0.5, 1, 0.5, 1 },
     }
     for _, c in ipairs(corners) do
         local t = piece(CIRCLE)
@@ -39,16 +42,16 @@ function CUI:CreateRoundRect(parent, radius, color, inset, layer, sublevel)
     end
 
     local top = piece(WHITE)
-    top:SetPoint("TOPLEFT", inset + radius, -inset)
-    top:SetPoint("BOTTOMRIGHT", parent, "TOPRIGHT", -inset - radius, -inset - radius)
+    top:SetPoint("TOPLEFT", ix + radius, -iy)
+    top:SetPoint("BOTTOMRIGHT", parent, "TOPRIGHT", -ix - radius, -iy - radius)
 
     local middle = piece(WHITE)
-    middle:SetPoint("TOPLEFT", inset, -inset - radius)
-    middle:SetPoint("BOTTOMRIGHT", -inset, inset + radius)
+    middle:SetPoint("TOPLEFT", ix, -iy - radius)
+    middle:SetPoint("BOTTOMRIGHT", -ix, iy + radius)
 
     local bottom = piece(WHITE)
-    bottom:SetPoint("BOTTOMLEFT", inset + radius, inset)
-    bottom:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", -inset - radius, inset + radius)
+    bottom:SetPoint("BOTTOMLEFT", ix + radius, iy)
+    bottom:SetPoint("TOPRIGHT", parent, "BOTTOMRIGHT", -ix - radius, iy + radius)
 
     local rect = setmetatable({ parts = parts }, RoundRect)
     rect:SetColor(color or C.graphite)

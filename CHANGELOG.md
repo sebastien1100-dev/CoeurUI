@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.48.0 · 28/11/2026
+
+- Suivi des quêtes au style « Givre » : la liste est posée sur le panneau du thème (fond ardoise, double liseré
+  très discret, ombre douce). Le réglage d'opacité du fond éclaircit le fond et l'ombre, le liseré reste net.
+- Traits sombres sous l'en-tête et sous la zone dépliée (gris léger quand le fond est coupé).
+- Quête suivie sur la carte posée sur une carte un peu plus claire aux coins arrondis (au lieu du voile blanc) ;
+  survol d'une quête : la même carte, plus discrète.
+- Objets de quête en cases du thème ; survol de la couleur des boutons.
+- Le reste du suivi du jeu (campagne, objectifs bonus...) a le même cadre, sous notre liste.
+- Un /reload suffit.
+
 ## 0.47.0 · 28/11/2026
 
 - Sacs et banque au style « Givre » : fenêtres ardoise au double liseré très discret avec une ombre douce, titre

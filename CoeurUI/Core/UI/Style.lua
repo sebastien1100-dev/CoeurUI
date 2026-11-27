@@ -13,6 +13,7 @@
 --   p:SetShown(bool), p:SetFillColor(couleur)
 --   CUI:SetBarTexture(barre, clé)                -- texture de barre ; « striee » : couleur unie + stries
 --                                                -- répétées (leur taille ne dépend pas de la barre)
+--   p:SetOpacity(a)                              -- fond et ombre plus légers, liseré net
 --   p:SetShadowShown(bool)                       -- ombre ou non (bouton seul / sur un panneau)
 --   CUI:CreateTipPanel(cadre)                    -- cadre d'une infobulle ou d'un menu
 --   CUI:CreateStripes(parent, texture)           -- stries sur une texture placée à la main
@@ -79,6 +80,18 @@ function Panel:SetShown(shown)
     self.ring:SetShown(shown)
     self.fill:SetShown(shown)
     if self.shadow then self.shadow:SetShown(shown and not self.noShadow and CUI:GetTheme().ombre > 0) end
+end
+
+-- Opacité du fond (0 à 1) : le fond et l'ombre s'éclaircissent, le liseré reste net (le liseré
+-- intérieur garde au moins 60 pour cent).
+function Panel:SetOpacity(a)
+    local theme = CUI:GetTheme()
+    local f = self.customFill or theme.panneau
+    self.fill:SetColor({ f[1], f[2], f[3], a })
+    local ring = lighten(f, theme.lisereClair)
+    ring[4] = math.max(a, 0.6)
+    self.ring:SetColor(ring)
+    if self.shadow then self.shadow:SetVertexColor(0, 0, 0, theme.ombre * a) end
 end
 
 -- Ombre montrée ou non (un bouton posé seul a la sienne, un bouton posé sur un panneau non).

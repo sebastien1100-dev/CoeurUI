@@ -91,3 +91,16 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
 5. Plus de 2 quêtes à rendre dans une zone : 2 affichées, puis « N autres quêtes à rendre » ; clic : elles
    apparaissent dessous ; clic : elles se rangent. Réglage à 0 : toutes affichées.
 6. Chaque réglage coupé : l'élément disparaît, la liste se remet en place.
+
+## 0.48.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.48.0 ».
+2. La liste est sur un panneau ardoise au double liseré très discret, avec une ombre douce. Opacité du fond à 100 :
+   fond plein ; à 55 : plus léger, le liseré reste net ; fond coupé : plus de cadre, seulement le texte.
+3. Traits sombres sous « Quêtes · 19 / 25 » et sous la zone dépliée ; fond coupé : traits gris légers.
+4. Quête suivie sur la carte (clic sur sa pastille) : posée sur une carte plus claire aux coins arrondis, pastille
+   cerclée de blanc. Survol d'une autre quête : carte plus discrète, qui part avec la souris.
+5. Objet de quête : case sombre à double liseré ; survol : liseré doré (ou couleur de la classe) ; clic : il sert.
+6. Quête de campagne ou objectif bonus (reste du suivi du jeu) : sous notre liste, sur le même panneau ; rien à
+   afficher : pas de panneau vide. Réglage « reste » coupé : ni le reste ni son panneau.
+7. Défilement à la molette, titre de zone fixé en haut : comme avant.

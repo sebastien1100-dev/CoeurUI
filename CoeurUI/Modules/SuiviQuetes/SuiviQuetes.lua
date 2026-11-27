@@ -10,6 +10,9 @@
 --     suivre, partager, lien dans la discussion, demande de groupe, lien Wowhead, abandonner) ;
 --   - placée au cadenas, grandit vers le bas jusqu'à la hauteur maximale, puis défile à la molette (titre
 --     de la zone en cours fixé en haut) ; repli automatique en combat, en donjon ou raid ; fond léger.
+-- Style « Givre » (planche « Suivi des quêtes » de la direction artistique) : panneau du thème derrière
+-- la liste (opacité réglable, liseré net), traits sombres, quête suivie et survol sur une carte
+-- arrondie, objets de quête en cases du thème ; le reste du suivi du jeu a le même cadre.
 -- Le suivi du jeu garde le reste (campagne, objectifs bonus, scénarios...), sous notre liste et habillé
 -- au même style, sans ses quêtes ; ou caché (réglage).
 -- Étape 2 : les objets de quête, à droite de leur quête, utilisables d'un clic (bouton protégé posé
@@ -78,6 +81,17 @@ local function known(v) return v ~= nil and not issecret(v) end
 
 local GREY = C.texteDiscret
 local LIGHT = C.texteSecondaire
+
+-- Trait sous l'en-tête et sous une zone dépliée : sombre sur le fond du thème, gris léger sans fond.
+local function paintLine(t)
+    if M.db.fond then
+        local c = C.lisereSombre
+        t:SetVertexColor(c[1], c[2], c[3], 1)
+    else
+        local c = C.bordureDiscrete
+        t:SetVertexColor(c[1], c[2], c[3], 0.6)
+    end
+end
 local DONE = C.actif
 local PAD = 10      -- marge intérieure du cadre
 local INDENT = 22   -- retrait des quêtes (place de la pastille)
@@ -417,7 +431,6 @@ local function setupZoneRow(row)
     row.line:SetTexture(WHITE)
     row.line:SetHeight(1)
     row.line:SetPoint("TOP", row, "BOTTOM", 0, 1)
-    row.line:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], 0.7)
     row:SetScript("OnClick", function(self) if self.zoneName then toggleZone(self.zoneName, self.isOpen) end end)
 end
 
@@ -444,7 +457,16 @@ local function paintZoneRow(row, zone, open)
     row.chevron:SetVertexColor(GREY[1], GREY[2], GREY[3])
     row.chevron:SetRotation(open and 0 or (math.pi / 2))
     row.line:SetWidth(math.floor(M.db.largeur * 0.8 + 0.5))
+    paintLine(row.line)
     row.line:SetShown(open)
+end
+
+-- Carte arrondie derrière une quête (suivie sur la carte, survol).
+local function questCard(row, alpha, sub)
+    local l = C.ligne
+    local card = CUI:CreateRoundRect(row, 3, { l[1], l[2], l[3], alpha }, { -4, -2 }, "BACKGROUND", sub)
+    card:SetShown(false)
+    return card
 end
 
 -- Bloc d'une quête : pastille, titre, lignes d'objectifs ; clic, Maj-clic, clic droit, survol.
@@ -454,12 +476,7 @@ local function questRow(i)
     row = _G.CreateFrame("Button", nil, content)
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     -- Fond plus clair et anneau blanc autour de la pastille : la quête suivie sur la carte.
-    row.trackBg = row:CreateTexture(nil, "BACKGROUND", nil, -1)
-    row.trackBg:SetTexture(WHITE)
-    row.trackBg:SetPoint("TOPLEFT", -4, 2)
-    row.trackBg:SetPoint("BOTTOMRIGHT", 4, -2)
-    row.trackBg:SetVertexColor(1, 1, 1, 0.07)
-    row.trackBg:Hide()
+    row.trackBg = questCard(row, 1, -1)
     row.ring = row:CreateTexture(nil, "ARTWORK", nil, 1)
     row.ring:SetTexture(CUI.MEDIA .. "Cercle")
     row.ring:SetSize(18, 18)
@@ -486,11 +503,7 @@ local function questRow(i)
     row.title = newText(row, 13)
     row.title:SetPoint("TOPLEFT", INDENT, 0)
     row.title:SetWordWrap(true)
-    row.hover = row:CreateTexture(nil, "BACKGROUND")
-    row.hover:SetTexture(WHITE)
-    row.hover:SetAllPoints()
-    row.hover:SetVertexColor(1, 1, 1, 0.04)
-    row.hover:Hide()
+    row.hover = questCard(row, 0.6, -2)
     row:SetScript("OnClick", function(self, button)
         if not self.questID then return end
         if button == "RightButton" then
@@ -501,8 +514,8 @@ local function questRow(i)
             openQuest(self.questID)
         end
     end)
-    row:SetScript("OnEnter", function(self) self.hover:Show() end)
-    row:SetScript("OnLeave", function(self) self.hover:Hide() end)
+    row:SetScript("OnEnter", function(self) self.hover:SetShown(true) end)
+    row:SetScript("OnLeave", function(self) self.hover:SetShown(false) end)
     questRows[i] = row
     return row
 end
@@ -521,10 +534,11 @@ local function createItemButton(row)
     local b = _G.CreateFrame("Button", nil, row)
     b:SetSize(ITEM, ITEM)
     b:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
-    b.border, b.fill = CUI:CreateBorderedRect(b, 3, C.graphite, C.fond)
+    b.panel = CUI:CreatePanel(b, { radius = 3, fill = C.case, shadow = false })
+    b.border = b.panel.border
     b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetPoint("TOPLEFT", 1, -1)
-    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.icon:SetPoint("TOPLEFT", 2, -2)
+    b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
     b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     b.cd = _G.CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
     b.cd:SetAllPoints(b.icon)
@@ -532,7 +546,7 @@ local function createItemButton(row)
     b.count:SetFont(CUI:GetFont(), 10, "OUTLINE")
     b.count:SetPoint("BOTTOMRIGHT", -1, 1)
     function b:SetVisualState(hover, pressed)
-        local c = pressed and C.or_ or (hover and C.texte or C.graphite)
+        local c = pressed and C.orClair or (hover and C.or_ or C.lisereSombre)
         self.border:SetColor(c)
     end
     CUI:AttachSecureAction(b, { type = "item", item = function() return b.link end }, {
@@ -819,7 +833,8 @@ local function layout()
     holder:SetSize(s.largeur, visible + 2 * PAD + headH)
     if scroll:GetVerticalScroll() > maxScroll() then scroll:SetVerticalScroll(maxScroll()) end
     back:SetShown(s.fond and #zones > 0)
-    back:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], s.opaciteFond / 100)
+    back:SetOpacity(s.opaciteFond / 100)
+    paintLine(head.line)
     holder:SetShown(#zones > 0)
     updateSticky()
 end
@@ -915,9 +930,48 @@ local function skinGameFrame(frame, depth)
     for _, child in ipairs({ frame:GetChildren() }) do skinGameFrame(child, depth + 1) end
 end
 
+-- Cadre du reste du suivi du jeu (campagne, bonus...) : un panneau du thème à part, posé sous ses
+-- parties visibles (rien n'est dessiné sur le cadre du jeu).
+local gameBack
+local function updateGameBack(t)
+    if not gameBack then
+        gameBack = _G.CreateFrame("Frame", nil, _G.UIParent)
+        gameBack.panel = CUI:CreatePanel(gameBack, { fill = C.panneau })
+    end
+    local s = M.db
+    local top, bottom
+    if s.fond and s.reste and t:IsVisible() then
+        local header, nine = rawget(t, "Header"), rawget(t, "NineSlice")
+        for _, child in ipairs({ t:GetChildren() }) do
+            if child ~= header and child ~= nine and child:IsShown() and child:GetAlpha() > 0
+                and (child:GetHeight() or 0) > 2 then
+                local ct, cb = child:GetTop(), child:GetBottom()
+                if ct and cb then
+                    top, bottom = math.max(top or ct, ct), math.min(bottom or cb, cb)
+                end
+            end
+        end
+    end
+    if not top then
+        gameBack:Hide()
+        return
+    end
+    local scale = t:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+    gameBack:SetFrameStrata(t:GetFrameStrata())
+    gameBack:SetFrameLevel(math.max(0, t:GetFrameLevel() - 1))
+    gameBack:ClearAllPoints()
+    gameBack:SetPoint("TOPLEFT", _G.UIParent, "BOTTOMLEFT", t:GetLeft() * scale - PAD, top * scale + PAD)
+    gameBack:SetPoint("BOTTOMRIGHT", _G.UIParent, "BOTTOMLEFT", t:GetRight() * scale + PAD, bottom * scale - PAD)
+    gameBack.panel:SetOpacity(s.opaciteFond / 100)
+    gameBack:Show()
+end
+
 local function skinGame()
     local t = gameTracker()
-    if not t or not M.db.reste then return end
+    if not t or not M.db.reste then
+        if gameBack then gameBack:Hide() end
+        return
+    end
     local header = rawget(t, "Header") -- « Tous les objectifs » : invisible et sans souris
     if type(header) == "table" and header.SetAlpha then
         header:SetAlpha(0)
@@ -925,6 +979,7 @@ local function skinGame()
     end
     hideGameQuests()
     skinGameFrame(t, 0)
+    if t:GetLeft() then updateGameBack(t) end
 end
 
 -- Repli automatique -----------------------------------------------------------------------------
@@ -950,9 +1005,7 @@ local function build()
     holder = _G.CreateFrame("Frame", "CoeurUISuiviQuetes", _G.UIParent)
     holder:SetSize(M.db.largeur, 100)
     holder:SetFrameStrata("LOW")
-    back = holder:CreateTexture(nil, "BACKGROUND")
-    back:SetTexture(WHITE)
-    back:SetAllPoints()
+    back = CUI:CreatePanel(holder, { fill = C.panneau })
 
     scroll = _G.CreateFrame("ScrollFrame", nil, holder)
     scroll:SetPoint("TOPLEFT", PAD - MARGIN, -PAD)
@@ -980,9 +1033,8 @@ local function build()
     head.line = head:CreateTexture(nil, "ARTWORK")
     head.line:SetTexture(WHITE)
     head.line:SetHeight(1)
-    head.line:SetPoint("BOTTOMLEFT", 1, 0)
-    head.line:SetPoint("BOTTOMRIGHT", -1, 0)
-    head.line:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], 0.6)
+    head.line:SetPoint("BOTTOMLEFT", 2, 0)
+    head.line:SetPoint("BOTTOMRIGHT", -2, 0)
     local toggle = _G.CreateFrame("Button", nil, head)
     toggle:SetSize(20, 20)
     toggle:SetPoint("RIGHT", -PAD + 2, -2)
