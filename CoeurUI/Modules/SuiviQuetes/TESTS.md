@@ -14,8 +14,8 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
    du jeu avec, en bas, « Lien Wowhead ».
 5. « Lien Wowhead » : petite fenêtre CœurUI, titre avec le nom de la quête, adresse `https://fr.wowhead.com/quest=…`
    sélectionnée. Ctrl+C puis coller dans le navigateur : la page de la quête s'ouvre. Taper dans la case : l'adresse
-   revient. « Sélectionner » : la re-sélectionne, message « Sélectionnée : appuyez sur Ctrl+C. ». Échap ou « Fermer » :
-   la fenêtre se ferme.
+   revient. Clic dans la case : l'adresse reste sélectionnée. Plus de bouton « Sélectionner » (0.19.1). Échap ou
+   « Fermer » : la fenêtre se ferme.
 6. Page de réglages : largeur (le suivi s'élargit, les textes passent sur moins de lignes), hauteur maximale (au-delà,
    le suivi défile), tailles des titres et des objectifs (le suivi se réarrange sans chevauchement).
 7. Fond : décocher (plus de fond) ; opacité 100 % puis 0 % ; recocher.

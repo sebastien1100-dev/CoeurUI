@@ -2,6 +2,12 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.19.1 · 27/11/2026
+
+- Suivi des quêtes : la fenêtre « Lien Wowhead » n'a plus de bouton « Sélectionner » (l'adresse est déjà
+  sélectionnée) ; un clic dans l'adresse la garde sélectionnée.
+- Un /reload suffit.
+
 ## 0.19.0 · 27/11/2026
 
 - Cadres d'unité : nouvelle barre d'incantation du joueur, collée sous son cadre et à sa largeur, au style sobre de
