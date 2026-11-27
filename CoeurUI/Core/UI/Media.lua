@@ -7,11 +7,12 @@ local L = CUI.L
 
 local BAR_TEXTURES = {
     { key = "unie", name = "TEXTURE_UNIE", file = "Interface\\Buttons\\WHITE8x8" },
+    { key = "striee", name = "TEXTURE_STRIEE", file = "Interface\\Buttons\\WHITE8x8", sample = CUI.MEDIA .. "Stries" },
     { key = "lisse", name = "TEXTURE_LISSE", file = CUI.MEDIA .. "BarreLisse" },
     { key = "jeu", name = "TEXTURE_JEU", file = "Interface\\TargetingFrame\\UI-StatusBar" },
     { key = "raid", name = "TEXTURE_RAID", file = "Interface\\RaidFrame\\Raid-Bar-Hp-Fill" },
 }
-local DEFAULT_TEXTURE = "lisse"
+local DEFAULT_TEXTURE = "striee" -- celle du thème « Givre » (Core/UI/Style.lua : CUI:SetBarTexture)
 
 local FONTS = {
     { key = "friz", name = "Friz Quadrata", file = "Fonts\\FRIZQT__.TTF" },
@@ -45,7 +46,7 @@ end
 function CUI:BarTextureOptions()
     local list = {}
     for i, entry in ipairs(BAR_TEXTURES) do
-        list[i] = { value = entry.key, text = entry.name, texture = entry.file }
+        list[i] = { value = entry.key, text = entry.name, texture = entry.sample or entry.file }
     end
     return list
 end

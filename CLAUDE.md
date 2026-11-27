@@ -33,6 +33,14 @@ pour les mises à jour. Réponses au joueur en français.
   ce qui demande attention (courrier arrivé...). Pas d'or (réservé à la fenêtre de CœurUI), pas d'icône pleine.
   Textures blanches teintées dans le jeu, générées par un script de `tools/` (maquette de référence : « CœurUI ·
   Maquette Icônes »).
+- **Style « Givre »** (direction artistique validée le 28/11/2026, pour tout le projet, fenêtres du jeu comprises ;
+  maquette de référence : « CœurUI · Direction artistique », planche « Le choix ») : minimal plat (pas de liseré
+  visible, en-têtes fondus dans le fond, titres en gras, sections en petites capitales espacées) ; fond ardoise
+  bleutée `#1A1E26`, cases `#101218` ; double liseré très discret (extérieur `#0D0F14`, intérieur : le fond
+  éclairci de 5 %) ; ombre douce sous les cadres et fenêtres ; coins de 4 points (cases : 3) ; barres à fines
+  stries en diagonale. Tout passe par le noyau (`Core/UI/Style.lua` : `CUI:CreatePanel`, `CUI:SetBarTexture`,
+  thème « givre » de `CUI.Themes`) : jamais de couleur ou de bordure de style écrite en dur dans un module, pour
+  qu'un système de thèmes puisse venir. Textures : `python tools/generer_textures.py`.
 - **Infobulles et menus** (direction « sobre » validée le 26/11/2026, pour tout le projet) : toutes les infobulles
   (CœurUI et jeu) et tous les menus ont le même cadre : fond sombre `#14161A` presque opaque, liseré gris fin
   `#3A3E47`, coins à peine arrondis, pas d'or ; titre blanc (ou couleur du jeu : qualité, attitude), texte gris

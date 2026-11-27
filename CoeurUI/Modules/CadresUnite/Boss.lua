@@ -91,10 +91,11 @@ end
 
 local function createVisual(f)
     local v = { owner = f, auras = {} }
-    v.border, v.fill = CUI:CreateBorderedRect(f, 3, C.graphite, C.fond)
+    v.panel = CUI:CreatePanel(f) -- style du thème : fond, double liseré, ombre
+    v.border, v.fill = v.panel.border, v.panel.fill
     v.health = _G.CreateFrame("StatusBar", nil, f)
-    v.health:SetPoint("TOPLEFT", 1, -1)
-    v.health:SetPoint("BOTTOMRIGHT", -1, 1)
+    v.health:SetPoint("TOPLEFT", 2, -2)
+    v.health:SetPoint("BOTTOMRIGHT", -2, 2)
     v.health:SetMinMaxValues(0, 1)
     local texts = _G.CreateFrame("Frame", nil, v.health)
     texts:SetAllPoints()
@@ -109,7 +110,7 @@ end
 
 local function layoutVisual(v)
     local g = M.db.general
-    v.health:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    CUI:SetBarTexture(v.health, g.texture)
     local font = CUI:GetFont()
     v.name:SetFont(font, g.tailleNom, "")
     v.hp:SetFont(font, g.tailleVie, "")
@@ -133,7 +134,7 @@ local function setMark(v, index)
 end
 
 local function setBorder(v, target)
-    v.border:SetColor((target and db().cibleLisere) and C.texte or C.graphite)
+    v.border:SetColor((target and db().cibleLisere) and C.texte or C.lisereSombre)
 end
 
 -- Mes affaiblissements : à gauche du cadre, de droite à gauche.
@@ -142,7 +143,8 @@ local function auraButton(v, i)
     if a then return a end
     local f = v.owner
     a = _G.CreateFrame("Frame", nil, f)
-    a.border, a.fill = CUI:CreateBorderedRect(a, 2, C.graphite, C.fond)
+    local panel = CUI:CreatePanel(a, { shadow = false, radius = 2 })
+    a.border, a.fill = panel.border, panel.fill
     a.icon = a:CreateTexture(nil, "ARTWORK")
     a.icon:SetPoint("TOPLEFT", 1, -1)
     a.icon:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -317,7 +319,7 @@ local function fillTest()
             cast:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -4)
             cast:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT", 0, -4)
             cast:SetHeight(s.incHauteur)
-            cast.bar:SetStatusBarTexture(CUI:GetBarTexture(M.db.general.texture))
+            CUI:SetBarTexture(cast.bar, M.db.general.texture)
             cast.bar:SetValue(d.castPct)
             local c = (d.locked and s.incProtege) and { 0.48, 0.49, 0.53 } or { 0.29, 0.47, 0.72 }
             cast.bar:SetStatusBarColor(c[1], c[2], c[3])
@@ -338,10 +340,10 @@ local function buildTest()
         local f = _G.CreateFrame("Frame", nil, test)
         f.visual = createVisual(f)
         local cast = _G.CreateFrame("Frame", nil, f)
-        CUI:CreateBorderedRect(cast, 3, C.graphite, C.fond)
+        CUI:CreatePanel(cast)
         cast.bar = _G.CreateFrame("StatusBar", nil, cast)
-        cast.bar:SetPoint("TOPLEFT", 1, -1)
-        cast.bar:SetPoint("BOTTOMRIGHT", -1, 1)
+        cast.bar:SetPoint("TOPLEFT", 2, -2)
+        cast.bar:SetPoint("BOTTOMRIGHT", -2, 2)
         cast.bar:SetMinMaxValues(0, 1)
         cast.name = newText(cast.bar)
         cast.name:SetPoint("LEFT", 6, 0)

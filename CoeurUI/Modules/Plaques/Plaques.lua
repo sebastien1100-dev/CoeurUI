@@ -44,6 +44,21 @@ local ROLES = {
     { value = "degats", text = "PN_ROLE_DEGATS" },
 }
 local function questsOn(read) return read("quetes") end
+
+-- Couleur de la barre de vie des monstres de quête (réglage).
+local COULEURS_QUETE = {
+    jaune = { 0.890, 0.773, 0.290 },  -- #E3C54A
+    orange = { 0.878, 0.541, 0.235 }, -- #E08A3C
+    violet = { 0.608, 0.420, 0.820 }, -- #9B6BD1
+    bleu = { 0.235, 0.482, 0.851 },   -- #3C7BD9
+    vert = { 0.310, 0.722, 0.290 },   -- #4FB84A
+    rose = { 0.847, 0.416, 0.659 },   -- #D86AA8
+}
+local COULEUR_QUETE_OPTIONS = {
+    { value = "jaune", text = "PN_COULEUR_JAUNE" }, { value = "orange", text = "PN_COULEUR_ORANGE" },
+    { value = "violet", text = "PN_COULEUR_VIOLET" }, { value = "bleu", text = "PN_COULEUR_BLEU" },
+    { value = "vert", text = "PN_COULEUR_VERT" }, { value = "rose", text = "PN_COULEUR_ROSE" },
+}
 local function effectsOn(read) return read("effets") end
 local function friendsOn(read) return read("habiller") end
 
@@ -57,7 +72,7 @@ local M = CUI:RegisterModule({
         amis = { habiller = true, blesse = true, niveau = false, tailleNom = 11, largeur = 110, hauteur = 4 },
         ennemis = {
             largeur = 150, hauteur = 10, cible = 125, niveau = true, pourcentage = true, tailleNom = 12,
-            quetes = true, nomJaune = true, reste = true, menace = true, role = "auto",
+            quetes = true, nomJaune = true, reste = true, couleurQuete = "jaune", tailleAvancement = 9, menace = true, role = "auto",
             effets = true, tailleEffets = 18, nombreEffets = 6,
             incantation = true, hauteurInc = 8,
         },
@@ -101,6 +116,10 @@ local M = CUI:RegisterModule({
             { type = "toggle", key = "quetes", label = "PN_QUETES_SIGNALER" },
             { type = "toggle", key = "nomJaune", label = "PN_QUETES_NOM_JAUNE", enabledIf = questsOn },
             { type = "toggle", key = "reste", label = "PN_QUETES_RESTE", enabledIf = questsOn },
+            { type = "dropdown", key = "couleurQuete", label = "PN_QUETES_COULEUR", options = COULEUR_QUETE_OPTIONS,
+              enabledIf = questsOn },
+            { type = "slider", key = "tailleAvancement", label = "PN_QUETES_TAILLE_TEXTE", min = 7, max = 18, step = 1,
+              format = "%d pt", enabledIf = questsOn },
             { type = "section", text = "PN_MENACE" },
             { type = "toggle", key = "menace", label = "PN_MENACE_LISERE" },
             { type = "dropdown", key = "role", label = "PN_ROLE", options = ROLES,
@@ -262,13 +281,9 @@ local function createPlate(base)
     p.pct = newText(p.health)
     p.pct:SetPoint("RIGHT", p.health, "RIGHT", -2, 0)
     p.pct:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
-    -- Quête : « ! » au trait jaune à gauche, l'avancement dessous.
-    p.quest = p:CreateTexture(nil, "OVERLAY")
-    p.quest:SetTexture(CUI.MEDIA .. "Icones\\Quetes")
-    p.quest:SetVertexColor(JAUNE_QUETE[1], JAUNE_QUETE[2], JAUNE_QUETE[3], 1)
+    -- Quête : pastille ronde jaune au « ! » sombre à gauche, l'avancement dessous.
     p.questText = newText(p)
-    p.questText:SetPoint("TOP", p.quest, "BOTTOM", 0, 2)
-    p.questText:SetTextColor(JAUNE_QUETE[1], JAUNE_QUETE[2], JAUNE_QUETE[3])
+    p.questText:SetPoint("RIGHT", p.health, "LEFT", -4, 0)
     -- Incantation : barre sous la vie, cadenas, nom du sort et temps dessous.
     p.cast = _G.CreateFrame("Frame", nil, p)
     texture(p.cast, "BACKGROUND", -8, C.fond):SetAllPoints()
@@ -321,12 +336,9 @@ local function layoutPlate(p)
     p.name:SetFont(font, s.tailleNom, "OUTLINE")
     p.level:SetFont(font, math.max(7, s.tailleNom - 2), "OUTLINE")
     p.pct:SetFont(font, math.max(7, math.min(s.hauteur, s.tailleNom - 3)), "OUTLINE")
-    p.questText:SetFont(font, math.max(7, s.tailleNom - 3), "OUTLINE")
+    p.questText:SetFont(font, s.tailleAvancement, "OUTLINE") -- avancement « 5/10 » (réglage)
     p.name:SetWidth(0)
     local icon = s.hauteur + s.tailleNom + 4
-    p.quest:SetSize(icon, icon)
-    p.quest:ClearAllPoints()
-    p.quest:SetPoint("RIGHT", p, "LEFT", -2, (s.tailleNom + 3) / 2)
     p.raid:SetSize(icon, icon)
     p.raid:ClearAllPoints()
     p.raid:SetPoint("LEFT", p, "RIGHT", 4, (s.tailleNom + 3) / 2)
@@ -407,9 +419,16 @@ local function updateQuest(p)
     else
         p.isQuest = false
     end
-    p.quest:SetShown(p.isQuest and true or false)
+    -- Monstre de quête : barre de vie de la couleur choisie (et l'avancement à gauche, de la même couleur).
+    local qc = COULEURS_QUETE[s.couleurQuete] or COULEURS_QUETE.jaune
+    -- Déjà pris par un autre joueur (il ne compterait pas pour nous) : gris, comme les autres ennemis pris.
+    local tapped = _G.UnitIsTapDenied and _G.UnitIsTapDenied(p.unit)
+    if known(tapped) and tapped then qc = GRIS end
+    local hc = p.isQuest and qc or healthColor(p.unit)
+    p.health:SetStatusBarColor(hc[1], hc[2], hc[3])
     p.questText:SetShown(p.isQuest and s.reste or false)
     p.questText:SetText(p.questRest or "")
+    p.questText:SetTextColor(qc[1], qc[2], qc[3])
     local nc = (p.isQuest and s.nomJaune) and JAUNE_QUETE or C.texte
     p.name:SetTextColor(nc[1], nc[2], nc[3])
 end
@@ -452,7 +471,6 @@ local function updateFriend(p)
         p.level:Hide()
     end
     p.pct:Hide()
-    p.quest:Hide()
     p.questText:Hide()
     updateHealth(p)
     updateRaidMark(p)
@@ -890,6 +908,8 @@ function M:OnEnable()
     self:On("UNIT_HEALTH", onUnit(updateHealth))
     self:On("UNIT_MAXHEALTH", onUnit(updateHealth))
     self:On("UNIT_NAME_UPDATE", onUnit(updateAll))
+    -- Monstre pris ou relâché par un autre joueur : sa couleur change (gris).
+    pcall(self.On, self, "UNIT_FLAGS", onUnit(updateAll))
     self:On("UNIT_FACTION", function(_, unit) if unit and plates[unit] then attach(unit) end end)
     self:On("UNIT_THREAT_LIST_UPDATE", onUnit(updateThreat))
     self:On("UNIT_AURA", function(_, unit)

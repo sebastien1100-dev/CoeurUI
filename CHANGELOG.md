@@ -2,6 +2,22 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.43.0 · 28/11/2026
+
+- Nouveau style de CœurUI, « Givre » (direction artistique validée) : fond ardoise bleutée, double liseré très
+  discret, ombre douce sous les cadres, coins de 4 points, barres à fines stries en diagonale.
+- Premiers servis : les cadres d'unité (joueur, cible, cible de la cible, familier, groupe, boss), leurs barres
+  d'incantation et leurs effets. Les autres modules suivront un par un.
+- Nouvelle texture de barre « Striée (CœurUI) », celle d'office ; la texture lisse choisie jusqu'ici passe aux
+  stries une fois (on peut la remettre dans Cadres d'unité › Général).
+- Plaques de nom : plus de « ! » à côté des monstres de quête : leur barre de vie prend une couleur à choisir
+  (jaune d'office ; orange, violet, bleu, vert, rose). L'avancement (« 5/10 ») est à gauche de la barre, de la
+  même couleur, avec sa propre taille (Plaques de nom › Ennemis › Quêtes).
+  Un monstre de quête déjà pris par un autre joueur a sa barre en gris (il ne compterait pas pour toi).
+- Suivi des quêtes : le surlignage de la quête suivie sur la carte et l'anneau de sa pastille étaient coupés à
+  gauche ; plus de parenthèses vides après le nom d'un monstre (« Vermine kobold () »).
+- Redémarrer le jeu (nouveaux fichiers).
+
 ## 0.42.0 · 28/11/2026
 
 - Suivi des quêtes, troisième étape (finitions, chacune réglable dans la section Affichage) :

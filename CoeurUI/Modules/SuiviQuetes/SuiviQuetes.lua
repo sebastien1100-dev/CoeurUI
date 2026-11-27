@@ -84,6 +84,7 @@ local INDENT = 22   -- retrait des quêtes (place de la pastille)
 local ITEM = 24     -- bouton d'objet de quête
 local HEAD = 24     -- barre du nombre de quêtes
 local DIST = 46     -- place de la distance
+local MARGIN = 5    -- marge gauche de la liste (le surlignage de la quête suivie et son anneau y débordent)
 
 -- Couleurs ---------------------------------------------------------------------------------------
 
@@ -116,7 +117,8 @@ local function withoutKills(s)
     local first, last = s:lower():find(suffix:lower(), 1, true)
     if not first then return s end
     s = s:sub(1, first - 1) .. s:sub(last + 1)
-    s = s:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+:", " :")
+    -- Parenthèses restées vides (« Vermine kobold () ») : retirées aussi.
+    s = s:gsub("%(%s*%)", ""):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%s+:", " :")
     return s
 end
 
@@ -650,7 +652,7 @@ local function layout()
     if not content then return end
     local s = M.db
     local width = s.largeur - 2 * PAD
-    content:SetWidth(width)
+    content:SetWidth(width + MARGIN)
     local zones = collect()
     local here = zoneHere()
     if here ~= lastHere then -- nouvelle zone : on oublie les zones ouvertes ou fermées à la main
@@ -705,9 +707,9 @@ local function layout()
             line.mark:SetFont(CUI:GetFont(), lineSize, "")
             line.text:SetFont(CUI:GetFont(), lineSize, "")
             line.mark:ClearAllPoints()
-            line.mark:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT, -y)
+            line.mark:SetPoint("TOPLEFT", content, "TOPLEFT", MARGIN + INDENT, -y)
             line.text:ClearAllPoints()
-            line.text:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT + lineSize, -y)
+            line.text:SetPoint("TOPLEFT", content, "TOPLEFT", MARGIN + INDENT + lineSize, -y)
             line.text:SetWidth(width - INDENT - lineSize - itemRoom)
             local color
             if o.turnIn then
@@ -729,7 +731,7 @@ local function layout()
             y = y + line.text:GetStringHeight() + 1
         end
         row:ClearAllPoints()
-        row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
+        row:SetPoint("TOPLEFT", content, "TOPLEFT", MARGIN, -top)
         row:SetSize(width, math.max(y - top, itemRoom > 0 and ITEM or 0))
         y = math.max(y, top + (itemRoom > 0 and ITEM or 0))
         row:Show()
@@ -743,7 +745,7 @@ local function layout()
             local row = zoneRow(zi, content)
             row:SetSize(width, math.max(16, titleSize + 4))
             row:ClearAllPoints()
-            row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
+            row:SetPoint("TOPLEFT", content, "TOPLEFT", MARGIN, -y)
             paintZoneRow(row, zone, open)
             row:Show()
             placedZones[#placedZones + 1] = { zone = zone, open = open, top = y }
@@ -768,7 +770,7 @@ local function layout()
                 row.key = key
                 row:SetSize(width, math.max(14, lineSize + 4))
                 row:ClearAllPoints()
-                row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
+                row:SetPoint("TOPLEFT", content, "TOPLEFT", MARGIN, -y)
                 row.text:SetFont(CUI:GetFont(), lineSize, "")
                 row.text:SetText(L.SQ_AUTRES_A_RENDRE:format(#hidden))
                 row.chevron:SetRotation(foldOpen[key] and 0 or (math.pi / 2))
@@ -807,7 +809,7 @@ local function layout()
         head.text:SetText(text)
         head.toggle:SetText(allCollapsed and "+" or "–")
     end
-    scroll:SetPoint("TOPLEFT", PAD, -(PAD + headH))
+    scroll:SetPoint("TOPLEFT", PAD - MARGIN, -(PAD + headH))
     sticky:SetPoint("TOPLEFT", holder, "TOPLEFT", PAD, -(PAD + headH))
     sticky:SetPoint("TOPRIGHT", holder, "TOPRIGHT", -PAD, -(PAD + headH))
 
@@ -953,7 +955,7 @@ local function build()
     back:SetAllPoints()
 
     scroll = _G.CreateFrame("ScrollFrame", nil, holder)
-    scroll:SetPoint("TOPLEFT", PAD, -PAD)
+    scroll:SetPoint("TOPLEFT", PAD - MARGIN, -PAD)
     scroll:SetPoint("BOTTOMRIGHT", -PAD, PAD)
     content = _G.CreateFrame("Frame", nil, scroll)
     content:SetSize(M.db.largeur - 2 * PAD, 10)

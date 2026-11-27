@@ -142,7 +142,8 @@ end
 
 local function createVisual(f)
     local v = {}
-    v.border, v.fill = CUI:CreateBorderedRect(f, 3, C.graphite, C.fond)
+    v.panel = CUI:CreatePanel(f) -- style du thème : fond, double liseré, ombre
+    v.border, v.fill = v.panel.border, v.panel.fill
     v.health = _G.CreateFrame("StatusBar", nil, f)
     v.health:SetMinMaxValues(0, 1)
     v.power = _G.CreateFrame("StatusBar", nil, f)
@@ -151,7 +152,7 @@ local function createVisual(f)
     -- couleur d'un affaiblissement à dissiper (cachés sinon).
     local glow = _G.CreateFrame("Frame", nil, f)
     glow:SetPoint("TOPLEFT", 1, -1)
-    glow:SetPoint("BOTTOMRIGHT", -1, 1)
+    glow:SetPoint("BOTTOMRIGHT", -1, 1) -- sur le liseré intérieur
     glow:SetFrameLevel(v.health:GetFrameLevel() + 3)
     glow.lines = {}
     for i = 1, 4 do
@@ -197,17 +198,16 @@ local function layoutVisual(f, v)
     local s, g = db(), M.db.general
     local power = s.ressource
     v.health:ClearAllPoints()
-    v.health:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
-    v.health:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
-    v.health:SetHeight(math.max(4, s.hauteur - 2 - (power and 5 or 0)))
+    v.health:SetPoint("TOPLEFT", f, "TOPLEFT", 2, -2)
+    v.health:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -2)
+    v.health:SetHeight(math.max(4, s.hauteur - 4 - (power and 5 or 0)))
     v.power:SetShown(power)
     v.power:ClearAllPoints()
-    v.power:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 1, 1)
-    v.power:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -1, 1)
+    v.power:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2, 2)
+    v.power:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -2, 2)
     v.power:SetHeight(4)
-    local texture = CUI:GetBarTexture(g.texture)
-    v.health:SetStatusBarTexture(texture)
-    v.power:SetStatusBarTexture(texture)
+    CUI:SetBarTexture(v.health, g.texture)
+    CUI:SetBarTexture(v.power, g.texture)
 
     local font = CUI:GetFont()
     v.name:SetFont(font, g.tailleNom, "")
@@ -231,7 +231,7 @@ local function layoutVisual(f, v)
     v.mark:SetSize(14, 14)
     v.mark:ClearAllPoints()
     v.mark:SetPoint("CENTER", f, "TOPRIGHT", -2, 0)
-    v.incoming:SetStatusBarTexture(texture)
+    CUI:SetBarTexture(v.incoming, g.texture)
     -- Accrochée au bout de la vie : à refaire après chaque changement de texture de la barre de vie
     -- (sans texture, il n'y a pas de bout où s'accrocher).
     local fillTex = v.health:GetStatusBarTexture()
@@ -274,7 +274,7 @@ local function setBorder(v, target, threat, dispel)
         v.glow.veil:SetVertexColor(dispel[1], dispel[2], dispel[3], 0.18)
         v.border:SetColor(dispel)
     else
-        v.border:SetColor(target and C.texte or (threat and C.coeur or C.graphite))
+        v.border:SetColor(target and C.texte or (threat and C.coeur or C.lisereSombre))
     end
 end
 
@@ -298,7 +298,8 @@ local function auraButton(v, kind, i)
     local f = v.owner
     a = _G.CreateFrame("Frame", nil, f)
     a:SetFrameLevel(f:GetFrameLevel() + 8)
-    a.border, a.fill = CUI:CreateBorderedRect(a, 2, C.graphite, C.fond)
+    local panel = CUI:CreatePanel(a, { shadow = false, radius = 2 })
+    a.border, a.fill = panel.border, panel.fill
     a.icon = a:CreateTexture(nil, "ARTWORK")
     a.icon:SetPoint("TOPLEFT", 1, -1)
     a.icon:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -576,10 +577,11 @@ end
 
 local function createPetVisual(p)
     local v = {}
-    v.border, v.fill = CUI:CreateBorderedRect(p, 2, C.graphite, C.fond)
+    local panel = CUI:CreatePanel(p, { radius = 3 })
+    v.border, v.fill = panel.border, panel.fill
     v.health = _G.CreateFrame("StatusBar", nil, p)
-    v.health:SetPoint("TOPLEFT", 1, -1)
-    v.health:SetPoint("BOTTOMRIGHT", -1, 1)
+    v.health:SetPoint("TOPLEFT", 2, -2)
+    v.health:SetPoint("BOTTOMRIGHT", -2, 2)
     v.health:SetMinMaxValues(0, 1)
     local texts = _G.CreateFrame("Frame", nil, v.health)
     texts:SetAllPoints()
@@ -596,7 +598,7 @@ local function layoutPet(owner, p)
     p:SetSize(math.max(20, s.largeur - PET_INDENT), petHeight())
     p:ClearAllPoints()
     p:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", PET_INDENT, -3)
-    p.visual.health:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    CUI:SetBarTexture(p.visual.health, g.texture)
     p.visual.name:SetFont(CUI:GetFont(), math.max(8, g.tailleNom - 2), "")
 end
 
@@ -675,7 +677,7 @@ end
 local function layoutDetachedPet(p)
     local s, g = db(), M.db.general
     p:SetSize(math.max(20, s.largeur - PET_INDENT), petHeight())
-    p.visual.health:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    CUI:SetBarTexture(p.visual.health, g.texture)
     p.visual.name:SetFont(CUI:GetFont(), math.max(8, g.tailleNom - 2), "")
 end
 

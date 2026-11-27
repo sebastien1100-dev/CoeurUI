@@ -118,6 +118,13 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
    14. ~~Bulles de discussion (demandées le 27/11/2026). Choix du joueur : style sobre des infobulles, pointe
        au même style ; réglages taille du texte, opacité du fond, couleur selon le canal. Hors donjons et raids (le
        jeu les verrouille).~~ Validé en jeu (0.32.0).
+   14b. Direction artistique de tout CœurUI (demandée le 28/11/2026), avant d'habiller les fenêtres du jeu.
+       Choix du joueur : sobre moderne affiné ou minimal plat, coins légèrement arrondis ; barres, ombre douce,
+       double liseré, accent de couleur, grain à comparer (« CœurUI · Direction artistique »). Choisi le
+       28/11/2026 : « Givre » (proposition 4) avec les barres striées de « Nuit » (proposition 9). Écrit dans le
+       noyau (Core/UI/Style.lua, thème « givre ») et appliqué aux cadres d'unité : validé (0.43.0). Ensuite,
+       module par module : fenêtre de CœurUI, barres d'actions, infobulles, sacs, suivi des quêtes, plaques,
+       discussion, minicarte, effets, bulles.
    15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le
        27/11/2026 (« CœurUI · Maquette Cadres de groupe »). Étapes : 1) cadres (disposition, tri, rôle, ressource,
        portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
@@ -166,6 +173,10 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Système de thèmes (demandé le 28/11/2026) : la porte est ouverte dans Core/UI/Style.lua (CUI.Themes, un seul
+  thème « givre » ; CUI:GetTheme, CUI:ApplyTheme repeint ce qui est dessiné). Reste à faire : d'autres thèmes,
+  un choix dans « Paramètres » (CUI.db.ui.theme), et que chaque module redessine ce qui ne passe pas par les
+  pièces communes.
 - Fenêtre des jets de butin en groupe (demandé le 27/11/2026) : pour chaque objet tiré au sort, qui a choisi
   Besoin, Cupidité, Désenchanter ou Passer, et le résultat de chacun ; le gagnant en évidence. Au style de
   CœurUI, placée au cadenas, avec l'historique des derniers objets. (Lié à « jets de butin en groupe » de la

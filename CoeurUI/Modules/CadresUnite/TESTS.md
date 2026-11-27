@@ -173,3 +173,16 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 7. Marqueur de raid posé sur le boss : en haut à droite.
 8. Fin de la rencontre : les cadres partent. Combat : aucune erreur.
 9. Couper « Cadres de boss de CœurUI » : nos cadres partent ; /reload : ceux du jeu reviennent.
+
+## 0.43.0 · style « Givre »
+
+1. **Redémarrer le jeu** (nouveaux fichiers). Aucune erreur Lua. `/cui version` : « 0.43.0 ».
+2. Joueur, cible, cible de la cible, familier : fond ardoise bleutée, liseré très discret, ombre douce
+   autour ; barres de vie et de ressource à fines stries en diagonale ; les stries ne s'étirent pas quand la
+   barre se vide ou se remplit.
+3. Barres d'incantation (joueur, cible, boss) : même style ; icône du sort dans un cadre sans ombre.
+4. Cadres de groupe (cadenas ouvert, groupe de test) et de boss : même style ; liseré blanc sur la cible,
+   rouge sur la menace, couleur de l'affaiblissement à dissiper : toujours visibles.
+5. Cadres d'unité › Général › texture : « Striée (CœurUI) » choisie ; passer à « Lisse » : barres lisses sans
+   stries ; revenir à « Striée » : les stries reviennent.
+6. Soins à venir (vert clair) : toujours au bout de la vie, stries comprises.

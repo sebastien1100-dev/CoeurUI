@@ -113,7 +113,7 @@ local M = CUI:RegisterModule({
     defaultEnabled = false,
     needsReload = true, -- les cadres du jeu ne reviennent qu'après un /reload
     defaults = {
-        general = { tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "lisse", soinsAVenir = true },
+        general = { tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "striee", soinsAVenir = true },
         joueur = { largeur = 230, hauteur = 34, texteVie = "vp", couleur = "classe",
                    ressource = true, niveau = true, portrait = false, chef = true,
                    incantation = true, incDetachee = false, incHauteur = 18, incLargeur = 270, incTemps = "rt",
@@ -199,10 +199,10 @@ end
 
 local function newBar(parent)
     local box = _G.CreateFrame("Frame", nil, parent)
-    CUI:CreateBorderedRect(box, 3, C.graphite, C.fond)
+    box.panel = CUI:CreatePanel(box) -- style du thème : fond, double liseré, ombre
     local bar = _G.CreateFrame("StatusBar", nil, box)
-    bar:SetPoint("TOPLEFT", 1, -1)
-    bar:SetPoint("BOTTOMRIGHT", -1, 1)
+    bar:SetPoint("TOPLEFT", 2, -2)
+    bar:SetPoint("BOTTOMRIGHT", -2, 2)
     bar:SetMinMaxValues(0, 1)
     bar:SetValue(1)
     return box, bar
@@ -213,10 +213,10 @@ local function createVisual(parent)
     v.healthBox, v.health = newBar(parent)
     v.powerBox, v.power = newBar(parent)
     v.portraitBox = _G.CreateFrame("Frame", nil, parent)
-    CUI:CreateBorderedRect(v.portraitBox, 3, C.graphite, C.desactiveFond)
+    CUI:CreatePanel(v.portraitBox, { fill = C.desactiveFond })
     v.portrait = v.portraitBox:CreateTexture(nil, "ARTWORK")
-    v.portrait:SetPoint("TOPLEFT", 1, -1)
-    v.portrait:SetPoint("BOTTOMRIGHT", -1, 1)
+    v.portrait:SetPoint("TOPLEFT", 2, -2)
+    v.portrait:SetPoint("BOTTOMRIGHT", -2, 2)
     v.portrait:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     local texts = _G.CreateFrame("Frame", nil, v.health)
     texts:SetAllPoints()
@@ -261,10 +261,9 @@ local function layout(v, s, g, kind)
     v.powerBox:SetPoint("TOPLEFT", v.healthBox, "BOTTOMLEFT", 0, -3)
     v.powerBox:SetSize(w, 6)
 
-    local texture = CUI:GetBarTexture(g.texture)
-    v.health:SetStatusBarTexture(texture)
+    CUI:SetBarTexture(v.health, g.texture)
     -- Soins à venir : accrochés au bout de la vie (à refaire après chaque changement de texture).
-    v.incoming:SetStatusBarTexture(texture)
+    CUI:SetBarTexture(v.incoming, g.texture)
     v.incoming:SetStatusBarColor(C.actif[1], C.actif[2], C.actif[3], 0.45)
     v.incoming:SetWidth(math.max(1, w - 2))
     local fillTex = v.health:GetStatusBarTexture()
@@ -273,7 +272,7 @@ local function layout(v, s, g, kind)
         v.incoming:SetPoint("TOPLEFT", fillTex, "TOPRIGHT")
         v.incoming:SetPoint("BOTTOMLEFT", fillTex, "BOTTOMRIGHT")
     end
-    v.power:SetStatusBarTexture(texture)
+    CUI:SetBarTexture(v.power, g.texture)
 
     local font = CUI:GetFont()
     v.level:SetFont(font, g.tailleNiveau, "")
@@ -817,7 +816,7 @@ local function createCastBar(def)
     f:SetFrameStrata("LOW")
     f:Hide()
     f.iconBox = _G.CreateFrame("Frame", nil, f)
-    CUI:CreateBorderedRect(f.iconBox, 3, C.graphite, C.fond)
+    CUI:CreatePanel(f.iconBox, { shadow = false })
     f.icon = f.iconBox:CreateTexture(nil, "ARTWORK")
     f.icon:SetPoint("TOPLEFT", 1, -1)
     f.icon:SetPoint("BOTTOMRIGHT", -1, 1)
@@ -925,7 +924,7 @@ local function applyCast(b)
     f.barBox:ClearAllPoints()
     f.barBox:SetPoint("TOPLEFT", s.incIcone and (h + 3) or 0, 0)
     f.barBox:SetPoint("BOTTOMRIGHT")
-    f.bar:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    CUI:SetBarTexture(f.bar, g.texture)
 
     local size = math.max(8, math.min(14, h - 6))
     local font = CUI:GetFont()
@@ -1053,6 +1052,11 @@ M.shared = {
 -- Marche / arrêt ----------------------------------------------------------------------------
 
 function M:OnEnable()
+    -- Style « Givre » (0.43.0) : la texture lisse d'avant passe aux stries, une seule fois.
+    if not M.db.general.styleGivre then
+        if M.db.general.texture == "lisse" then M.db.general.texture = "striee" end
+        M.db.general.styleGivre = true
+    end
     CUI:AfterCombat(build) -- cadres protégés : jamais créés en combat
     if M.groupe then CUI:SafeCall(CUI:Tr("CU_GROUPE"), M.groupe.Enable) end -- Groupe.lua
     if M.boss then CUI:SafeCall(CUI:Tr("CU_BOSS"), M.boss.Enable) end -- Boss.lua
