@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.44.0 · 28/11/2026
+
+- Fenêtre de CœurUI au style « Givre » : fond ardoise bleutée, double liseré très discret et ombre douce à la place
+  du contour doré ; barre de titre fondue dans le fond ; colonne de gauche et cartes des modules aux teintes du
+  thème. L'or reste sur le logo, le choix en cours, les interrupteurs et le bouton principal.
+- Même style pour les petites fenêtres de CœurUI (lien Wowhead...).
+- Nouveau réglage dans « Général » : couleur des survols et boutons (interrupteurs, curseurs, choix en cours),
+  l'or de CœurUI ou la couleur de ta classe. Appliquée après un /reload (bouton proposé). Le « Cœur » du titre reste
+  doré.
+- Un /reload suffit.
+
 ## 0.43.0 · 28/11/2026
 
 - Nouveau style de CœurUI, « Givre » (direction artistique validée) : fond ardoise bleutée, double liseré très

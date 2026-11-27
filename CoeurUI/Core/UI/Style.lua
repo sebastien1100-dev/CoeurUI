@@ -31,6 +31,10 @@ CUI.Themes = {
         lisereSombre = hex("0D0F14"), -- liseré extérieur
         lisereClair = 0.05,           -- liseré intérieur : le fond éclairci de 5 %
         case = hex("101218"),         -- fond des cases (sacs, barres d'actions)
+        fenetre = hex("1A1E26"),      -- fond de la fenêtre de CœurUI
+        colonne = hex("151820"),      -- sa colonne de gauche
+        carte = hex("1F232C"),        -- une carte, une ligne de liste
+        carteActive = hex("252A34"),  -- une carte active, la ligne choisie
         rayon = 4,                    -- coins (cases : rayon - 1)
         ombre = 0.55,                 -- opacité de l'ombre douce (0 : pas d'ombre)
         stries = 0.16,                -- opacité des stries des barres
@@ -47,6 +51,7 @@ end
 -- Couleurs du thème en cours, aussi dans CUI.Colors (lues au moment de dessiner).
 local function copyColors(theme)
     C.panneau, C.lisereSombre, C.case = theme.panneau, theme.lisereSombre, theme.case
+    C.fenetre, C.colonne, C.carte, C.ligne = theme.fenetre, theme.colonne, theme.carte, theme.carteActive
 end
 copyColors(CUI.Themes[DEFAULT_THEME])
 
@@ -149,6 +154,24 @@ function CUI:SetBarTexture(bar, key)
             bar.cuiStripes:Hide()
         end
     end
+end
+
+-- Couleur des survols et boutons (« Général ») : l'or de CœurUI ou la couleur de la classe du joueur.
+-- Posée au chargement (une partie des couleurs est retenue en dessinant : un /reload l'applique).
+-- L'or de la marque (« Cœur » du titre) ne change pas.
+C.marque = C.or_
+function CUI:ApplyAccent()
+    local choice = self.db and self.db.general and self.db.general.accent or "or"
+    self.appliedAccent = choice
+    if choice ~= "classe" then return end
+    local _, classFile = _G.UnitClass("player")
+    local c = classFile and _G.C_ClassColor and _G.C_ClassColor.GetClassColor and _G.C_ClassColor.GetClassColor(classFile)
+    if not c and classFile and _G.RAID_CLASS_COLORS then c = _G.RAID_CLASS_COLORS[classFile] end
+    if not c then return end
+    local base = { c.r, c.g, c.b, 1 }
+    C.or_ = base
+    C.orClair = lighten(base, 0.25)
+    C.railActif = { c.r * 0.4, c.g * 0.4, c.b * 0.4, 1 } -- fond d'un interrupteur activé
 end
 
 -- Thème changé : tout ce qui a été dessiné se repeint (les modules redessinent le reste).

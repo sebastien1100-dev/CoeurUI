@@ -42,7 +42,8 @@ migrations[3] = function(db)
 end
 
 -- Paramètres généraux : pages « Paramètres » (langue, bouton de minicarte) et « Général » (police).
-local GENERAL_DEFAULTS = { langue = "auto", boutonMinicarte = true, angleMinicarte = 200, police = "friz" }
+local GENERAL_DEFAULTS = { langue = "auto", boutonMinicarte = true, angleMinicarte = 200, police = "friz",
+                           accent = "or" }
 
 -- Ajoute dans target les valeurs de defaults qui manquent, sans toucher à ce qui existe.
 local function fillDefaults(target, defaults)
@@ -90,6 +91,7 @@ function CUI:LoadSettings()
     self.charDb = char
     self:SetLanguage(db.general.langue)
     self:ApplyFont()
+    self:ApplyAccent() -- couleur des survols et boutons (Core/UI/Style.lua)
 end
 
 -- Paramètres généraux -----------------------------------------------------------------------
@@ -119,6 +121,11 @@ end
 -- La langue choisie diffère-t-elle de celle chargée (un /reload l'appliquera) ?
 function CUI:LanguagePending()
     return self.db ~= nil and self:ResolveLanguage(self.db.general.langue) ~= self.language
+end
+
+-- La couleur des survols et boutons choisie diffère-t-elle de celle chargée (un /reload l'appliquera) ?
+function CUI:AccentPending()
+    return self.db ~= nil and self.db.general.accent ~= self.appliedAccent
 end
 
 -- Efface toute la sauvegarde. Le jeu n'écrira rien au prochain /reload : tout repart des

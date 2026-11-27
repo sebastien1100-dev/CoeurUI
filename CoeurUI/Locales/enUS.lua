@@ -268,6 +268,11 @@ L.GENERAL_INTRO = "Settings shared by all of CœurUI: windows, panels and the te
 L.SECTION_POLICE = "FONT"
 L.POLICE = "Font"
 L.POLICE_NOTE = "Used everywhere in CœurUI. Sizes are set in each module."
+L.SECTION_ACCENT = "HOVER AND BUTTONS"
+L.ACCENT = "Colour"
+L.ACCENT_NOTE = "Hovers, buttons, switches, sliders and current choice. Applied after a /reload."
+L.ACCENT_OR = "CœurUI gold"
+L.ACCENT_CLASSE = "My class colour"
 
 -- "Tooltips and menus" module
 L.IM_NOM = "Tooltips"

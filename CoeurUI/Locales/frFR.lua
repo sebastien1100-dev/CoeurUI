@@ -267,6 +267,11 @@ L.GENERAL_INTRO = "Réglages communs à tout CœurUI : fenêtres, panneaux et te
 L.SECTION_POLICE = "POLICE"
 L.POLICE = "Police"
 L.POLICE_NOTE = "Utilisée partout dans CœurUI. Les tailles se règlent dans chaque module."
+L.SECTION_ACCENT = "SURVOLS ET BOUTONS"
+L.ACCENT = "Couleur"
+L.ACCENT_NOTE = "Survols, boutons, interrupteurs, curseurs et choix en cours. Appliquée après un /reload."
+L.ACCENT_OR = "Or de CœurUI"
+L.ACCENT_CLASSE = "Couleur de ma classe"
 
 -- Module « Infobulles et menus »
 L.IM_NOM = "Tooltips"

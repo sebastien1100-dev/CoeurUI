@@ -122,7 +122,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        Choix du joueur : sobre moderne affiné ou minimal plat, coins légèrement arrondis ; barres, ombre douce,
        double liseré, accent de couleur, grain à comparer (« CœurUI · Direction artistique »). Choisi le
        28/11/2026 : « Givre » (proposition 4) avec les barres striées de « Nuit » (proposition 9). Écrit dans le
-       noyau (Core/UI/Style.lua, thème « givre ») et appliqué aux cadres d'unité : validé (0.43.0). Ensuite,
+       noyau (Core/UI/Style.lua, thème « givre ») et appliqué aux cadres d'unité : validé (0.43.0) ; fenêtre de CœurUI : validée (0.44.0). Ensuite,
        module par module : fenêtre de CœurUI, barres d'actions, infobulles, sacs, suivi des quêtes, plaques,
        discussion, minicarte, effets, bulles.
    15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le

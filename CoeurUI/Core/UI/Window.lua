@@ -76,27 +76,18 @@ function CUI:CreateWindow(key, title, width)
     f:EnableMouse(true)
     f:Hide()
 
-    -- Ombre légère, contour doré, fond.
-    local shadow = self:CreateRoundRect(f, 8, C.ombre, -3, "BACKGROUND", -2)
-    shadow:SetColor(C.ombre)
-    self:CreateBorderedRect(f, 6, C.or_, C.fenetre, "BACKGROUND", 0)
+    -- Style du thème (« Givre ») : fond, double liseré très discret, ombre douce.
+    f.panel = self:CreatePanel(f, { fill = C.fenetre })
 
-    -- Barre de titre.
+    -- Barre de titre : fondue dans le fond (minimal plat), un trait très discret dessous.
     local header = _G.CreateFrame("Frame", nil, f)
-    header:SetPoint("TOPLEFT", 1, -1)
-    header:SetPoint("TOPRIGHT", -1, -1)
+    header:SetPoint("TOPLEFT", 2, -2)
+    header:SetPoint("TOPRIGHT", -2, -2)
     header:SetHeight(HEADER_HEIGHT)
     f.header = header -- pour poser d'autres boutons à gauche de la croix (f.closeButton)
-    self:CreateRoundRect(header, 5, C.graphite, 0, "BACKGROUND", 0)
-    local square = header:CreateTexture(nil, "BACKGROUND", nil, 1) -- coins du bas carrés
-    square:SetTexture("Interface\\Buttons\\WHITE8x8")
-    square:SetVertexColor(unpack(C.graphite))
-    square:SetPoint("BOTTOMLEFT")
-    square:SetPoint("BOTTOMRIGHT")
-    square:SetHeight(6)
     local line = header:CreateTexture(nil, "ARTWORK")
     line:SetTexture("Interface\\Buttons\\WHITE8x8")
-    line:SetVertexColor(unpack(C.bordureDiscrete))
+    line:SetVertexColor(unpack(C.lisereSombre))
     line:SetPoint("BOTTOMLEFT")
     line:SetPoint("BOTTOMRIGHT")
     line:SetHeight(1)
@@ -111,7 +102,7 @@ function CUI:CreateWindow(key, title, width)
     titleText:SetPoint("LEFT", logo, "RIGHT", 9, 0)
     f.titleText = titleText
     function f:SetTitle(value)
-        titleText:SetText(CUI:ColorCode(C.or_) .. "Cœur|rUI " .. CUI:ColorCode(C.texteDiscret) .. "· " .. value .. "|r")
+        titleText:SetText(CUI:ColorCode(C.marque or C.or_) .. "Cœur|rUI " .. CUI:ColorCode(C.texteDiscret) .. "· " .. value .. "|r")
     end
     f:SetTitle(title)
 
@@ -129,8 +120,8 @@ function CUI:CreateWindow(key, title, width)
 
     -- Zone de contenu.
     f.content = _G.CreateFrame("Frame", nil, f)
-    f.content:SetPoint("TOPLEFT", 1, -1 - HEADER_HEIGHT)
-    f.content:SetPoint("BOTTOMRIGHT", -1, 1)
+    f.content:SetPoint("TOPLEFT", 2, -2 - HEADER_HEIGHT)
+    f.content:SetPoint("BOTTOMRIGHT", -2, 2)
 
     f:SetScript("OnShow", function() restorePosition(f) end)
     f:HookScript("OnHide", function() CUI:HideTooltip() end)

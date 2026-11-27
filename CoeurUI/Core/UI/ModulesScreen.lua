@@ -96,7 +96,7 @@ end
 
 -- Clés de chaque page (pour « Valeurs par défaut »).
 local SETTINGS_KEYS = { "langue", "boutonMinicarte" }
-local GENERAL_KEYS = { "police" }
+local GENERAL_KEYS = { "police", "accent" }
 
 -- Réglages de la page « Général » (valeurs dans CUI.db.general) : communs à tout CœurUI.
 local function lookItems()
@@ -104,6 +104,10 @@ local function lookItems()
         { type = "section", text = "SECTION_POLICE" },
         { type = "dropdown", key = "police", label = "POLICE", description = "POLICE_NOTE",
           options = function() return CUI:FontOptions() end },
+        { type = "section", text = "SECTION_ACCENT" },
+        { type = "dropdown", key = "accent", label = "ACCENT", description = "ACCENT_NOTE", options = {
+            { value = "or", text = "ACCENT_OR" }, { value = "classe", text = "ACCENT_CLASSE" },
+        } },
     }
 end
 
@@ -258,7 +262,8 @@ end
 local function createCard()
     local card = _G.CreateFrame("Frame", nil, body.child)
     card:SetSize(math.floor((MAIN_W - PAD * 2 - CARD_GAP) / 2), CARD_H)
-    card.border, card.fill = CUI:CreateBorderedRect(card, 4, C.graphite, C.fenetre)
+    card.panel = CUI:CreatePanel(card, { shadow = false, fill = C.carte })
+    card.border, card.fill = card.panel.border, card.panel.fill
     card.switch = CUI:CreateSwitch(card, function(switch, checked)
         toggleModule(card.module, checked, switch)
     end)
@@ -285,7 +290,7 @@ local function createCard()
         if self.hasSettings then self.border:SetColor(C.bordure) end
     end)
     card:SetScript("OnLeave", function(self)
-        self.border:SetColor(self.module:IsWanted() and C.bordureDiscrete or C.graphite)
+        self.border:SetColor(C.lisereSombre)
     end)
     return card
 end
@@ -299,8 +304,8 @@ local function refreshHome()
         card.module = m
         local wanted = m:IsWanted()
         card.switch:SetChecked(wanted)
-        card.border:SetColor(wanted and C.bordureDiscrete or C.graphite)
-        card.fill:SetColor(wanted and C.ligne or C.fenetre)
+        card.border:SetColor(C.lisereSombre)
+        card.panel:SetFillColor(wanted and C.ligne or C.carte)
         card.name:SetText(CUI:Tr(m.name))
         card.desc:SetText(CUI:Tr(m.description))
         card.hasSettings = CUI:HasModuleSettings(m)
@@ -474,7 +479,7 @@ local function createWindow()
     squareRight:SetPoint("TOPRIGHT")
     squareRight:SetPoint("BOTTOMRIGHT")
     squareRight:SetWidth(8)
-    local sideLine = solid(content, "ARTWORK", 0, C.graphite)
+    local sideLine = solid(content, "ARTWORK", 0, C.lisereSombre)
     sideLine:SetPoint("TOPLEFT", side, "TOPRIGHT")
     sideLine:SetPoint("BOTTOMLEFT", side, "BOTTOMRIGHT")
     sideLine:SetWidth(1)
@@ -616,7 +621,7 @@ function CUI:RefreshModulesScreen()
     if not window or not window:IsShown() then return end
 
     local list = self:GetModules()
-    local active, waitReload = 0, self:LanguagePending()
+    local active, waitReload = 0, self:LanguagePending() or self:AccentPending()
     for _, m in ipairs(list) do
         if m.enabled and not m.pendingReload then active = active + 1 end
         if m.pendingReload then waitReload = true end
@@ -686,7 +691,10 @@ function CUI:RefreshModulesScreen()
         if not lookPanel then
             lookPanel = self:CreateSettingsPanel(body.child, lookItems(), PANEL_W, nil,
                 function(item) return CUI:GetGeneral(item.key) end,
-                function(item, value) CUI:SetGeneral(item.key, value) end)
+                function(item, value)
+                    CUI:SetGeneral(item.key, value)
+                    CUI:RefreshModulesScreen() -- couleur changée : bouton « Recharger l'interface »
+                end)
             lookPanel:SetPoint("TOPLEFT", PAD, -4)
         end
         lookPanel:Refresh()
