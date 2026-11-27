@@ -96,7 +96,7 @@ end
 
 -- Clés de chaque page (pour « Valeurs par défaut »).
 local SETTINGS_KEYS = { "langue", "boutonMinicarte" }
-local GENERAL_KEYS = { "police", "accent" }
+local GENERAL_KEYS = { "police", "accent", "opaciteFenetre" }
 
 -- Réglages de la page « Général » (valeurs dans CUI.db.general) : communs à tout CœurUI.
 local function lookItems()
@@ -108,6 +108,9 @@ local function lookItems()
         { type = "dropdown", key = "accent", label = "ACCENT", description = "ACCENT_NOTE", options = {
             { value = "or", text = "ACCENT_OR" }, { value = "classe", text = "ACCENT_CLASSE" },
         } },
+        { type = "section", text = "SECTION_FENETRE" },
+        { type = "slider", key = "opaciteFenetre", label = "OPACITE_FENETRE", description = "OPACITE_FENETRE_NOTE",
+          min = 20, max = 100, step = 5, format = "%d %%" },
     }
 end
 
@@ -470,7 +473,7 @@ local function createWindow()
     side:SetPoint("TOPLEFT")
     side:SetPoint("BOTTOMLEFT")
     side:SetWidth(SIDE)
-    CUI:CreateRoundRect(side, 5, C.colonne)
+    local sideRound = CUI:CreateRoundRect(side, 5, C.colonne)
     local squareTop = solid(side, "BACKGROUND", 1, C.colonne)
     squareTop:SetPoint("TOPLEFT")
     squareTop:SetPoint("TOPRIGHT")
@@ -479,6 +482,13 @@ local function createWindow()
     squareRight:SetPoint("TOPRIGHT")
     squareRight:SetPoint("BOTTOMRIGHT")
     squareRight:SetWidth(8)
+    -- Opacité du fond de la fenêtre (« Général ») : la colonne suit.
+    window.onOpacity = function(a)
+        local c = C.colonne
+        sideRound:SetColor({ c[1], c[2], c[3], a })
+        squareTop:SetVertexColor(c[1], c[2], c[3], a)
+        squareRight:SetVertexColor(c[1], c[2], c[3], a)
+    end
     local sideLine = solid(content, "ARTWORK", 0, C.lisereSombre)
     sideLine:SetPoint("TOPLEFT", side, "TOPRIGHT")
     sideLine:SetPoint("BOTTOMLEFT", side, "BOTTOMRIGHT")
@@ -693,6 +703,10 @@ function CUI:RefreshModulesScreen()
                 function(item) return CUI:GetGeneral(item.key) end,
                 function(item, value)
                     CUI:SetGeneral(item.key, value)
+                    if item.key == "opaciteFenetre" then
+                        CUI:ApplyWindowOpacity()
+                        return
+                    end
                     CUI:RefreshModulesScreen() -- couleur changée : bouton « Recharger l'interface »
                 end)
             lookPanel:SetPoint("TOPLEFT", PAD, -4)

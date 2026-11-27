@@ -273,6 +273,9 @@ L.ACCENT = "Couleur"
 L.ACCENT_NOTE = "Survols, boutons, interrupteurs, curseurs et choix en cours. Appliquée après un /reload."
 L.ACCENT_OR = "Or de CœurUI"
 L.ACCENT_CLASSE = "Couleur de ma classe"
+L.SECTION_FENETRE = "FENÊTRE DE CŒURUI"
+L.OPACITE_FENETRE = "Opacité du fond"
+L.OPACITE_FENETRE_NOTE = "Le fond de cette fenêtre et sa colonne ; textes, cartes et boutons restent nets."
 
 -- Module « Infobulles et menus »
 L.IM_NOM = "Tooltips"

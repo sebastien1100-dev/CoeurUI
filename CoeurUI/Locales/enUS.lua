@@ -274,6 +274,9 @@ L.ACCENT = "Colour"
 L.ACCENT_NOTE = "Hovers, buttons, switches, sliders and current choice. Applied after a /reload."
 L.ACCENT_OR = "CœurUI gold"
 L.ACCENT_CLASSE = "My class colour"
+L.SECTION_FENETRE = "CŒURUI WINDOW"
+L.OPACITE_FENETRE = "Background opacity"
+L.OPACITE_FENETRE_NOTE = "This window's background and its column; texts, cards and buttons stay sharp."
 
 -- "Tooltips and menus" module
 L.IM_NOM = "Tooltips"

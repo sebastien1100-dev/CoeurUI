@@ -8,6 +8,17 @@ local _, CUI = ...
 local C = CUI.Colors
 
 local HEADER_HEIGHT = 40
+local windows = {} -- fenêtres créées (opacité du fond : page « Général »)
+
+-- Opacité du fond des fenêtres de CœurUI (réglage « Général », de 20 à 100 %) : le fond et sa colonne
+-- s'éclaircissent, textes, cartes et boutons restent nets. f.onOpacity(a) : ce qu'une fenêtre y ajoute.
+function CUI:ApplyWindowOpacity()
+    local a = (self.db and self.db.general.opaciteFenetre or 100) / 100
+    for _, f in ipairs(windows) do
+        f.panel:SetOpacity(a)
+        if f.onOpacity then f.onOpacity(a) end
+    end
+end
 
 local function savePosition(f)
     local point, _, _, x, y = f:GetPoint(1)
@@ -123,7 +134,11 @@ function CUI:CreateWindow(key, title, width)
     f.content:SetPoint("TOPLEFT", 2, -2 - HEADER_HEIGHT)
     f.content:SetPoint("BOTTOMRIGHT", -2, 2)
 
-    f:SetScript("OnShow", function() restorePosition(f) end)
+    windows[#windows + 1] = f
+    f:SetScript("OnShow", function()
+        restorePosition(f)
+        CUI:ApplyWindowOpacity()
+    end)
     f:HookScript("OnHide", function() CUI:HideTooltip() end)
 
     -- Échap ferme la fenêtre.

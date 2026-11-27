@@ -25,3 +25,19 @@
 13. En combat, en donjon : messages normaux, aucune erreur (le jeu peut cacher certains textes : laissés tels quels).
 14. Couper le module : demande un rechargement ; après : la discussion du jeu revient comme avant, avec son heure.
 15. Langue anglaise : module « Chat », canaux [G], [P], [R].
+
+## 0.50.0 · style « Givre »
+
+1. **Redémarrer le jeu** (nouvelles textures). Aucune erreur Lua. `/cui version` : « 0.50.0 ».
+2. La discussion est posée sur un panneau ardoise au double liseré très discret, coins arrondis, ombre douce.
+3. Opacité du fond à 100 : plein ; à 60 : plus léger, liseré net ; à 0 : plus de fond ni de liseré.
+4. Saisie au repos (sous la fenêtre) : même fond que la discussion, qui suit l'opacité réglée (à 0 : invisible).
+   Appuyer sur Entrée : elle devient une case sombre pleine ; Échap : elle reprend le fond de la discussion.
+5. Onglets, pastille, pictos copier / descendre, liens, effacement des vieux messages : comme avant.
+6. Onglet « Journal de combat » : même panneau que Général ; la barre « Mes actions / Qu'est-ce qui m'est arrivé ? »
+   sans fond noir, posée au-dessus des messages. Une fenêtre détachée (onglet glissé ailleurs) a aussi son panneau.
+7. Opacité du fond à 10 : fond à peine visible, seuls les deux liserés fins restent nets autour (coins arrondis
+   propres). Même chose sur le suivi des quêtes avec son opacité à 10.
+8. Discussion et suivi des quêtes à la même opacité (70) : même teinte, sans ombre autour. À 100 : l'ombre douce
+   revient autour des deux.
+9. Pictos copier et descendre au-dessus de la discussion, à droite : visibles tout le temps, sans survol.

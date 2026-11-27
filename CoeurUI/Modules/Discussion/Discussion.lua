@@ -1,12 +1,14 @@
 -- Module « Discussion » (maquette validée le 27/11/2026) : la discussion du jeu (ChatFrame1..N),
 -- habillée au style sobre de CœurUI. Le jeu garde tout (canaux, onglets, saisie, historique) ;
 -- CœurUI change l'apparence et ajoute :
---   - fond sombre léger (opacité réglable) et liseré gris fin, décor du jeu invisible ;
+--   - style « Givre » (planche « Discussion » de la direction artistique) : panneau du thème sous les
+--     messages (opacité réglable : fond et ombre s'éclaircissent, liseré net), saisie dans une case du
+--     thème ; décor du jeu invisible ;
 --   - onglets en petites capitales grises (l'ouvert en blanc souligné), pastille rouge cœur sur un
 --     onglet qui reçoit un message ;
 --   - canaux raccourcis ([G], [Gr], [R], [1. Général] sans la zone), heure en gris discret, noms en couleur de classe ;
 --   - liens web soulignés : un clic ouvre la fenêtre « à copier » du noyau ;
---   - boutons du jeu (amis, canaux, menu, défilement) retirés ; au survol, deux pictos au trait :
+--   - boutons du jeu (amis, canaux, menu, défilement) retirés ; toujours visibles, deux pictos au trait :
 --     copier la discussion, descendre en bas ;
 --   - vieux messages effacés au bout d'un temps réglable, de retour au survol.
 -- La fenêtre se place avec le cadenas. Couper le module demande un /reload.
@@ -65,7 +67,8 @@ local LIEN_COULEUR = "|cff8fb4e8"
 
 local built = false
 local hiddenParent
-local holder, back, tools
+local holder, tools
+local backs = {} -- panneau du thème de chaque fenêtre de discussion (Général, Journal de combat...)
 local placing = false
 
 local function hidden()
@@ -125,17 +128,41 @@ local function place()
     placing = false
 end
 
-local function paintBack()
-    if not back then return end
+local function paintOne(back)
     local a = M.db.opaciteFond / 100
     back:SetShown(a > 0)
-    -- Même fond que les fenêtres et infobulles de CœurUI ; une seule couche, donc l'opacité réglée
-    -- est celle qu'on voit. Liseré gris fin par-dessus, un peu plus marqué que le fond.
-    back.fill:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], a)
-    local b = math.min(1, a + 0.25)
-    for _, line in ipairs(back.lines) do
-        line:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], b)
+    back:SetOpacity(a) -- fond et ombre selon le réglage, liseré net
+end
+
+-- Saisie : au repos, exactement le fond de la discussion (même panneau, même opacité) ; quand on
+-- tape, une case sombre du thème pleine, pour bien lire.
+local editBoxes = {}
+local function paintEdit(eb)
+    local p = eb.cuiPanel
+    if not p then return end
+    local typing = eb:HasFocus()
+    local a = typing and 1 or M.db.opaciteFond / 100
+    p:SetFillColor(typing and C.case or C.panneau)
+    p:SetShown(typing or a > 0)
+    p:SetOpacity(a)
+end
+
+local function paintBack()
+    for _, back in ipairs(backs) do paintOne(back) end
+    for _, eb in ipairs(editBoxes) do paintEdit(eb) end
+end
+
+-- Barre de filtres du Journal de combat (« Mes actions »...) : son fond noir du jeu devient invisible,
+-- les filtres restent posés au-dessus des messages comme les onglets.
+local function skinCombatBar()
+    local bar = _G.CombatLogQuickButtonFrame_Custom
+    if not bar or bar.cuiSkinned or (bar.IsForbidden and bar:IsForbidden()) then return end
+    bar.cuiSkinned = true
+    for _, region in ipairs({ bar:GetRegions() }) do
+        if region.GetObjectType and region:GetObjectType() == "Texture" then region:SetAlpha(0) end
     end
+    local tex = _G.CombatLogQuickButtonFrame_CustomTexture
+    if tex and tex.SetAlpha then tex:SetAlpha(0) end
 end
 
 -- Onglets ---------------------------------------------------------------------------------------
@@ -254,6 +281,12 @@ end
 local function skinFrame(cf)
     if cf.cuiSkinned then return end
     cf.cuiSkinned = true
+    -- Fond dessiné sur la fenêtre de discussion elle-même, tout au fond : toujours sous les messages
+    -- (un cadre à part pouvait passer par-dessus). Panneau du thème, 6 points de marge autour du texte.
+    -- Chaque fenêtre a le sien (le Journal de combat est une autre fenêtre que Général).
+    local back = CUI:CreatePanel(cf, { inset = -6 })
+    backs[#backs + 1] = back
+    paintOne(back)
     local name = cf:GetName()
     for _, key in ipairs(_G.CHAT_FRAME_TEXTURES or FRAME_TEXTURES) do clear(_G[name .. key]) end
     clear(cf.Background)
@@ -270,8 +303,28 @@ local function skinFrame(cf)
             clear(eb[key])
         end
         for _, key in ipairs({ "focusLeft", "focusMid", "focusRight" }) do clear(eb[key]) end
-        local border, fill = CUI:CreateBorderedRect(eb, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.92 })
-        eb.cuiBorder, eb.cuiFill = border, fill
+        eb.cuiPanel = CUI:CreatePanel(eb, { fill = C.panneau })
+        editBoxes[#editBoxes + 1] = eb
+        -- Tout autre décor du jeu sur la saisie (fonds en plusieurs morceaux, contour de la saisie
+        -- active...) : retiré, aussi quand le jeu le remet en prenant la saisie.
+        local own = {}
+        for _, rect in ipairs({ eb.cuiPanel.border, eb.cuiPanel.ring, eb.cuiPanel.fill }) do
+            for _, t in ipairs(rect.parts) do own[t] = true end
+        end
+        local function clearEdit(self)
+            for _, region in ipairs({ self:GetRegions() }) do
+                if not own[region] and region.GetObjectType and region:GetObjectType() == "Texture" then
+                    clear(region)
+                end
+            end
+            local nine = rawget(self, "NineSlice")
+            if nine and nine.SetAlpha then nine:SetAlpha(0) end
+        end
+        clearEdit(eb)
+        paintEdit(eb)
+        eb:HookScript("OnEditFocusGained", function(self) clearEdit(self) paintEdit(self) end)
+        eb:HookScript("OnEditFocusLost", paintEdit)
+        eb:HookScript("OnShow", function(self) clearEdit(self) paintEdit(self) end)
         -- Juste sous la fenêtre, à la largeur de son fond (le jeu la décalait et l'élargissait).
         placeEditBox(eb)
         _G.hooksecurefunc(eb, "SetPoint", function(self)
@@ -285,6 +338,7 @@ end
 
 local function skinAll()
     eachChatFrame(skinFrame)
+    skinCombatBar()
     paintTabs()
 end
 
@@ -493,14 +547,13 @@ local function createTool(icon, title, onClick)
     return b
 end
 
--- Survol : pictos visibles, messages effacés de retour.
+-- Survol : messages effacés de retour (les pictos, eux, restent toujours visibles).
 local wasOver = false
 local function onHoverTick()
     if not holder then return end
     -- La fenêtre et la bande au-dessus (onglets, pictos) : on peut aller de l'une aux autres.
     -- (IsMouseOver du cadre : la fonction globale MouseIsOver n'existe pas sur ce client.)
     local over = holder:IsMouseOver(34, 0, 0, 0)
-    tools:SetShown(over)
     local entering = over and not wasOver
     wasOver = over
     -- Messages effacés : de retour une seule fois, quand la souris arrive. Les faire revenir en
@@ -521,33 +574,6 @@ local function build()
     holder = _G.CreateFrame("Frame", "CoeurUIDiscussion", _G.UIParent)
     holder:SetSize(M.db.largeur, M.db.hauteur)
 
-    -- Fond dessiné sur la discussion du jeu elle-même, tout au fond : toujours sous les messages
-    -- (un cadre à part pouvait passer par-dessus). 6 points de marge autour du texte.
-    -- Une seule couche de fond (deux rectangles pleins empilés s'additionnaient : trop opaque, teinte
-    -- plus claire), et un liseré de 1 point fait de quatre traits.
-    local cf = _G.ChatFrame1
-    back = { lines = {} }
-    back.fill = cf:CreateTexture(nil, "BACKGROUND", nil, -8)
-    back.fill:SetTexture("Interface\\Buttons\\WHITE8x8")
-    back.fill:SetPoint("TOPLEFT", cf, "TOPLEFT", -6, 6)
-    back.fill:SetPoint("BOTTOMRIGHT", cf, "BOTTOMRIGHT", 6, -6)
-    local edges = {
-        { "TOPLEFT", "TOPRIGHT", 0, 0, 0, 0, true }, { "BOTTOMLEFT", "BOTTOMRIGHT", 0, 0, 0, 0, true },
-        { "TOPLEFT", "BOTTOMLEFT", 0, 0, 0, 0, false }, { "TOPRIGHT", "BOTTOMRIGHT", 0, 0, 0, 0, false },
-    }
-    for _, e in ipairs(edges) do
-        local line = cf:CreateTexture(nil, "BACKGROUND", nil, -7)
-        line:SetTexture("Interface\\Buttons\\WHITE8x8")
-        line:SetPoint(e[1], back.fill, e[1])
-        line:SetPoint(e[2], back.fill, e[2])
-        if e[7] then line:SetHeight(1) else line:SetWidth(1) end
-        back.lines[#back.lines + 1] = line
-    end
-    function back:SetShown(shown)
-        self.fill:SetShown(shown)
-        for _, line in ipairs(self.lines) do line:SetShown(shown) end
-    end
-
     tools = _G.CreateFrame("Frame", nil, holder)
     tools:SetSize(46, 18)
     tools:SetPoint("BOTTOMRIGHT", holder, "TOPRIGHT", 0, 8)
@@ -559,7 +585,6 @@ local function build()
         if cf and cf.ScrollToBottom then cf:ScrollToBottom() end
     end)
     bottom:SetPoint("LEFT", copy, "RIGHT", 10, 0)
-    tools:Hide()
 
     -- Le jeu replace sa discussion (mode Édition, glisser...) : on la remet sur notre cadre.
     _G.hooksecurefunc(_G.ChatFrame1, "SetPoint", function()

@@ -2,6 +2,25 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.50.0 · 28/11/2026
+
+- Discussion au style « Givre » : les messages sont posés sur le panneau du thème (fond ardoise, double liseré très
+  discret, coins arrondis, ombre douce). L'opacité réglée éclaircit le fond et l'ombre, le liseré reste net ; à 0,
+  plus de fond du tout.
+- Zone de saisie : au repos, exactement le fond de la discussion (même panneau, même opacité réglée) ; quand on
+  tape, une case sombre pleine pour bien lire. Le décor gris du jeu qui restait dessous est retiré.
+- Journal de combat (et toute autre fenêtre de discussion) : même panneau que l'onglet Général (il n'avait pas de
+  fond) ; sa barre de filtres (« Mes actions »...) perd le fond noir du jeu.
+- Fond transparent (discussion, suivi des quêtes) : à faible opacité, le fond restait presque opaque (les
+  liserés étaient des rectangles pleins posés dessous) ; les liserés sont maintenant de vrais contours. Fond
+  transparent : plus d'ombre dessous (elle l'assombrissait : à réglage égal, le suivi des quêtes paraissait plus
+  noir que la discussion) ; l'opacité réglée est celle qu'on voit, la même partout.
+- Les pictos « copier » et « descendre en bas » au-dessus de la discussion restent toujours visibles (ils
+  n'apparaissaient qu'au survol).
+- Nouveau réglage dans « Général » : opacité du fond de la fenêtre de CœurUI (de 20 à 100 %) ; le fond et sa
+  colonne s'éclaircissent, textes, cartes et boutons restent nets.
+- Redémarrer le jeu (nouvelles textures).
+
 ## 0.49.0 · 28/11/2026
 
 - Plaques de nom au style « Givre » : barres de vie et d'incantation dans une case sombre au double liseré discret,

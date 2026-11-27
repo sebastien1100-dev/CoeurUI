@@ -66,39 +66,106 @@ local function lighten(c, k)
 end
 
 local SHADOW = CUI.MEDIA .. "Ombre"
+local WHITE = "Interface\\Buttons\\WHITE8x8"
 local SHADOW_OUT = 10   -- l'ombre déborde de 10 points autour du cadre
 local SHADOW_SLICE = 24 -- marges des neuf morceaux de la texture d'ombre
 
 local panels = setmetatable({}, { __mode = "k" }) -- cadres dessinés (repeints par ApplyTheme)
 local bars = setmetatable({}, { __mode = "k" })   -- barres striées
 
+-- Liseré en vrai contour (cadre à fond transparent) : quatre coins en quart d'anneau (Contour2 à 4) et
+-- quatre traits de 1 point. Les liserés pleins (rectangles arrondis posés sous le fond) se verraient à
+-- travers un fond transparent.
+local Outline = {}
+Outline.__index = Outline
+
+function Outline:SetColor(c)
+    for _, t in ipairs(self.parts) do t:SetVertexColor(c[1], c[2], c[3], c[4] or 1) end
+end
+
+function Outline:SetShown(shown)
+    for _, t in ipairs(self.parts) do t:SetShown(shown) end
+end
+
+local function createOutline(parent, radius, inset, sublevel)
+    local o = setmetatable({ parts = {} }, Outline)
+    local r = math.max(2, math.min(4, radius))
+    local file = CUI.MEDIA .. "Contour" .. r
+    for _, c in ipairs({ { "TOPLEFT", inset, -inset, 0, 1, 0, 1 }, { "TOPRIGHT", -inset, -inset, 1, 0, 0, 1 },
+                         { "BOTTOMLEFT", inset, inset, 0, 1, 1, 0 }, { "BOTTOMRIGHT", -inset, inset, 1, 0, 1, 0 } }) do
+        local t = parent:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        t:SetTexture(file)
+        t:SetTexCoord(c[4], c[5], c[6], c[7])
+        t:SetSize(r, r)
+        t:SetPoint(c[1], c[2], c[3])
+        o.parts[#o.parts + 1] = t
+    end
+    local function line(p1, x1, y1, p2, x2, y2, w, h)
+        local t = parent:CreateTexture(nil, "BACKGROUND", nil, sublevel)
+        t:SetTexture(WHITE)
+        t:SetPoint(p1, x1, y1)
+        t:SetPoint(p2, x2, y2)
+        if w then t:SetWidth(w) else t:SetHeight(h) end
+        o.parts[#o.parts + 1] = t
+    end
+    line("TOPLEFT", inset + r, -inset, "TOPRIGHT", -inset - r, -inset, nil, 1)
+    line("BOTTOMLEFT", inset + r, inset, "BOTTOMRIGHT", -inset - r, inset, nil, 1)
+    line("TOPLEFT", inset, -inset - r, "BOTTOMLEFT", inset, inset + r, 1, nil)
+    line("TOPRIGHT", -inset, -inset - r, "BOTTOMRIGHT", -inset, inset + r, 1, nil)
+    return o
+end
+
 local Panel = {}
 Panel.__index = Panel
 
 function Panel:SetShown(shown)
-    self.border:SetShown(shown)
-    self.ring:SetShown(shown)
+    local translucent = self.edge ~= nil and self.edge.on
+    self.border:SetShown(shown and not translucent)
+    self.ring:SetShown(shown and not translucent)
+    if self.edge then
+        self.edge:SetShown(shown and translucent)
+        self.edgeIn:SetShown(shown and translucent)
+    end
     self.fill:SetShown(shown)
-    if self.shadow then self.shadow:SetShown(shown and not self.noShadow and CUI:GetTheme().ombre > 0) end
+    -- Fond transparent : pas d'ombre (elle se verrait à travers le fond et l'assombrirait).
+    if self.shadow then
+        self.shadow:SetShown(shown and not self.noShadow and not translucent and CUI:GetTheme().ombre > 0)
+    end
 end
 
--- Opacité du fond (0 à 1) : le fond et l'ombre s'éclaircissent, le liseré reste net (le liseré
--- intérieur garde au moins 60 pour cent).
+-- Opacité du fond (0 à 1) : le fond s'éclaircit, le liseré reste net (le liseré intérieur garde au
+-- moins 60 pour cent). Fond transparent : les liserés deviennent de vrais contours et l'ombre disparaît,
+-- pour que l'opacité réglée soit celle qu'on voit.
 function Panel:SetOpacity(a)
+    self.opacity = a
     local theme = CUI:GetTheme()
     local f = self.customFill or theme.panneau
-    self.fill:SetColor({ f[1], f[2], f[3], a })
     local ring = lighten(f, theme.lisereClair)
-    ring[4] = math.max(a, 0.6)
-    self.ring:SetColor(ring)
-    if self.shadow then self.shadow:SetVertexColor(0, 0, 0, theme.ombre * a) end
+    local translucent = a < 0.999
+    if translucent and not self.edge then
+        local parent, radius, inset = self.parent, self.radius, self.inset
+        self.edge = createOutline(parent, radius, inset, -7)
+        self.edgeIn = createOutline(parent, math.max(2, radius - 1), inset + 1, -6)
+    end
+    local shown = self.fill.parts[1]:IsShown()
+    if self.edge then
+        self.edge.on = translucent
+        self.edge:SetColor(theme.lisereSombre)
+        ring[4] = math.max(a, 0.6)
+        self.edgeIn:SetColor(ring)
+    end
+    self.ring:SetColor(lighten(f, theme.lisereClair))
+    self.fill:SetColor({ f[1], f[2], f[3], a })
+    if self.shadow then self.shadow:SetVertexColor(0, 0, 0, theme.ombre) end
+    self:SetShown(shown)
 end
 
 -- Ombre montrée ou non (un bouton posé seul a la sienne, un bouton posé sur un panneau non).
 function Panel:SetShadowShown(shown)
     self.noShadow = not shown
     if self.shadow then
-        self.shadow:SetShown(shown and CUI:GetTheme().ombre > 0 and self.fill.parts[1]:IsShown())
+        local translucent = self.edge ~= nil and self.edge.on
+        self.shadow:SetShown(shown and not translucent and CUI:GetTheme().ombre > 0 and self.fill.parts[1]:IsShown())
     end
 end
 
@@ -119,6 +186,7 @@ function Panel:Paint()
         self.shadow:SetVertexColor(0, 0, 0, theme.ombre)
         self.shadow:SetShown(theme.ombre > 0 and not self.noShadow and self.fill.parts[1]:IsShown())
     end
+    if self.opacity then self:SetOpacity(self.opacity) end
 end
 
 function CUI:CreatePanel(parent, opts)
@@ -126,7 +194,7 @@ function CUI:CreatePanel(parent, opts)
     local theme = self:GetTheme()
     local radius = opts.radius or theme.rayon
     local inset = opts.inset or 0
-    local p = setmetatable({ customFill = opts.fill }, Panel)
+    local p = setmetatable({ customFill = opts.fill, parent = parent, radius = radius, inset = inset }, Panel)
     if opts.shadow ~= false then
         local t = parent:CreateTexture(nil, "BACKGROUND", nil, -8)
         t:SetTexture(SHADOW)
@@ -158,7 +226,6 @@ end
 -- Barres ---------------------------------------------------------------------------------------
 
 local STRIPES = CUI.MEDIA .. "Stries"
-local WHITE = "Interface\\Buttons\\WHITE8x8"
 
 -- Texture d'une barre (clé de CUI:BarTextureOptions) ; « striee » : couleur unie et stries par-dessus
 -- la partie remplie. Les stries suivent la barre (vide, pleine) sans changer de taille.

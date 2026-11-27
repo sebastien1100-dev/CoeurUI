@@ -43,7 +43,7 @@ end
 
 -- Paramètres généraux : pages « Paramètres » (langue, bouton de minicarte) et « Général » (police).
 local GENERAL_DEFAULTS = { langue = "auto", boutonMinicarte = true, angleMinicarte = 200, police = "friz",
-                           accent = "or" }
+                           accent = "or", opaciteFenetre = 100 }
 
 -- Ajoute dans target les valeurs de defaults qui manquent, sans toucher à ce qui existe.
 local function fillDefaults(target, defaults)
