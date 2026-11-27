@@ -149,3 +149,13 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 4. Clic sur le cadre d'un familier : il est ciblé ; clic droit : son menu ; survol : son infobulle.
 5. Vie du familier qui baisse et remonte ; il meurt : barre vide.
 6. Combat : un familier appelé ou renvoyé : son cadre suit, aucune erreur.
+
+## 0.36.0 · familiers détachés
+
+1. /reload. `/cui version` : « 0.36.0 ». Page « Groupe » : « Familiers détachés » (coupé), sous « Familiers des
+   équipiers ».
+2. L'activer, cadenas ouvert : nouveau cadre « Familiers du groupe » ; les familiers d'exemple y sont, l'un sous
+   l'autre ; les cadres du groupe se resserrent. Le déplacer : il bouge seul ; /reload : il est resté.
+3. En groupe : les familiers des équipiers (et le tien) dans la colonne à part ; clic : cibler ; clic droit : menu.
+4. Le couper : les familiers reviennent sous leur maître ; plus de cadre « Familiers du groupe » au cadenas.
+5. Combat : un familier appelé ou renvoyé : la colonne suit, aucune erreur.

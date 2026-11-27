@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.36.0 · 27/11/2026
+
+- Cadres de groupe : option « Familiers détachés ». Les familiers quittent le dessous de leur maître pour une
+  colonne à part, placée librement avec le cadenas (cadre « Familiers du groupe »).
+- Familiers sous leur maître : la place n'est plus gardée sous les équipiers qui n'en ont pas (hors combat ; en
+  combat, quand le groupe change, le jeu range les cadres avec une place sous chacun jusqu'à la fin du combat).
+- Un /reload suffit.
+
 ## 0.35.0 · 27/11/2026
 
 - Cadres de groupe, troisième étape : les familiers. Un petit cadre (nom, vie) sous chaque équipier qui a un

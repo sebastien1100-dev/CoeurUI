@@ -121,7 +121,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
    15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le
        27/11/2026 (« CœurUI · Maquette Cadres de groupe »). Étapes : 1) cadres (disposition, tri, rôle, ressource,
        portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
-       dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0). Étape 2 validée (0.34.0). Étape 3 validée (0.35.0).
+       dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0). Étape 2 validée (0.34.0). Étape 3 validée (0.35.0). Familiers détachés (option) validés (0.36.0). Module terminé.
    16. Cadres de raid (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
    17. Cadres de boss (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
    18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,

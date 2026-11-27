@@ -10,7 +10,8 @@
 -- Étape 2 : les effets. Soins à venir (prolongement vert clair de la vie), mes soins sur la durée
 -- (liseré vert) et affaiblissements à dissiper (liseré de leur type), seulement ceux que ma classe dissipe
 -- (réglable), en petites icônes ; chaque sorte à sa place (un coin du cadre ou le centre, réglable).
--- Étape 3 : les familiers des équipiers, un petit cadre sous chaque maître qui en a un (réglable).
+-- Étape 3 : les familiers des équipiers, un petit cadre sous chaque maître qui en a un (réglable) ; ou
+-- détachés : une colonne à part, placée au cadenas (son propre en-tête protégé du jeu).
 --
 -- Les cadres sont créés par un en-tête protégé du jeu (SecureGroupHeaderTemplate) : lui seul peut
 -- montrer, cacher et ranger les cadres en combat quand le groupe change. Nous ne faisons que dessiner
@@ -28,7 +29,7 @@ M.defaults.groupe = {
     actif = true, sens = "bas", tri = "role", moi = true,
     largeur = 210, hauteur = 30, espacement = 14,
     texteVie = "p", couleur = "classe",
-    role = true, ressource = true, chef = true, marqueur = true, familiers = true,
+    role = true, ressource = true, chef = true, marqueur = true, familiers = true, familiersDetaches = false,
     palir = true, opacitePortee = 45, etats = true,
     soinsAVenir = true, hots = true, dissipes = true, dissipesClasse = true, effetsMax = 3, tailleDissipes = 18, tailleHots = 14,
     lisereDissipe = true,
@@ -84,6 +85,8 @@ M.subs[#M.subs + 1] = {
         { type = "toggle", key = "chef", label = "CU_GR_CHEF", enabledIf = on },
         { type = "toggle", key = "marqueur", label = "CU_GR_MARQUEUR", enabledIf = on },
         { type = "toggle", key = "familiers", label = "CU_GR_FAMILIERS", enabledIf = on },
+        { type = "toggle", key = "familiersDetaches", label = "CU_GR_FAMILIERS_DETACHES",
+          description = "CU_GR_FAMILIERS_DETACHES_NOTE", enabledIf = function(read) return read("actif") and read("familiers") end },
         { type = "section", text = "CU_GR_PORTEE_ETAT" },
         { type = "toggle", key = "palir", label = "CU_GR_PALIR", enabledIf = on },
         { type = "slider", key = "opacitePortee", label = "CU_GR_OPACITE", min = 10, max = 90, step = 5,
@@ -117,6 +120,9 @@ local ORDRE_CLASSES = "WARRIOR,DEATHKNIGHT,PALADIN,MONK,PRIEST,SHAMAN,DRUID,ROGU
 local MAX = 5
 
 local header, anchor, test
+local petHeader, petAnchor  -- familiers détachés
+local petButtons = {}       -- cadres créés par l'en-tête des familiers
+local requestPack           -- plus bas (disposition) : resserrer les cadres hors combat
 local buttons = {}   -- cadres créés par l'en-tête
 local hiddenParent
 
@@ -517,6 +523,8 @@ end
 
 local updatePetFor -- plus bas (familiers)
 
+local updateDetached -- plus bas (familiers détachés)
+
 local function updateAll()
     for _, f in ipairs(buttons) do
         if f:IsShown() then
@@ -525,6 +533,7 @@ local function updateAll()
             updatePetFor(f)
         end
     end
+    updateDetached()
 end
 
 local function updateUnit(unit)
@@ -534,6 +543,7 @@ local function updateUnit(unit)
             if f.petUnit == unit then updatePetFor(f) end
         end
     end
+    updateDetached(unit)
 end
 
 -- Familiers des équipiers --------------------------------------------------------------------------
@@ -548,7 +558,13 @@ end
 
 -- Place réservée sous chaque cadre pour son familier (réglage actif).
 local function petExtra()
-    return db().familiers and (petHeight() + 3) or 0
+    local s = db()
+    return (s.familiers and not s.familiersDetaches) and (petHeight() + 3) or 0
+end
+
+local function detached()
+    local s = db()
+    return s.familiers and s.familiersDetaches
 end
 
 -- Unité du familier, telle que les évènements du jeu la donnent.
@@ -600,11 +616,18 @@ end
 
 updatePetFor = updatePet
 
+-- Familiers détachés : tous, ou ceux d'une unité.
+updateDetached = function(unit)
+    for _, p in ipairs(petButtons) do
+        if p:IsShown() and (not unit or p.unit == unit) then updateDetachedPet(p) end
+    end
+end
+
 -- Montré par le jeu quand le familier existe (réglage actif), sinon caché. Hors combat seulement.
 local function watchPet(f)
     local p = f.pet
     if not p then return end
-    if db().familiers then
+    if db().familiers and not db().familiersDetaches then
         _G.RegisterUnitWatch(p)
     else
         _G.UnregisterUnitWatch(p)
@@ -621,7 +644,8 @@ local function createPet(f)
     p:RegisterForClicks("AnyUp")
     p.visual = createPetVisual(p)
     layoutPet(f, p)
-    p:HookScript("OnShow", function() updatePet(f) end)
+    p:HookScript("OnShow", function() updatePet(f); requestPack() end)
+    p:HookScript("OnHide", function() requestPack() end)
     p:HookScript("OnEnter", function(self)
         local tip, unit = _G.GameTooltip, petUnitOf(f.unit)
         if not tip or not unit then return end
@@ -634,6 +658,55 @@ local function createPet(f)
     end)
     f.pet = p
     watchPet(f)
+end
+
+-- Familiers détachés : un cadre de l'en-tête des familiers (son unité est donnée par l'en-tête).
+local function updateDetachedPet(p)
+    local unit = p.unit
+    if not unit or not _G.UnitExists(unit) then return end
+    local v = p.visual
+    v.name:SetText(_G.UnitName(unit))
+    v.health:SetMinMaxValues(0, _G.UnitHealthMax(unit))
+    v.health:SetValue(_G.UnitHealth(unit))
+    local color = sh().healthColor(unit, db().couleur)
+    v.health:SetStatusBarColor(color[1], color[2], color[3])
+end
+
+local function layoutDetachedPet(p)
+    local s, g = db(), M.db.general
+    p:SetSize(math.max(20, s.largeur - PET_INDENT), petHeight())
+    p.visual.health:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    p.visual.name:SetFont(CUI:GetFont(), math.max(8, g.tailleNom - 2), "")
+end
+
+local function setupDetachedPet(p)
+    if p.visual then return end
+    p:RegisterForClicks("AnyUp")
+    p:SetFrameStrata("LOW")
+    p.visual = createPetVisual(p)
+    layoutDetachedPet(p)
+    p:HookScript("OnAttributeChanged", function(self, name, value)
+        if name == "unit" then
+            self.unit = value
+            updateDetachedPet(self)
+        end
+    end)
+    p:HookScript("OnShow", function(self)
+        self.unit = self:GetAttribute("unit")
+        updateDetachedPet(self)
+    end)
+    p:HookScript("OnEnter", function(self)
+        local tip = _G.GameTooltip
+        if not tip or not self.unit then return end
+        _G.GameTooltip_SetDefaultAnchor(tip, self)
+        tip:SetUnit(self.unit)
+        tip:Show()
+    end)
+    p:HookScript("OnLeave", function()
+        if _G.GameTooltip then _G.GameTooltip:Hide() end
+    end)
+    p.unit = p:GetAttribute("unit")
+    petButtons[#petButtons + 1] = p
 end
 
 -- Un cadre créé par l'en-tête : notre dessin, l'infobulle, le suivi de son unité.
@@ -649,6 +722,7 @@ local function setupButton(f)
             update(self)
             updateRange(self)
             updatePet(self)
+            requestPack() -- l'en-tête vient de ranger ses cadres : on les resserre
         end
     end)
     f:HookScript("OnShow", function(self)
@@ -682,13 +756,58 @@ local DIRECTIONS = {
 }
 
 -- Place d'un cadre n (1 à 5) dans l'ancre, pour le groupe de test.
-local function slotOffset(n)
+-- Décalage de chaque cadre depuis le coin de l'ancre, selon qui a un familier dessous (hasPet(k)) :
+-- en colonne, la place d'un familier n'est gardée que sous ceux qui en ont un.
+local function offsets(count, hasPet)
     local s = db()
     local d = DIRECTIONS[s.sens] or DIRECTIONS.bas
-    local step = (n - 1)
-    local dx = d.x * step * (s.largeur + s.espacement)
-    local dy = d.y * step * (s.hauteur + s.espacement + petExtra())
-    return d.corner, dx, dy
+    local pe = petExtra()
+    local list = {}
+    local along = 0
+    for i = 1, count do
+        local dx, dy = 0, 0
+        if d.x ~= 0 then
+            dx = d.x * (i - 1) * (s.largeur + s.espacement)
+        elseif d.y < 0 then
+            dy = -along -- vers le bas : le familier d'un cadre pousse le suivant
+            along = along + s.hauteur + s.espacement + (hasPet(i) and pe or 0)
+        else
+            -- vers le haut : le familier d'un cadre se loge sous lui, avant le précédent
+            along = along + (hasPet(i) and pe or 0)
+            dy = along
+            along = along + s.hauteur + s.espacement
+        end
+        list[i] = { d.corner, dx, dy }
+    end
+    return list
+end
+
+-- Cadres de l'en-tête rangés par nous hors combat (le jeu ne sait pas laisser une place variable) :
+-- seulement ceux qui ont un familier gardent sa place dessous. En combat, c'est l'en-tête qui range,
+-- avec la place d'un familier sous chacun.
+local function packButtons()
+    if not header or _G.InCombatLockdown() then return end
+    local shown = {}
+    for i = 1, MAX do
+        local f = header:GetAttribute("child" .. i)
+        if f and f:IsShown() then shown[#shown + 1] = f end
+    end
+    local list = offsets(#shown, function(k) return shown[k].pet and shown[k].pet:IsShown() end)
+    for k, f in ipairs(shown) do
+        local o = list[k]
+        f:ClearAllPoints()
+        f:SetPoint(o[1], anchor, o[1], o[2], o[3])
+    end
+end
+
+local packPending = false
+requestPack = function()
+    if packPending then return end
+    packPending = true
+    M:After(0, function()
+        packPending = false
+        packButtons()
+    end)
 end
 
 -- Taille de l'ancre : la place de cinq cadres.
@@ -737,31 +856,7 @@ local function configureHeader()
     header:SetAttribute("point", d.point) -- en dernier : l'en-tête se range de nouveau
 end
 
-local function applyLayout()
-    if not anchor then return end
-    local w, h = anchorSize()
-    anchor:SetSize(w, h)
-    for _, f in ipairs(buttons) do layoutVisual(f, f.visual) end
-    if test then
-        for i, t in ipairs(test.frames) do
-            t:SetSize(db().largeur, db().hauteur)
-            local corner, dx, dy = slotOffset(i)
-            t:ClearAllPoints()
-            t:SetPoint(corner, anchor, corner, dx, dy)
-            layoutVisual(t, t.visual)
-            layoutPet(t, t.pet)
-        end
-    end
-    CUI:AfterCombat(function()
-        configureHeader()
-        -- Groupe de test affiché (cadenas ouvert) : le vrai reste caché.
-        header:SetShown(not (test and test:IsShown()))
-        updateAll()
-    end)
-end
-
--- Groupe de test (cadenas ouvert) ---------------------------------------------------------------
-
+-- Groupe de test : les cinq faux équipiers (déclarés ici, la disposition s'en sert).
 local TEST_HOT = "Interface\\Icons\\Spell_Holy_Renew"
 local TEST_MAGIE = "Interface\\Icons\\Spell_Frost_FrostNova"
 local TEST_POISON = "Interface\\Icons\\Spell_Nature_CorrosiveBreath"
@@ -775,6 +870,66 @@ local TEST = {
     { class = "HUNTER", role = "DAMAGER", phase = 3.4, far = true, pet = true },
     { class = "WARLOCK", role = "DAMAGER", phase = 4.6, dies = true, pet = true },
 }
+
+-- Taille de l'ancre des familiers détachés : cinq petits cadres en colonne.
+local function petAnchorSize()
+    return math.max(20, db().largeur - PET_INDENT), MAX * petHeight() + (MAX - 1) * 3
+end
+
+-- En-tête des familiers détachés (hors combat) : montré seulement si l'option est active.
+local function configurePetHeader()
+    if not petHeader then return end
+    local s = db()
+    petHeader:SetAttribute("cuiLargeur", math.max(20, s.largeur - PET_INDENT))
+    petHeader:SetAttribute("cuiHauteur", petHeight())
+    for _, p in ipairs(petButtons) do layoutDetachedPet(p) end
+    petHeader:SetAttribute("showPlayer", s.moi)
+    petHeader:ClearAllPoints()
+    petHeader:SetPoint("TOPLEFT", petAnchor, "TOPLEFT", 0, 0)
+    petHeader:SetAttribute("yOffset", -3)
+    petHeader:SetAttribute("point", "TOP")
+    petHeader:SetShown(detached() and not (test and test:IsShown()))
+end
+
+local function applyLayout()
+    if not anchor then return end
+    if petAnchor then petAnchor:SetSize(petAnchorSize()) end
+    local w, h = anchorSize()
+    anchor:SetSize(w, h)
+    for _, f in ipairs(buttons) do layoutVisual(f, f.visual) end
+    if test then
+        local list = offsets(MAX, function(k) return db().familiers and TEST[k].pet end)
+        for i, t in ipairs(test.frames) do
+            t:SetSize(db().largeur, db().hauteur)
+            local o = list[i]
+            t:ClearAllPoints()
+            t:SetPoint(o[1], anchor, o[1], o[2], o[3])
+            layoutVisual(t, t.visual)
+            layoutPet(t, t.pet)
+        end
+        -- Familiers détachés : les exemples vont dans la colonne des familiers, l'un sous l'autre.
+        if detached() and petAnchor then
+            local k = 0
+            for i, t in ipairs(test.frames) do
+                if TEST[i].pet then
+                    t.pet:ClearAllPoints()
+                    t.pet:SetPoint("TOPLEFT", petAnchor, "TOPLEFT", 0, -k * (petHeight() + 3))
+                    k = k + 1
+                end
+            end
+        end
+    end
+    CUI:AfterCombat(function()
+        configureHeader()
+        configurePetHeader()
+        requestPack()
+        -- Groupe de test affiché (cadenas ouvert) : le vrai reste caché.
+        header:SetShown(not (test and test:IsShown()))
+        updateAll()
+    end)
+end
+
+-- Groupe de test (cadenas ouvert) ---------------------------------------------------------------
 
 local function testName(class)
     local names = _G.LOCALIZED_CLASS_NAMES_MALE
@@ -912,10 +1067,16 @@ local function showTest(shown)
         applyLayout()
         fillTest()
         test:Show()
-        CUI:AfterCombat(function() if header then header:Hide() end end)
+        CUI:AfterCombat(function()
+            if header then header:Hide() end
+            if petHeader then petHeader:Hide() end
+        end)
     else
         if test then test:Hide() end
-        CUI:AfterCombat(function() if header and db().actif then header:Show() end end)
+        CUI:AfterCombat(function()
+            if header and db().actif then header:Show() end
+            if petHeader then petHeader:SetShown(db().actif and detached()) end
+        end)
     end
 end
 
@@ -980,12 +1141,55 @@ local function build()
     end
     configureHeader()
 
+    -- Familiers détachés : leur propre en-tête protégé et leur cadre au cadenas.
+    petAnchor = _G.CreateFrame("Frame", "CoeurUIGroupeFamiliersAncre", _G.UIParent)
+    petAnchor:SetSize(petAnchorSize())
+    petHeader = _G.CreateFrame("Frame", "CoeurUIGroupeFamiliers", _G.UIParent, "SecureGroupPetHeaderTemplate")
+    petHeader:SetFrameStrata("LOW")
+    petHeader:SetAttribute("template", "SecureUnitButtonTemplate")
+    petHeader:SetAttribute("showParty", true)
+    petHeader:SetAttribute("showRaid", false)
+    petHeader:SetAttribute("initialConfigFunction", [[
+        self:SetAttribute("type1", "target")
+        self:SetAttribute("type2", "togglemenu")
+        local h = self:GetParent()
+        self:SetWidth(h:GetAttribute("cuiLargeur"))
+        self:SetHeight(h:GetAttribute("cuiHauteur"))
+    ]])
+    petHeader:SetAttribute("cuiLargeur", math.max(20, s.largeur - PET_INDENT))
+    petHeader:SetAttribute("cuiHauteur", petHeight())
+    petHeader:SetAttribute("showPlayer", true)
+    petHeader:SetAttribute("showSolo", true)
+    petHeader:SetAttribute("startingIndex", 1 - MAX)
+    petHeader:Show()
+    petHeader:SetAttribute("startingIndex", 1)
+    petHeader:SetAttribute("showSolo", false)
+    for i = 1, MAX do
+        local p = petHeader:GetAttribute("child" .. i) or _G["CoeurUIGroupeFamiliersUnitButton" .. i]
+        if p then setupDetachedPet(p) end
+    end
+    configurePetHeader()
+
     CUI:RegisterMover({
         key = "cadre_groupe", frame = anchor, label = "CU_GROUPE", default = { "TOPLEFT", "TOPLEFT", 30, -260 },
         onUnlock = function() showTest(true) end,
         onLock = function() showTest(false) end,
     })
+    G.RegisterPetMover()
     updateAll()
+end
+
+-- Cadre « Familiers du groupe » au cadenas : seulement quand ils sont détachés.
+function G.RegisterPetMover()
+    if not petAnchor then return end
+    if detached() and db().actif then
+        CUI:RegisterMover({
+            key = "cadre_groupe_familiers", frame = petAnchor, label = "CU_GR_FAMILIERS_CADRE",
+            default = { "TOPLEFT", "TOPLEFT", 260, -260 },
+        })
+    else
+        CUI:UnregisterMover("cadre_groupe_familiers")
+    end
 end
 
 -- Appelés par CadresUnite.lua ------------------------------------------------------------------
@@ -1003,6 +1207,9 @@ function G.Enable()
             if M.enabled then updateUnit(unit) end
         end)
     end
+    pcall(CUI.On, CUI, "PLAYER_REGEN_ENABLED", G, function()
+        if M.enabled then requestPack() end
+    end)
     pcall(CUI.On, CUI, "UNIT_PET", G, function(_, owner)
         if not M.enabled then return end
         for _, f in ipairs(buttons) do
@@ -1032,5 +1239,6 @@ function G.Apply()
         return
     end
     applyLayout()
+    G.RegisterPetMover()
     if test and test:IsShown() then fillTest() end
 end
