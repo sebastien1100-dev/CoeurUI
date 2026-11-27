@@ -95,7 +95,10 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
    9. ~~Discussion (tchat)~~ Validée en jeu (0.22.0). Maquette validée le 27/11/2026 (« CœurUI · Maquette Discussion ») :
       la discussion du jeu habillée ; onglets en petites capitales, pastille ; canaux raccourcis, heure grise,
       couleurs de classe ; liens web à copier ; canaux numérotés sans leur zone ([1. Général], le jeu impose « numéro. nom ») ; pictos copier / descendre au survol ; effacement réglable.
-   10. Effets : améliorations et affaiblissements (buffs et débuffs).
+   10. Effets : améliorations et affaiblissements (buffs et débuffs). En test (0.23.0). Maquette validée le
+       27/11/2026 (« CœurUI · Maquette Effets ») : boutons du jeu habillés ; temps dessous, blanc sous 10 s ;
+       liseré du type pour les affaiblissements ; améliorations et affaiblissements indépendants (cadre au
+       cadenas et sous-onglet de réglages chacun).
    11. Sacs et banque (demandés le 27/11/2026). Maquette à faire avant le code.
 4. Client PC minimal : mises à jour de l'addon.
 
@@ -107,6 +110,8 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Effets sur les cadres d'unité (ex. affaiblissements posés par le joueur sous le cadre de la cible), dans le
+  module « Cadres d'unité » (proposé le 27/11/2026).
 - Bulles de discussion au-dessus des personnages, au style de CœurUI (question posée le 27/11/2026, pas encore
   tranchée).
 - Profils de réglages (plusieurs jeux de réglages, choisis par perso). Pas avant que les modules d'interface soient

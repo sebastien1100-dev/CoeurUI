@@ -2,6 +2,18 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.23.0 · 27/11/2026
+
+- Nouveau module « Effets » (coupé d'office) : les améliorations et affaiblissements du joueur en carrés sobres
+  (icône rognée, liseré gris fin), le temps restant dessous en petit gris clair (blanc sous 10 secondes), le nombre
+  d'applications en bas à droite.
+- Affaiblissements avec un liseré de la couleur de leur type (magie, malédiction, poison, maladie).
+- Améliorations et affaiblissements indépendants : chacun son cadre au cadenas et sa page de réglages (taille, par
+  rangée, rangées au plus, espacement, sens, textes).
+- Changer la taille des effets ne déplace pas le groupe : il reste collé du côté d'où partent les icônes.
+- Clic droit pour annuler une amélioration et infobulles : comme le jeu. Couper le module demande un rechargement.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.22.0 · 27/11/2026
 
 - Nouveau module « Discussion » (coupé d'office) : la discussion du jeu au style sobre de CœurUI. Fond sombre

@@ -7,6 +7,7 @@
 --       onUnlock = function(cadre) end, onLock = function(cadre) end,   -- ex. montrer un exemple
 --       parent = autreCadre,  -- facultatif : position rattachée à ce cadre (default aussi), qu'il suit
 --       tagPoint = { "TOPLEFT", "BOTTOMLEFT", 0, -3 },  -- facultatif : étiquette ailleurs qu'au-dessus
+--       point = "TOPRIGHT",   -- facultatif : coin qui reste en place quand la taille change (voir SetMoverPoint)
 --   On déplace un cadre en le glissant, ou en glissant son étiquette (son nom).
 --   })
 --   CUI:ResetMover("joueur")        -- remet un seul cadre à sa place d'origine
@@ -81,6 +82,22 @@ local function savePosition(def)
             saved()[def.key] = { "CENTER", "CENTER", math.floor(cx - px * k + 0.5), math.floor(cy - py * k + 0.5) }
         end
         applyPosition(def) -- de nouveau rattaché (le glisser l'avait accroché à l'écran)
+        return
+    end
+    if def.point then
+        -- Position gardée par un coin choisi (celui d'où le cadre pousse) : un changement de taille
+        -- laisse ce coin en place. Écart entre ce coin du cadre et le même coin de l'écran.
+        local l, b, w, h = def.frame:GetRect()
+        if l then
+            local p = def.point
+            local k = def.frame:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
+            l, b, w, h = l * k, b * k, w * k, h * k
+            local W, H = _G.UIParent:GetSize()
+            local x = p:find("LEFT") and l or p:find("RIGHT") and (l + w - W) or (l + w / 2 - W / 2)
+            local y = p:find("TOP") and (b + h - H) or p:find("BOTTOM") and b or (b + h / 2 - H / 2)
+            saved()[def.key] = { p, p, math.floor(x / k + 0.5), math.floor(y / k + 0.5) }
+            applyPosition(def)
+        end
         return
     end
     local point, _, relPoint, x, y = def.frame:GetPoint(1)
@@ -514,6 +531,18 @@ function CUI:SetMoversUnlocked(on)
         self:SetModulesScreenShown(true)
     end
     self:RefreshModulesScreen()
+end
+
+-- Coin du cadre qui reste en place quand sa taille change (ex. « TOPRIGHT » pour des icônes ajoutées
+-- vers la gauche). Le cadre est rattaché par ce coin, au même endroit de l'écran, et gardé ainsi.
+-- À appeler avant de changer sa taille.
+function CUI:SetMoverPoint(key, point)
+    local def = movers[key]
+    if not def or def.parent then return end
+    def.point = point
+    if drag and drag.def == def then return end -- gardé à la fin du glisser
+    if _G.InCombatLockdown() and def.frame:IsProtected() then return end
+    savePosition(def)
 end
 
 -- Remet un cadre à sa place d'origine.
