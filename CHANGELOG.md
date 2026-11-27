@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.35.0 · 27/11/2026
+
+- Cadres de groupe, troisième étape : les familiers. Un petit cadre (nom, vie) sous chaque équipier qui a un
+  familier, toi compris ; clic : le cibler, clic droit : son menu. Réglage « Familiers des équipiers ».
+- En colonne, la place d'un familier est gardée entre deux cadres. Le groupe de test montre ceux du chasseur et du
+  démoniste.
+- Un /reload suffit.
+
 ## 0.34.0 · 27/11/2026
 
 - Cadres de groupe, deuxième étape : les effets (section « Effets » de la page « Groupe »).

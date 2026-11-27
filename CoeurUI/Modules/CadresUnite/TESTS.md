@@ -138,3 +138,14 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 8. Taille des icônes des soins et des affaiblissements : chacune change seule.
 9. Groupe de test : liseré du prêtre vert (poison), du mage bleu (magie). En groupe, un équipier avec un
    affaiblissement à dissiper : liseré de sa couleur ; dissipé : liseré normal. Réglage coupé : liseré normal.
+
+## 0.35.0 · cadres de groupe, étape 3 : les familiers
+
+1. /reload. `/cui version` : « 0.35.0 ». Page « Groupe », Éléments : « Familiers des équipiers » (actif).
+2. Cadenas ouvert : petit cadre « Familier » sous le chasseur et sous le démoniste ; les cadres ne se chevauchent
+   pas (colonne et ligne). Réglage coupé : ils partent et les cadres se resserrent.
+3. En groupe, un équipier appelle un familier : son cadre apparaît sous lui ; il le renvoie : il part. Pareil
+   pour ton propre familier (« M'afficher » actif).
+4. Clic sur le cadre d'un familier : il est ciblé ; clic droit : son menu ; survol : son infobulle.
+5. Vie du familier qui baisse et remonte ; il meurt : barre vide.
+6. Combat : un familier appelé ou renvoyé : son cadre suit, aucune erreur.

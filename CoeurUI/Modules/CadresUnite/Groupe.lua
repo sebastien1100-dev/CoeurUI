@@ -10,7 +10,7 @@
 -- Étape 2 : les effets. Soins à venir (prolongement vert clair de la vie), mes soins sur la durée
 -- (liseré vert) et affaiblissements à dissiper (liseré de leur type), seulement ceux que ma classe dissipe
 -- (réglable), en petites icônes ; chaque sorte à sa place (un coin du cadre ou le centre, réglable).
--- Étape suivante : familiers.
+-- Étape 3 : les familiers des équipiers, un petit cadre sous chaque maître qui en a un (réglable).
 --
 -- Les cadres sont créés par un en-tête protégé du jeu (SecureGroupHeaderTemplate) : lui seul peut
 -- montrer, cacher et ranger les cadres en combat quand le groupe change. Nous ne faisons que dessiner
@@ -28,7 +28,7 @@ M.defaults.groupe = {
     actif = true, sens = "bas", tri = "role", moi = true,
     largeur = 210, hauteur = 30, espacement = 14,
     texteVie = "p", couleur = "classe",
-    role = true, ressource = true, chef = true, marqueur = true,
+    role = true, ressource = true, chef = true, marqueur = true, familiers = true,
     palir = true, opacitePortee = 45, etats = true,
     soinsAVenir = true, hots = true, dissipes = true, dissipesClasse = true, effetsMax = 3, tailleDissipes = 18, tailleHots = 14,
     lisereDissipe = true,
@@ -83,6 +83,7 @@ M.subs[#M.subs + 1] = {
         { type = "toggle", key = "ressource", label = "CU_RESSOURCE", enabledIf = on },
         { type = "toggle", key = "chef", label = "CU_GR_CHEF", enabledIf = on },
         { type = "toggle", key = "marqueur", label = "CU_GR_MARQUEUR", enabledIf = on },
+        { type = "toggle", key = "familiers", label = "CU_GR_FAMILIERS", enabledIf = on },
         { type = "section", text = "CU_GR_PORTEE_ETAT" },
         { type = "toggle", key = "palir", label = "CU_GR_PALIR", enabledIf = on },
         { type = "slider", key = "opacitePortee", label = "CU_GR_OPACITE", min = 10, max = 90, step = 5,
@@ -514,19 +515,125 @@ local function updateRange(f)
     end
 end
 
+local updatePetFor -- plus bas (familiers)
+
 local function updateAll()
     for _, f in ipairs(buttons) do
         if f:IsShown() then
             update(f)
             updateRange(f)
+            updatePetFor(f)
         end
     end
 end
 
 local function updateUnit(unit)
     for _, f in ipairs(buttons) do
-        if f.unit == unit and f:IsShown() then update(f) end
+        if f:IsShown() then
+            if f.unit == unit then update(f) end
+            if f.petUnit == unit then updatePetFor(f) end
+        end
     end
+end
+
+-- Familiers des équipiers --------------------------------------------------------------------------
+-- Un petit cadre protégé sous chaque cadre de l'en-tête : son unité est celle de son parent + « pet »
+-- (le jeu la suit tout seul, même en combat) ; montré seulement quand le familier existe.
+
+local PET_INDENT = 18
+
+local function petHeight()
+    return math.max(12, math.floor(db().hauteur * 0.5))
+end
+
+-- Place réservée sous chaque cadre pour son familier (réglage actif).
+local function petExtra()
+    return db().familiers and (petHeight() + 3) or 0
+end
+
+-- Unité du familier, telle que les évènements du jeu la donnent.
+local function petUnitOf(unit)
+    if unit == "player" then return "pet" end
+    local n = unit and unit:match("^party(%d)$")
+    return n and ("partypet" .. n) or nil
+end
+
+local function createPetVisual(p)
+    local v = {}
+    v.border, v.fill = CUI:CreateBorderedRect(p, 2, C.graphite, C.fond)
+    v.health = _G.CreateFrame("StatusBar", nil, p)
+    v.health:SetPoint("TOPLEFT", 1, -1)
+    v.health:SetPoint("BOTTOMRIGHT", -1, 1)
+    v.health:SetMinMaxValues(0, 1)
+    local texts = _G.CreateFrame("Frame", nil, v.health)
+    texts:SetAllPoints()
+    texts:SetFrameLevel(v.health:GetFrameLevel() + 2)
+    v.name = newText(texts)
+    v.name:SetJustifyH("LEFT")
+    v.name:SetPoint("LEFT", 5, 0)
+    v.name:SetPoint("RIGHT", -5, 0)
+    return v
+end
+
+local function layoutPet(owner, p)
+    local s, g = db(), M.db.general
+    p:SetSize(math.max(20, s.largeur - PET_INDENT), petHeight())
+    p:ClearAllPoints()
+    p:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", PET_INDENT, -3)
+    p.visual.health:SetStatusBarTexture(CUI:GetBarTexture(g.texture))
+    p.visual.name:SetFont(CUI:GetFont(), math.max(8, g.tailleNom - 2), "")
+end
+
+local function updatePet(f)
+    f.petUnit = petUnitOf(f.unit)
+    local p = f.pet
+    if not (p and p:IsShown()) then return end
+    local unit = petUnitOf(f.unit)
+    if not unit or not _G.UnitExists(unit) then return end
+    local v = p.visual
+    v.name:SetText(_G.UnitName(unit))
+    v.health:SetMinMaxValues(0, _G.UnitHealthMax(unit))
+    v.health:SetValue(_G.UnitHealth(unit))
+    local color = sh().healthColor(unit, db().couleur)
+    v.health:SetStatusBarColor(color[1], color[2], color[3])
+end
+
+updatePetFor = updatePet
+
+-- Montré par le jeu quand le familier existe (réglage actif), sinon caché. Hors combat seulement.
+local function watchPet(f)
+    local p = f.pet
+    if not p then return end
+    if db().familiers then
+        _G.RegisterUnitWatch(p)
+    else
+        _G.UnregisterUnitWatch(p)
+        p:Hide()
+    end
+end
+
+local function createPet(f)
+    local p = _G.CreateFrame("Button", nil, f, "SecureUnitButtonTemplate")
+    p:SetAttribute("useparent-unit", true)
+    p:SetAttribute("unitsuffix", "pet")
+    p:SetAttribute("type1", "target")
+    p:SetAttribute("type2", "togglemenu")
+    p:RegisterForClicks("AnyUp")
+    p.visual = createPetVisual(p)
+    layoutPet(f, p)
+    p:HookScript("OnShow", function() updatePet(f) end)
+    p:HookScript("OnEnter", function(self)
+        local tip, unit = _G.GameTooltip, petUnitOf(f.unit)
+        if not tip or not unit then return end
+        _G.GameTooltip_SetDefaultAnchor(tip, self)
+        tip:SetUnit(unit)
+        tip:Show()
+    end)
+    p:HookScript("OnLeave", function()
+        if _G.GameTooltip then _G.GameTooltip:Hide() end
+    end)
+    f.pet = p
+    watchPet(f)
 end
 
 -- Un cadre créé par l'en-tête : notre dessin, l'infobulle, le suivi de son unité.
@@ -541,6 +648,7 @@ local function setupButton(f)
             self.unit = value
             update(self)
             updateRange(self)
+            updatePet(self)
         end
     end)
     f:HookScript("OnShow", function(self)
@@ -559,6 +667,7 @@ local function setupButton(f)
         if _G.GameTooltip then _G.GameTooltip:Hide() end
     end)
     f.unit = f:GetAttribute("unit")
+    createPet(f)
     buttons[#buttons + 1] = f
 end
 
@@ -578,7 +687,7 @@ local function slotOffset(n)
     local d = DIRECTIONS[s.sens] or DIRECTIONS.bas
     local step = (n - 1)
     local dx = d.x * step * (s.largeur + s.espacement)
-    local dy = d.y * step * (s.hauteur + s.espacement)
+    local dy = d.y * step * (s.hauteur + s.espacement + petExtra())
     return d.corner, dx, dy
 end
 
@@ -586,10 +695,11 @@ end
 local function anchorSize()
     local s = db()
     local vertical = s.sens == "bas" or s.sens == "haut"
+    local pet = petExtra()
     if vertical then
-        return s.largeur, MAX * s.hauteur + (MAX - 1) * s.espacement
+        return s.largeur, MAX * (s.hauteur + pet) + (MAX - 1) * s.espacement
     end
-    return MAX * s.largeur + (MAX - 1) * s.espacement, s.hauteur
+    return MAX * s.largeur + (MAX - 1) * s.espacement, s.hauteur + pet
 end
 
 -- Attributs de l'en-tête (hors combat) : qui montrer, dans quel ordre, dans quel sens.
@@ -598,7 +708,13 @@ local function configureHeader()
     local d = DIRECTIONS[s.sens] or DIRECTIONS.bas
     header:SetAttribute("cuiLargeur", s.largeur)
     header:SetAttribute("cuiHauteur", s.hauteur)
-    for _, f in ipairs(buttons) do f:SetSize(s.largeur, s.hauteur) end
+    for _, f in ipairs(buttons) do
+        f:SetSize(s.largeur, s.hauteur)
+        if f.pet then
+            layoutPet(f, f.pet)
+            watchPet(f)
+        end
+    end
     header:SetAttribute("showPlayer", s.moi)
     if s.tri == "role" then
         header:SetAttribute("groupBy", "ASSIGNEDROLE")
@@ -614,7 +730,8 @@ local function configureHeader()
         header:SetAttribute("sortMethod", s.tri == "nom" and "NAME" or "INDEX")
     end
     header:SetAttribute("xOffset", d.x * s.espacement)
-    header:SetAttribute("yOffset", d.y * s.espacement)
+    -- En colonne, la place du familier s'ajoute entre deux cadres.
+    header:SetAttribute("yOffset", d.y * (s.espacement + petExtra()))
     header:ClearAllPoints()
     header:SetPoint(d.corner, anchor, d.corner, 0, 0)
     header:SetAttribute("point", d.point) -- en dernier : l'en-tête se range de nouveau
@@ -632,6 +749,7 @@ local function applyLayout()
             t:ClearAllPoints()
             t:SetPoint(corner, anchor, corner, dx, dy)
             layoutVisual(t, t.visual)
+            layoutPet(t, t.pet)
         end
     end
     CUI:AfterCombat(function()
@@ -654,8 +772,8 @@ local TEST = {
       auras = { { icon = TEST_POISON, kind = "dispel", dispelName = "Poison" } } },
     { class = "MAGE", role = "DAMAGER", phase = 2.1, mark = 1, incoming = 20,
       auras = { { icon = TEST_MAGIE, kind = "dispel", dispelName = "Magic" }, { icon = TEST_HOT, kind = "hot" } } },
-    { class = "HUNTER", role = "DAMAGER", phase = 3.4, far = true },
-    { class = "WARLOCK", role = "DAMAGER", phase = 4.6, dies = true },
+    { class = "HUNTER", role = "DAMAGER", phase = 3.4, far = true, pet = true },
+    { class = "WARLOCK", role = "DAMAGER", phase = 4.6, dies = true, pet = true },
 }
 
 local function testName(class)
@@ -752,6 +870,16 @@ local function fillTest()
         v.leader:SetShown(s.chef and d.leader or false)
         setMark(v, d.mark)
         setBorder(v, d.target, d.threat, fillTestAuras(f, d))
+        -- Familier d'exemple (chasseur, démoniste).
+        local pet = f.pet
+        pet:SetShown(s.familiers and d.pet or false)
+        if pet:IsShown() then
+            local pv, green = pet.visual, sh().VERT
+            pv.name:SetText(L.CU_FAMILIER)
+            pv.health:SetMinMaxValues(0, 100)
+            pv.health:SetValue(i == 4 and 85 or 60)
+            pv.health:SetStatusBarColor(green[1], green[2], green[3])
+        end
     end
     test.cycle = math.floor((test.elapsed or 0) / 12)
     animateTest(test.elapsed or 0)
@@ -766,6 +894,9 @@ local function buildTest()
     for i = 1, MAX do
         local f = _G.CreateFrame("Frame", nil, test)
         f.visual = createVisual(f)
+        f.pet = _G.CreateFrame("Frame", nil, f)
+        f.pet.visual = createPetVisual(f.pet)
+        f.pet:Hide()
         test.frames[i] = f
     end
     test.elapsed = 0
@@ -872,6 +1003,12 @@ function G.Enable()
             if M.enabled then updateUnit(unit) end
         end)
     end
+    pcall(CUI.On, CUI, "UNIT_PET", G, function(_, owner)
+        if not M.enabled then return end
+        for _, f in ipairs(buttons) do
+            if f.unit == owner and f:IsShown() then updatePet(f) end
+        end
+    end)
     for _, event in ipairs(ALL_EVENTS) do
         pcall(CUI.On, CUI, event, G, function()
             if M.enabled then updateAll() end
