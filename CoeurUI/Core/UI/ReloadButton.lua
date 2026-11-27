@@ -15,6 +15,13 @@
 --                                             -- même chose pour cliquer un bouton protégé du jeu
 --                                             -- (cible) ; infobulle() rend titre, texte ; quand()
 --                                             -- dit si le bouton protégé doit être posé.
+--   CUI:AttachSecureAction(bouton, attributs, options)
+--                                             -- n'importe quelle action protégée (utiliser un objet :
+--                                             -- { type = "item", item = function() ... end }). Les
+--                                             -- attributs-fonctions sont relus à chaque placement.
+--                                             -- options : tooltip(), gameTooltip(tip), when(),
+--                                             -- keepInCombat (reste posé en combat, à sa dernière
+--                                             -- place : un objet de quête s'utilise en combat).
 local _, CUI = ...
 local L = CUI.L
 
@@ -23,24 +30,33 @@ local bindings = {} -- { visual = bouton visible, secure = bouton protégé, pla
 local function createSecure(bind)
     local secure = _G.CreateFrame("Button", "CoeurUIBoutonReload" .. bind.index, _G.UIParent,
         "SecureActionButtonTemplate")
-    for k, v in pairs(bind.attrs) do
-        if type(v) == "function" then v = v() end -- cible trouvée au dernier moment
-        secure:SetAttribute(k, v)
-    end
+    -- Attributs posés à chaque placement (sync), hors combat.
     -- Haut et bas : le jeu ne déclenche qu'une fois, selon le réglage « action à l'appui ».
     secure:RegisterForClicks("AnyUp", "AnyDown")
-    secure:SetFrameStrata("FULLSCREEN_DIALOG")
+    if bind.keepInCombat then
+        -- Posé longtemps (objets de quête) : à la hauteur de son bouton visible, pas au-dessus des
+        -- fenêtres qui s'ouvrent par-dessus.
+        secure:SetFrameStrata(bind.visual:GetFrameStrata())
+        secure:SetFrameLevel(bind.visual:GetFrameLevel() + 5)
+    else
+        secure:SetFrameStrata("FULLSCREEN_DIALOG")
+    end
     secure:Hide()
 
     -- La souris arrive sur le bouton protégé : on fait réagir le bouton visible dessous.
     local visual = bind.visual
     secure:HookScript("OnEnter", function(self)
         visual:SetVisualState(true, false)
-        CUI:ShowTooltip(self, bind.tooltip())
+        if bind.gameTooltip then
+            CUI:ShowGameTooltip(self, bind.gameTooltip)
+        elseif bind.tooltip then
+            CUI:ShowTooltip(self, bind.tooltip())
+        end
     end)
     secure:HookScript("OnLeave", function(self)
         visual:SetVisualState(false, false)
         CUI:HideTooltip(self)
+        CUI:HideGameTooltip(self)
     end)
     secure:HookScript("OnMouseDown", function() visual:SetVisualState(true, true) end)
     secure:HookScript("OnMouseUp", function() visual:SetVisualState(true, false) end)
@@ -65,6 +81,10 @@ local function sync(bind)
         createSecure(bind)
         secure = bind.secure
     end
+    for k, v in pairs(bind.attrs) do
+        if type(v) == "function" then v = v() end -- cible lue au dernier moment
+        if secure:GetAttribute(k) ~= v then secure:SetAttribute(k, v) end
+    end
 
     local scale = visual:GetEffectiveScale() / _G.UIParent:GetEffectiveScale()
     local x, y = left * scale, bottom * scale
@@ -81,11 +101,12 @@ local function sync(bind)
     end
 end
 
-local function attach(visual, attrs, tooltip, when)
+local function attach(visual, attrs, tooltip, when, opts)
+    opts = opts or {}
     local bind = { visual = visual, placed = {}, index = #bindings + 1, attrs = attrs, tooltip = tooltip,
-                   when = when }
+                   when = when, gameTooltip = opts.gameTooltip, keepInCombat = opts.keepInCombat }
     bindings[#bindings + 1] = bind
-    if CUI:InCombat() then
+    if CUI:InCombat() and not bind.keepInCombat then
         visual:Disable()
     end
     -- Suit le bouton visible tant qu'il est à l'écran (fenêtre déplacée, mise en page changée).
@@ -100,6 +121,12 @@ end
 -- emplacement de banque... Hors combat seulement (en combat, le bouton visible est désactivé).
 function CUI:AttachSecureClick(visual, target, tooltip, when)
     return attach(visual, { type = "click", clickbutton = target }, tooltip, when)
+end
+
+-- Rend un bouton visible capable de lancer une action protégée quelconque (voir en haut du fichier).
+function CUI:AttachSecureAction(visual, attrs, opts)
+    opts = opts or {}
+    return attach(visual, attrs, opts.tooltip, opts.when, opts)
 end
 
 -- Rend un bouton visible capable de recharger l'interface.
@@ -124,18 +151,22 @@ end
 -- Entrée en combat : dernier moment où l'on peut encore cacher un bouton protégé.
 CUI:On("PLAYER_REGEN_DISABLED", "core:reload", function()
     for _, bind in ipairs(bindings) do
-        if bind.secure then
-            bind.secure:Hide()
-            bind.placed = {}
+        if not bind.keepInCombat then
+            if bind.secure then
+                bind.secure:Hide()
+                bind.placed = {}
+            end
+            bind.visual:Disable()
         end
-        bind.visual:Disable()
     end
 end)
 
 CUI:On("PLAYER_REGEN_ENABLED", "core:reload", function()
     for _, bind in ipairs(bindings) do
-        bind.visual:Enable()
-        bind.visual:SetVisualState(false, false)
+        if not bind.keepInCombat then
+            bind.visual:Enable()
+            bind.visual:SetVisualState(false, false)
+        end
         sync(bind)
     end
 end)

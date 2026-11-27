@@ -12,7 +12,8 @@
 --     de la zone en cours fixé en haut) ; repli automatique en combat, en donjon ou raid ; fond léger.
 -- Le suivi du jeu garde le reste (campagne, objectifs bonus, scénarios...), sous notre liste et habillé
 -- au même style, sans ses quêtes ; ou caché (réglage).
--- Étape suivante : les boutons d'objets de quête (protégés).
+-- Étape 2 : les objets de quête, à droite de leur quête, utilisables d'un clic (bouton protégé posé
+-- par-dessus, hors combat ; il reste en combat à sa dernière place).
 -- Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -70,6 +71,7 @@ local LIGHT = C.texteSecondaire
 local DONE = C.actif
 local PAD = 10      -- marge intérieure du cadre
 local INDENT = 22   -- retrait des quêtes (place de la pastille)
+local ITEM = 24     -- bouton d'objet de quête
 
 -- Couleurs ---------------------------------------------------------------------------------------
 
@@ -408,6 +410,73 @@ local function questRow(i)
     return row
 end
 
+-- Objet de quête (étape 2) : l'icône dans notre liste ; le clic passe par un bouton protégé posé
+-- par-dessus (noyau, AttachSecureAction), seulement quand l'icône est entière dans la partie visible.
+local function inView(frame)
+    local top, bottom = frame:GetTop(), frame:GetBottom()
+    local vt, vb = scroll:GetTop(), scroll:GetBottom()
+    if not (top and bottom and vt and vb) then return false end
+    if sticky and sticky:IsShown() then vt = sticky:GetBottom() or vt end
+    return top <= vt + 0.5 and bottom >= vb - 0.5
+end
+
+local function createItemButton(row)
+    local b = _G.CreateFrame("Button", nil, row)
+    b:SetSize(ITEM, ITEM)
+    b:SetPoint("TOPRIGHT", row, "TOPRIGHT", 0, 0)
+    b.border, b.fill = CUI:CreateBorderedRect(b, 3, C.graphite, C.fond)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("TOPLEFT", 1, -1)
+    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.cd = _G.CreateFrame("Cooldown", nil, b, "CooldownFrameTemplate")
+    b.cd:SetAllPoints(b.icon)
+    b.count = b:CreateFontString(nil, "OVERLAY")
+    b.count:SetFont(CUI:GetFont(), 10, "OUTLINE")
+    b.count:SetPoint("BOTTOMRIGHT", -1, 1)
+    function b:SetVisualState(hover, pressed)
+        local c = pressed and C.or_ or (hover and C.texte or C.graphite)
+        self.border:SetColor(c)
+    end
+    CUI:AttachSecureAction(b, { type = "item", item = function() return b.link end }, {
+        when = function() return b.link ~= nil and inView(b) end,
+        gameTooltip = function(tip)
+            if b.logIndex and tip.SetQuestLogSpecialItem then tip:SetQuestLogSpecialItem(b.logIndex) end
+        end,
+        keepInCombat = true,
+    })
+    b:Hide()
+    row.item = b
+end
+
+-- L'objet d'une quête (lien, icône, charges, recharge), ou caché.
+local function setQuestItem(row, q)
+    if not row.item then createItemButton(row) end
+    local b = row.item
+    local link, texture, charges, showComplete
+    if _G.GetQuestLogSpecialItemInfo and q.logIndex then
+        link, texture, charges, showComplete = _G.GetQuestLogSpecialItemInfo(q.logIndex)
+    end
+    if not known(link) or (q.complete and not showComplete) then
+        b.link, b.logIndex = nil, nil
+        b:Hide()
+        return false
+    end
+    b.link, b.logIndex = link, q.logIndex
+    b.icon:SetTexture(texture)
+    b.count:SetText((known(charges) and charges > 1) and charges or "")
+    if _G.GetQuestLogSpecialItemCooldown then
+        local start, duration, enable = _G.GetQuestLogSpecialItemCooldown(q.logIndex)
+        if known(start) and known(duration) and start and duration and duration > 0 then
+            _G.CooldownFrame_Set(b.cd, start, duration, enable)
+        else
+            b.cd:Clear()
+        end
+    end
+    b:Show()
+    return true
+end
+
 -- Ligne d'objectif (tiret ou coche, texte).
 local function lineRow(i)
     local line = lineRows[i]
@@ -495,7 +564,9 @@ local function layout()
                 row.badge:SetTexture(q.complete and "Interface\\GossipFrame\\ActiveQuestIcon"
                     or "Interface\\GossipFrame\\AvailableQuestIcon")
                 row.title:SetFont(CUI:GetFont(), titleSize, "")
-                row.title:SetWidth(width - INDENT)
+                -- Objet de quête à droite : le texte lui laisse la place.
+                local itemRoom = setQuestItem(row, q) and (ITEM + 4) or 0
+                row.title:SetWidth(width - INDENT - itemRoom)
                 local level = known(q.level) and q.level > 0 and ("[" .. q.level .. "] ") or ""
                 local tag = q.tag and (" |cff9a9da5(" .. q.tag .. ")|r") or ""
                 row.title:SetText(level .. (q.title or "") .. tag)
@@ -515,7 +586,7 @@ local function layout()
                     line.mark:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT, -y)
                     line.text:ClearAllPoints()
                     line.text:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT + lineSize, -y)
-                    line.text:SetWidth(width - INDENT - lineSize)
+                    line.text:SetWidth(width - INDENT - lineSize - itemRoom)
                     local color
                     if o.turnIn then
                         line.mark:SetText("")
@@ -537,7 +608,8 @@ local function layout()
                 end
                 row:ClearAllPoints()
                 row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
-                row:SetSize(width, y - top)
+                row:SetSize(width, math.max(y - top, itemRoom > 0 and ITEM or 0))
+                y = math.max(y, top + (itemRoom > 0 and ITEM or 0))
                 row:Show()
                 placedItems[#placedItems + 1] = { a = row, top = top }
                 y = y + 6
@@ -748,7 +820,8 @@ end
 function M:OnEnable()
     CUI:AfterCombat(build)
     for _, event in ipairs({ "QUEST_LOG_UPDATE", "QUEST_WATCH_LIST_CHANGED", "QUEST_ACCEPTED", "QUEST_REMOVED",
-                             "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "UNIT_QUEST_LOG_CHANGED" }) do
+                             "QUEST_TURNED_IN", "ZONE_CHANGED_NEW_AREA", "UNIT_QUEST_LOG_CHANGED",
+                             "BAG_UPDATE_COOLDOWN" }) do
         pcall(self.On, self, event, requestRefresh)
     end
     self:On("PLAYER_ENTERING_WORLD", function()

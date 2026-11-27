@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.41.0 · 28/11/2026
+
+- Suivi des quêtes, deuxième étape : les objets de quête. Leur bouton est à droite de leur quête, avec ses
+  charges et sa recharge ; un clic utilise l'objet, survol : son infobulle.
+- Le bouton se pose hors combat ; en combat il reste utilisable à sa place. Un objet qui apparaît en combat, ou
+  une liste qui bouge en combat : le bouton suit à la fin du combat.
+- Un /reload suffit.
+
 ## 0.40.1 · 28/11/2026
 
 - Suivi des quêtes : un trait léger souligne le titre d'une zone dépliée (80 % de la largeur du fond).

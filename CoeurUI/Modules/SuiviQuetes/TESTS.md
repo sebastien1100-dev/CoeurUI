@@ -67,3 +67,15 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
    largeur, hauteur, défilement, fond et opacité, repli en combat / en donjon (seuls les titres de zone restent).
 10. Reste du suivi du jeu (campagne, objectifs bonus...) : sous notre liste, même style ; réglage coupé : caché.
 11. Cadenas : cadre « Suivi des quêtes » à placer ; /reload : il est resté.
+
+## 0.41.0 · notre suivi, étape 2 : objets de quête
+
+1. /reload. `/cui version` : « 0.41.0 ». Une quête avec un objet (ex. « Entrevoir notre avenir ») : bouton carré à
+   droite de la quête, son icône ; le titre et les objectifs lui laissent la place.
+2. Clic sur le bouton : l'objet est utilisé (comme depuis le sac) ; survol : infobulle de l'objet ; recharge qui
+   tourne après usage ; nombre de charges en bas à droite s'il y en a plusieurs.
+3. En combat : le bouton marche toujours ; aucune erreur.
+4. Défiler : quand le bouton sort de la partie visible (ou passe sous le titre fixé), il ne réagit plus ; revenu :
+   il remarche.
+5. Quête finie (objet plus utile) : le bouton disparaît, sauf si le jeu le garde jusqu'au rendu.
+6. Replier la zone de la quête : le bouton disparaît ; la déplier : il revient.

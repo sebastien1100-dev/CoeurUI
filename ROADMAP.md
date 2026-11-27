@@ -155,7 +155,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        défiler. Quêtes rangées par zone (titres repliables, la zone actuelle en premier), avec toutes les options
        du module « Suivi des quêtes » ; le suivi du jeu garde le reste (campagne, objectifs bonus, scénarios...).
        Étapes : 1) quêtes et objectifs ; 2) boutons d'objets de quête (protégés) ; 3) finitions. Maquette validée
-       le 28/11/2026 (« CœurUI · Maquette Suivi des quêtes (le nôtre) »). Étape 1 validée (0.40.0).
+       le 28/11/2026 (« CœurUI · Maquette Suivi des quêtes (le nôtre) »). Étape 1 validée (0.40.0). Étape 2 validée (0.41.0).
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication
