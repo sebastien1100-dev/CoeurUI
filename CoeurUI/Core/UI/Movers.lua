@@ -11,6 +11,7 @@
 --   On déplace un cadre en le glissant, ou en glissant son étiquette (son nom).
 --   })
 --   CUI:ResetMover("joueur")        -- remet un seul cadre à sa place d'origine
+--   CUI:SaveMoverPosition("joueur") -- garde la place d'un cadre que le module a déplacé lui-même
 --   CUI:UnregisterMover("joueur")   -- quand le module est coupé
 --
 -- Grille aimantée (maquette validée) : tant que le cadenas est ouvert, une grille fine part du centre
@@ -541,6 +542,15 @@ function CUI:SetMoverPoint(key, point)
     if not def or def.parent then return end
     def.point = point
     if drag and drag.def == def then return end -- gardé à la fin du glisser
+    if _G.InCombatLockdown() and def.frame:IsProtected() then return end
+    savePosition(def)
+end
+
+-- Un module a déplacé son cadre lui-même (ex. fenêtre glissée par sa barre de titre) : sa nouvelle
+-- place est gardée comme celle du cadenas (et rattachée par son coin choisi, voir SetMoverPoint).
+function CUI:SaveMoverPosition(key)
+    local def = movers[key]
+    if not def then return end
     if _G.InCombatLockdown() and def.frame:IsProtected() then return end
     savePosition(def)
 end

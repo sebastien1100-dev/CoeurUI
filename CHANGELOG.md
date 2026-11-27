@@ -2,6 +2,24 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.29.0 · 27/11/2026
+
+- Nouveau module « Sacs et banque » (coupé d'office), première étape : tous les sacs dans une seule fenêtre sobre,
+  à la place de ceux du jeu, placée au cadenas.
+- Rangement par catégories (équipement, consommables, composants, quêtes, divers, camelote, places libres) ou en
+  vrac (réglage). Sacs de composants et carquois à part, en bas, avec leurs places libres.
+- Cases au liseré de la couleur de la qualité, niveau d'objet sur l'équipement, pastille rouge sur les nouveaux
+  objets jusqu'au survol.
+- Recherche par nom ; en bas : sacs équipés (cliquer ou glisser pour les changer), places libres, argent.
+- La fenêtre se déplace en glissant sa barre de titre (ou avec le cadenas) ; sa place est gardée.
+- Places libres : carrés sombres au liseré à peine visible ; le dessin de sac vide du jeu (aile brune) ne
+  s'affiche plus.
+- Bouton dans la barre de titre des sacs pour passer du rangement par catégories au vrac, et retour.
+  Redémarrer le jeu (nouvelle icône).
+- Bouton « tiroir » dans la barre de titre : affiche ou cache les emplacements de sac en bas (choix gardé).
+- Clics, glisser, infobulles et utilisation des objets : comme le jeu. Couper le module demande un rechargement.
+- Redémarrer le jeu (nouveaux fichiers).
+
 ## 0.28.0 · 27/11/2026
 
 - Plaques de nom : nouvelle page « Amis ». Les plaques des PNJ et joueurs alliés montrent le nom seul, vert pour un

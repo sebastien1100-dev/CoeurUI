@@ -93,6 +93,13 @@ def tiroir(d):
         rect_arrondi(d, x, y, 6.5, 6.5, 1.2)
 
 
+def categories(d):
+    """Liste rangée : trois rubriques, une petite case et un trait chacune."""
+    for y in (4, 10.25, 16.5):
+        rect_arrondi(d, 3.5, y, 3.5, 3.5, 0.8)
+        ligne(d, (10, y + 1.75), (20.5, y + 1.75))
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -233,7 +240,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

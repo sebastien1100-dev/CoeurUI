@@ -99,7 +99,10 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
        27/11/2026 (« CœurUI · Maquette Effets ») : boutons du jeu habillés ; temps dessous, blanc sous 10 s ;
        liseré du type pour les affaiblissements ; améliorations et affaiblissements indépendants (cadre au
        cadenas et sous-onglet de réglages chacun).
-   11. Sacs et banque (demandés le 27/11/2026). Maquette à faire avant le code.
+   11. Sacs et banque (demandés le 27/11/2026). Choix du joueur : un seul sac, avec ou sans catégories (réglage) ;
+       sacs de composants et carquois à part ; recherche, vente de la camelote, niveau d'objet, nouveaux objets ;
+       banque à côté des sacs, même style. Maquette validée le 27/11/2026 (« CœurUI · Maquette Sacs et banque »).
+       Étapes : 1) sacs ; 2) camelote ; 3) banque. Étape 1 validée (0.29.0).
    12. ~~Barres d'expérience et de réputation (demandées le 27/11/2026), rangées dans le module « Barres d'actions »
        (page « Expérience et réputation », cadre à elles au cadenas). Maquette validée le 27/11/2026 (« CœurUI ·
        Maquette Barres d'expérience et de réputation ») : violet, quêtes à rendre en jaune (« +1 niveau »), repos
