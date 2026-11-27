@@ -623,6 +623,17 @@ local function decimal(x)
     return (("%.1f"):format(x):gsub("%.", L.CU_INC_DECIMALE))
 end
 
+-- Nom de sort à afficher : certains sorts du jeu n'ont pas de nom traduit (« Opening - No Text » en
+-- ouvrant un coffre, un sac de récolte...) ; on retire « - No Text » et on traduit les plus courants.
+local SANS_TEXTE = { Opening = "CU_INC_OUVERTURE" }
+local function castName(name)
+    if not known(name) or type(name) ~= "string" then return name end
+    local base = name:match("^(.-)%s*%-%s*No Text$")
+    if not base then return name end
+    local key = SANS_TEXTE[base]
+    return key and L[key] or base
+end
+
 local function setCastColor(b, c)
     b.frame.bar:SetStatusBarColor(c[1], c[2], c[3])
 end
@@ -727,7 +738,7 @@ local function startCast(b, channel)
     b.mode = channel and "canal" or "cast"
     b.wasCast = not channel
     b.castID = known(castID) and castID or nil
-    f.name:SetText(name)
+    f.name:SetText(castName(name))
     f.icon:SetTexture(texture)
     paintProtect(b, notInterruptible)
     f.bar:SetMinMaxValues(0, 1)

@@ -2,6 +2,12 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.44.1 · 28/11/2026
+
+- Barres d'incantation : un sort sans nom traduit s'affichait « Opening - No Text » (ouvrir un coffre, un sac de
+  récolte...) ; il s'affiche « Ouverture ». Les autres sorts de ce genre perdent juste « - No Text ».
+- Un /reload suffit.
+
 ## 0.44.0 · 28/11/2026
 
 - Fenêtre de CœurUI au style « Givre » : fond ardoise bleutée, double liseré très discret et ombre douce à la place

@@ -174,6 +174,7 @@ L.CU_INC_INTERROMPU = "Interrupted"
 L.CU_INC_ECHEC = "Failed"
 L.CU_INC_EXEMPLE = "Cast bar (example)"
 L.CU_INC_DECIMALE = "."
+L.CU_INC_OUVERTURE = "Opening"
 
 -- Group frames (Groupe.lua)
 L.CU_GROUPE = "Party"

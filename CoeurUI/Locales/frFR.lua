@@ -173,6 +173,7 @@ L.CU_INC_INTERROMPU = "Interrompu"
 L.CU_INC_ECHEC = "Échec"
 L.CU_INC_EXEMPLE = "Incantation (exemple)"
 L.CU_INC_DECIMALE = ","
+L.CU_INC_OUVERTURE = "Ouverture"
 
 -- Cadres de groupe (Groupe.lua)
 L.CU_GROUPE = "Groupe"
