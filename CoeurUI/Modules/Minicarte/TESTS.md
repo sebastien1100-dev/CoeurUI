@@ -84,3 +84,14 @@ Le module ne dépend de rien chez EllesmereUI.
    le haut de la carte. Déplacer la carte à gauche de l'écran (cadenas) : le menu s'ouvre à sa droite.
 2. Contour de la carte : un trait noir puis un trait graphite, d'un pixel chacun, réguliers sur les quatre côtés,
    coins nets ; pareil après avoir changé l'échelle de l'interface (options du jeu) puis /reload.
+
+## 0.51.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.51.0 ».
+2. La carte est entourée du panneau du thème (double liseré très discret, coins arrondis, ombre douce) ; la carte
+   reste carrée dedans. Rectangle (réglage) : pareil.
+3. Bouton de suivi, courrier (quand il y en a), file d'attente (en file), tiroir : petites cases sombres ; survol :
+   icône blanche, liseré doré (ou couleur de la classe). Courrier : pastille rouge cœur.
+4. Tiroir ouvert : cadre des fenêtres, titre « ADDONS » en haut à gauche, ronds des addons dessous ; survol d'un
+   rond : liseré de la couleur des boutons. Tiroir vide : le message seul.
+5. Coordonnées en bas de la carte dans une petite case sombre.

@@ -7,6 +7,9 @@
 -- La carte du jeu (Minimap) doit rester carrée : on la pose, carrée, au centre d'un cadre de la
 -- taille voulue (qui coupe les points de la carte qui dépassent) et un masque (Media/Minicarte,
 -- généré par tools/generer_masques.py) cache les bandes du terrain en trop.
+-- Style « Givre » (planche « Minicarte » de la direction artistique) : panneau du thème autour de la
+-- carte (carrée dedans), boutons en petites cases du thème, tiroir au cadre des fenêtres, coordonnées
+-- dans une petite case.
 -- Couper le module demande un /reload (la minicarte du jeu revient alors telle quelle).
 local _, CUI = ...
 local L = CUI.L
@@ -64,38 +67,6 @@ local gameHolders = {} -- clé -> petit cadre qui porte un bouton du jeu
 local drawerButton, drawer
 local hiddenParent
 
-local function solid(parent, layer, color, sublevel)
-    local t = parent:CreateTexture(nil, layer, nil, sublevel or 0)
-    t:SetTexture(WHITE)
-    t:SetVertexColor(color[1], color[2], color[3], color[4] or 1)
-    return t
-end
-
--- Taille d'un pixel de l'écran dans les unités d'un cadre (pour des traits nets à toute échelle).
-local function pixelOf(frame)
-    local _, physicalHeight = _G.GetPhysicalScreenSize()
-    if not physicalHeight or physicalHeight == 0 then return 1 end
-    return 768 / physicalHeight / frame:GetEffectiveScale()
-end
-
--- Contour d'un pixel d'écran autour d'un cadre, à l'extérieur, à offset pixels du bord. Les traits
--- tombent sur les pixels : même épaisseur des quatre côtés, coins nets.
-local function outline(frame, color, offset, layer)
-    local px = pixelOf(frame)
-    local o, w = (offset or 0) * px, px
-    local sides = {
-        { "TOPLEFT", -o - w, o + w, "TOPRIGHT", o + w, o },
-        { "BOTTOMLEFT", -o - w, -o, "BOTTOMRIGHT", o + w, -o - w },
-        { "TOPLEFT", -o - w, o, "BOTTOMLEFT", -o, -o },
-        { "TOPRIGHT", o, o, "BOTTOMRIGHT", o + w, -o },
-    }
-    for _, s in ipairs(sides) do
-        local t = solid(frame, layer or "BACKGROUND", color)
-        t:SetPoint(s[1], frame, s[1], s[2], s[3])
-        t:SetPoint(s[4], frame, s[4], s[5], s[6])
-    end
-end
-
 -- Range un objet du jeu hors de vue (cadre) ou le rend invisible (texture).
 local function hide(obj)
     if not obj then return end
@@ -146,6 +117,14 @@ end
 
 local function setHover(icon, on)
     icon:SetVertexColor(unpack(on and ICON_SURVOL or ICON_REPOS))
+    -- Case du bouton (style « Givre ») : liseré de la couleur des boutons au survol.
+    local box = icon:GetParent()
+    if box and box.panel then box.panel.border:SetColor(on and C.or_ or C.lisereSombre) end
+end
+
+-- Petite case du thème sous un bouton posé sur la carte.
+local function boxPanel(f)
+    f.panel = CUI:CreatePanel(f, { radius = 3, fill = C.case, shadow = false })
 end
 
 -- Pastille d'alerte (rouge cœur, cerclée de sombre), en haut à droite d'une icône.
@@ -293,22 +272,21 @@ local compartmentOrder = {}   -- nos boutons tirés du menu des addons du jeu, d
 
 -- Rond CœurUI d'un bouton d'addon (maquette « ronds sobres ») : liseré gris fin, fond graphite ;
 -- le liseré s'éclaircit au survol.
-local TILE_FOND = { 0.13, 0.145, 0.17, 1 } -- #22252B
 local function addRound(frame, layer)
     local ring = frame:CreateTexture(nil, layer, nil, 0)
     ring:SetTexture(CUI.MEDIA .. "Cercle")
     ring:SetAllPoints()
-    ring:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], 1)
+    ring:SetVertexColor(C.lisereSombre[1], C.lisereSombre[2], C.lisereSombre[3], 1)
     local disc = frame:CreateTexture(nil, layer, nil, 1)
     disc:SetTexture(CUI.MEDIA .. "Cercle")
     disc:SetPoint("TOPLEFT", 1, -1)
     disc:SetPoint("BOTTOMRIGHT", -1, 1)
-    disc:SetVertexColor(unpack(TILE_FOND))
+    disc:SetVertexColor(C.case[1], C.case[2], C.case[3], 1)
     frame.cuiRing = ring
 end
 
 local function setRoundHover(frame, on)
-    local c = on and C.texteSecondaire or C.bordureDiscrete
+    local c = on and C.or_ or C.lisereSombre
     frame.cuiRing:SetVertexColor(c[1], c[2], c[3], 1)
 end
 
@@ -420,6 +398,8 @@ local function undressButton(b, orig)
     if orig.width and orig.width > 0 then b:SetSize(orig.width, orig.height) end
 end
 
+local DRAWER_TITLE = 18 -- hauteur du titre « ADDONS » du tiroir
+
 local function layoutDrawer()
     local shown = {}
     for _, b in ipairs(collected) do
@@ -434,12 +414,14 @@ local function layoutDrawer()
     local n = #shown
     local cols = math.max(1, math.min(COLS, n))
     local rows = math.max(1, math.ceil(n / COLS))
-    drawer:SetSize(cols * CELL + (cols - 1) * GAP + 12, rows * CELL + (rows - 1) * GAP + 12)
+    drawer:SetSize(math.max(cols * CELL + (cols - 1) * GAP + 12, math.ceil(drawer.title:GetStringWidth()) + 16),
+        rows * CELL + (rows - 1) * GAP + 12 + DRAWER_TITLE)
     for i, b in ipairs(shown) do
         local col, row = (i - 1) % COLS, math.floor((i - 1) / COLS)
-        b.cuiPlace = { "TOPLEFT", 6 + col * (CELL + GAP), -6 - row * (CELL + GAP) }
+        b.cuiPlace = { "TOPLEFT", 6 + col * (CELL + GAP), -6 - DRAWER_TITLE - row * (CELL + GAP) }
         b.cuiApply()
     end
+    drawer.title:SetShown(n > 0)
     drawer.empty:SetShown(n == 0)
     if n == 0 then
         drawer.empty:SetText(L.MC_TIROIR_VIDE)
@@ -461,7 +443,7 @@ local function collect(b)
         if busy or not M.db.tiroir or not b.cuiTile then return end
         busy = true
         local tile = b.cuiTile
-        local p = b.cuiPlace or { "TOPLEFT", 6, -6 }
+        local p = b.cuiPlace or { "TOPLEFT", 6, -6 - DRAWER_TITLE }
         tile:ClearAllPoints()
         tile:SetPoint(p[1], drawer, p[1], p[2], p[3])
         tile:SetFrameLevel(drawer:GetFrameLevel() + 1)
@@ -546,7 +528,7 @@ local function compartmentButton(entry, text)
     end)
     b.cuiApply = function()
         b:ClearAllPoints()
-        local p = b.cuiPlace or { "TOPLEFT", 6, -6 }
+        local p = b.cuiPlace or { "TOPLEFT", 6, -6 - DRAWER_TITLE }
         b:SetPoint(p[1], drawer, p[1], p[2], p[3])
     end
     compartmentButtons[text] = b
@@ -616,7 +598,7 @@ local function toggleDrawer(show)
         placeDrawer()
     end
     drawer:SetShown(show)
-    drawerButton.bg:SetVertexColor(unpack(show and C.graphiteClair or { 0.06, 0.07, 0.09, 0.75 }))
+    drawerButton.panel:SetFillColor(show and C.ligne or C.case)
 end
 
 local function buildDrawer()
@@ -625,8 +607,7 @@ local function buildDrawer()
     -- Au-dessus de la carte : posé dessus (cadenas), il doit recevoir le clic, pas la carte.
     drawerButton:SetFrameLevel(_G.Minimap:GetFrameLevel() + 10)
     drawerButton.cuiIgnore = true
-    drawerButton.bg = solid(drawerButton, "BACKGROUND", { 0.06, 0.07, 0.09, 0.75 })
-    drawerButton.bg:SetAllPoints()
+    boxPanel(drawerButton)
     drawerButton.icon = newIcon(drawerButton, "Tiroir", 16)
     drawerButton:RegisterForClicks("LeftButtonUp")
     drawerButton:SetScript("OnClick", function() toggleDrawer() end)
@@ -638,8 +619,11 @@ local function buildDrawer()
     drawer:SetClampedToScreen(true)
     drawer:EnableMouse(true)
     drawer.cuiIgnore = true
-    -- Même cadre que les infobulles et les menus (direction « sobre », CLAUDE.md).
-    CUI:CreateBorderedRect(drawer, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
+    -- Cadre des fenêtres (style « Givre ») ; titre en petites capitales.
+    CUI:CreatePanel(drawer, { fill = C.panneau })
+    drawer.title = CUI:CreateText(drawer, "petit", "texteDiscret")
+    drawer.title:SetPoint("TOPLEFT", 8, -7)
+    drawer.title:SetText(L.MC_TIROIR_TITRE)
     drawer.empty = CUI:CreateText(drawer, "petit", "texteDiscret")
     drawer.empty:SetPoint("CENTER")
     drawer:Hide()
@@ -651,8 +635,7 @@ local function newGameHolder(key, iconName)
     local f = _G.CreateFrame("Frame", "CoeurUIMinicarte_" .. key, holder)
     f:SetSize(24, 24)
     f:SetFrameLevel(_G.Minimap:GetFrameLevel() + 10)
-    f.bg = solid(f, "BACKGROUND", { 0.06, 0.07, 0.09, 0.7 })
-    f.bg:SetAllPoints()
+    boxPanel(f)
     f.icon = newIcon(f, iconName, 18)
     gameHolders[key] = f
     return f
@@ -662,7 +645,7 @@ end
 local function followShown(f, frame)
     local function sync()
         local shown = frame:IsShown()
-        f.bg:SetShown(shown)
+        f.panel:SetShown(shown)
         f.icon:SetShown(shown)
         if f.ring then
             f.ring:SetShown(shown)
@@ -805,8 +788,8 @@ local function build()
     holder:SetFrameStrata("LOW")
     holder:SetFrameLevel(2)
     holder:SetSize(220, 220)
-    outline(holder, { 0, 0, 0, 1 }, 0)
-    outline(holder, C.graphite, 1)
+    -- Panneau du thème autour de la carte (2 points de marge : la carte reste carrée dedans).
+    CUI:CreatePanel(holder, { inset = -2 })
 
     -- La carte du jeu, carrée, au centre de notre cadre (qui coupe ce qui dépasse).
     pin(minimap, holder, function(f, t)
@@ -848,9 +831,14 @@ local function build()
     coordText:SetJustifyH("CENTER")
     coordText:SetJustifyV("MIDDLE")
     coordText:SetPoint("CENTER")
-    coordFrame.veil = solid(coordFrame, "BACKGROUND", { 0.06, 0.07, 0.09, 0.6 })
-    coordFrame.veil:SetPoint("TOPLEFT", coordText, "TOPLEFT", -7, 3)
-    coordFrame.veil:SetPoint("BOTTOMRIGHT", coordText, "BOTTOMRIGHT", 7, -3)
+    -- Petite case sombre du thème sous les coordonnées.
+    local box = _G.CreateFrame("Frame", nil, coordFrame)
+    box:SetPoint("TOPLEFT", coordText, "TOPLEFT", -7, 3)
+    box:SetPoint("BOTTOMRIGHT", coordText, "BOTTOMRIGHT", 7, -3)
+    box:SetFrameLevel(coordFrame:GetFrameLevel())
+    local k = C.case
+    CUI:CreatePanel(box, { radius = 3, fill = { k[1], k[2], k[3], 0.85 }, shadow = false })
+    coordFrame.veil = box
 
     buildGameButtons()
     buildDrawer()

@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.51.0 · 28/11/2026
+
+- Minicarte au style « Givre » : la carte est posée dans le panneau du thème (double liseré très discret, coins
+  arrondis, ombre douce), elle reste carrée dedans.
+- Courrier, suivi, file d'attente et bouton du tiroir : petites cases du thème ; au survol, icône blanche et
+  liseré de la couleur des boutons.
+- Tiroir des addons au cadre des fenêtres, avec le titre « ADDONS » ; ronds des addons sur fond de case, liseré
+  de la couleur des boutons au survol.
+- Coordonnées dans une petite case sombre.
+- Un /reload suffit.
+
 ## 0.50.0 · 28/11/2026
 
 - Discussion au style « Givre » : les messages sont posés sur le panneau du thème (fond ardoise, double liseré très

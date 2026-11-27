@@ -260,6 +260,7 @@ L.MC_M_COURRIER = "Courrier"
 L.MC_M_SUIVI = "Suivi"
 L.MC_M_FILE = "File d'attente"
 L.MC_M_TIROIR = "Tiroir des addons"
+L.MC_TIROIR_TITRE = "ADDONS"
 L.MC_TIROIR_VIDE = "Aucun bouton d'addon."
 
 -- Page « Général » (réglages communs à tout CœurUI)

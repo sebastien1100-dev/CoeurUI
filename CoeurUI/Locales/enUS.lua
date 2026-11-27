@@ -261,6 +261,7 @@ L.MC_M_COURRIER = "Mail"
 L.MC_M_SUIVI = "Tracking"
 L.MC_M_FILE = "Queue"
 L.MC_M_TIROIR = "Addon drawer"
+L.MC_TIROIR_TITRE = "ADDONS"
 L.MC_TIROIR_VIDE = "No addon button."
 
 -- "General" page (settings shared by all of CœurUI)
