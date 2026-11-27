@@ -4,8 +4,11 @@
 -- d'attitude (hostile rouge, neutre jaune, gris si le monstre est pris par un autre), couleur de
 -- classe pour un joueur adverse. Cible plus grande. Menace sur le liseré (orange : ça bascule ;
 -- rouge cœur : danger), selon le rôle (pris de la spécialisation, ou réglé). Monstre de quête :
--- nom en jaune, « ! » au trait jaune à gauche, ce qu'il reste à faire dessous.
--- Étapes suivantes : incantation, mes affaiblissements, plaques amies.
+-- nom en jaune, « ! » au trait jaune à gauche, ce qu'il reste à faire dessous. Marqueur de raid à droite.
+-- Étape 2 : mes affaiblissements au-dessus du nom. Ce sont les icônes d'effets de la plaque du jeu
+-- (le jeu les tient à jour, même en combat quand il cache les effets aux addons) : rendues visibles
+-- malgré la plaque du jeu invisible, habillées (carrés, liseré gris fin, temps dessous) et rangées
+-- par CœurUI. Étapes suivantes : incantation, plaques amies.
 --
 -- Les plaques du jeu restent en place (le jeu les crée, les place, les rend cliquables) : CœurUI
 -- pose son dessin dessus et rend celui du jeu invisible. Les plaques amies (et les plaques interdites
@@ -30,6 +33,7 @@ local ROLES = {
     { value = "degats", text = "PN_ROLE_DEGATS" },
 }
 local function questsOn(read) return read("quetes") end
+local function effectsOn(read) return read("effets") end
 
 local M = CUI:RegisterModule({
     key = "Plaques",
@@ -41,6 +45,7 @@ local M = CUI:RegisterModule({
         ennemis = {
             largeur = 150, hauteur = 10, cible = 125, niveau = true, pourcentage = true, tailleNom = 12,
             quetes = true, nomJaune = true, reste = true, menace = true, role = "auto",
+            effets = true, tailleEffets = 18, nombreEffets = 6,
         },
     },
     subs = {
@@ -54,6 +59,12 @@ local M = CUI:RegisterModule({
             { type = "toggle", key = "pourcentage", label = "PN_POURCENTAGE" },
             { type = "slider", key = "tailleNom", label = "PN_TAILLE_NOM", min = 8, max = 18, step = 1, format = "%d pt" },
             { type = "column" },
+            { type = "section", text = "PN_EFFETS" },
+            { type = "toggle", key = "effets", label = "PN_EFFETS_AFFICHER" },
+            { type = "slider", key = "tailleEffets", label = "PN_EFFETS_TAILLE", min = 12, max = 32, step = 1, format = "%d",
+              enabledIf = effectsOn },
+            { type = "slider", key = "nombreEffets", label = "PN_EFFETS_NOMBRE", min = 1, max = 10, step = 1, format = "%d",
+              enabledIf = effectsOn },
             { type = "section", text = "PN_QUETES" },
             { type = "toggle", key = "quetes", label = "PN_QUETES_SIGNALER" },
             { type = "toggle", key = "nomJaune", label = "PN_QUETES_NOM_JAUNE", enabledIf = questsOn },
@@ -211,6 +222,10 @@ local function createPlate(base)
     p.questText = newText(p)
     p.questText:SetPoint("TOP", p.quest, "BOTTOM", 0, 2)
     p.questText:SetTextColor(JAUNE_QUETE[1], JAUNE_QUETE[2], JAUNE_QUETE[3])
+    -- Marqueur de raid (crâne, croix...) : à droite de la barre.
+    p.raid = p:CreateTexture(nil, "OVERLAY")
+    p.raid:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+    p.raid:Hide()
     return p
 end
 
@@ -228,6 +243,9 @@ local function layoutPlate(p)
     p.quest:SetSize(icon, icon)
     p.quest:ClearAllPoints()
     p.quest:SetPoint("RIGHT", p, "LEFT", -2, (s.tailleNom + 3) / 2)
+    p.raid:SetSize(icon, icon)
+    p.raid:ClearAllPoints()
+    p.raid:SetPoint("LEFT", p, "RIGHT", 4, (s.tailleNom + 3) / 2)
 end
 
 -- Le dessin du jeu, invisible sous le nôtre (et rendu quand la plaque redevient amie).
@@ -287,6 +305,16 @@ local function updateQuest(p)
     p.name:SetTextColor(nc[1], nc[2], nc[3])
 end
 
+local function updateRaidMark(p)
+    local index = _G.GetRaidTargetIndex(p.unit)
+    if known(index) and index and index > 0 and _G.SetRaidTargetIconTexture then
+        _G.SetRaidTargetIconTexture(p.raid, index)
+        p.raid:Show()
+    else
+        p.raid:Hide()
+    end
+end
+
 local function updateTarget(p)
     local isTarget = _G.UnitIsUnit(p.unit, "target")
     local big = known(isTarget) and isTarget
@@ -311,7 +339,160 @@ local function updateAll(p)
     updateHealth(p)
     updateThreat(p)
     updateQuest(p)
+    updateRaidMark(p)
     updateTarget(p)
+end
+
+-- Mes affaiblissements : les icônes de la plaque du jeu -----------------------------------
+
+-- Cadre des effets de la plaque du jeu (selon la version du jeu).
+local function auraContainer(base)
+    local uf = base.UnitFrame
+    return uf and (uf.AurasFrame or uf.BuffFrame)
+end
+
+-- Icônes d'effets affichées, dans l'ordre du jeu (recherche sur deux niveaux de cadres).
+local function auraButtons(container)
+    local list = {}
+    local function scan(frame, depth)
+        for _, child in ipairs({ frame:GetChildren() }) do
+            if child.Icon and child.IsShown and child:IsShown() then
+                list[#list + 1] = child
+            elseif depth < 2 and child.GetChildren then
+                scan(child, depth + 1)
+            end
+        end
+    end
+    scan(container, 0)
+    table.sort(list, function(a, b)
+        local ai, bi = rawget(a, "layoutIndex"), rawget(b, "layoutIndex")
+        if type(ai) == "number" and type(bi) == "number" then return ai < bi end
+        return false
+    end)
+    return list
+end
+
+local function hideRegion(r)
+    if r and r.SetAlpha then r:SetAlpha(0) end
+end
+
+-- Habillage d'une icône (une fois) : icône rognée, liseré gris fin, temps sous l'icône.
+local function skinAura(b)
+    if b.cuiSkinned then return end
+    b.cuiSkinned = true
+    -- Sur ce client, « Icon » peut être un cadre qui porte la texture : on cherche la vraie.
+    local icon = b.Icon
+    if not (icon.GetObjectType and icon:GetObjectType() == "Texture") then
+        local found
+        for _, r in ipairs({ icon.Icon, icon.Texture }) do
+            if r and r.GetObjectType and r:GetObjectType() == "Texture" then found = r break end
+        end
+        if not found and icon.GetRegions then
+            for _, r in ipairs({ icon:GetRegions() }) do
+                if r.GetObjectType and r:GetObjectType() == "Texture" then found = r break end
+            end
+        end
+        icon = found
+    end
+    if icon then
+        if icon.GetNumMaskTextures and icon.RemoveMaskTexture then
+            for i = icon:GetNumMaskTextures(), 1, -1 do
+                local mask = icon:GetMaskTexture(i)
+                if mask then icon:RemoveMaskTexture(mask) end
+            end
+        end
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        icon:ClearAllPoints()
+        icon:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -1)
+        icon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -1, 1)
+    end
+    hideRegion(b.Border)
+    hideRegion(b.IconBorder)
+    hideRegion(b.DebuffBorder)
+    b.cuiBack = b:CreateTexture(nil, "BACKGROUND", nil, -8)
+    b.cuiBack:SetTexture(WHITE)
+    b.cuiBack:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], 1)
+    b.cuiBack:SetAllPoints()
+    b.cuiLines = {}
+    for i = 1, 4 do b.cuiLines[i] = texture(b, "OVERLAY", 6, C.graphite) end
+    b.cuiLines[1]:SetPoint("TOPLEFT"); b.cuiLines[1]:SetPoint("TOPRIGHT"); b.cuiLines[1]:SetHeight(1)
+    b.cuiLines[2]:SetPoint("BOTTOMLEFT"); b.cuiLines[2]:SetPoint("BOTTOMRIGHT"); b.cuiLines[2]:SetHeight(1)
+    b.cuiLines[3]:SetPoint("TOPLEFT"); b.cuiLines[3]:SetPoint("BOTTOMLEFT"); b.cuiLines[3]:SetWidth(1)
+    b.cuiLines[4]:SetPoint("TOPRIGHT"); b.cuiLines[4]:SetPoint("BOTTOMRIGHT"); b.cuiLines[4]:SetWidth(1)
+    -- Temps restant : le décompte du jeu (il le tient à jour, même en combat), posé sous l'icône.
+    local cd = b.Cooldown
+    if cd then
+        if cd.SetDrawSwipe then cd:SetDrawSwipe(false) end
+        if cd.SetDrawEdge then cd:SetDrawEdge(false) end
+        if cd.SetHideCountdownNumbers then cd:SetHideCountdownNumbers(false) end
+        b.cuiTime = cd.GetCountdownFontString and cd:GetCountdownFontString()
+    end
+    local count = (b.CountFrame and b.CountFrame.Count) or b.Count
+    if count and count.GetObjectType and count:GetObjectType() == "FontString" then b.cuiCount = count end
+end
+
+-- Range les icônes en une ligne centrée au-dessus du nom ; au-delà du nombre réglé : cachées.
+local laying = false
+local function layoutAuras(p)
+    local base = p.base
+    local container = base and auraContainer(base)
+    if not container then return end
+    local s = M.db.ennemis
+    if container.SetIgnoreParentAlpha then container:SetIgnoreParentAlpha(s.effets and true or false) end
+    container:SetAlpha(s.effets and 1 or 0)
+    if not s.effets then return end
+    laying = true
+    local size, gap = s.tailleEffets, 3
+    local buttons = auraButtons(container)
+    local n = math.min(#buttons, s.nombreEffets)
+    local x = (s.largeur - (n * size + (n - 1) * gap)) / 2
+    local font = CUI:GetFont()
+    for i, b in ipairs(buttons) do
+        skinAura(b)
+        if i <= n then
+            b:SetSize(size, size)
+            b:ClearAllPoints()
+            b:SetPoint("BOTTOMLEFT", p, "TOPLEFT", x + (i - 1) * (size + gap), s.tailleNom + 8 + math.floor(size / 2))
+            b:SetAlpha(1)
+            if b.cuiTime then
+                b.cuiTime:ClearAllPoints()
+                b.cuiTime:SetPoint("TOP", b, "BOTTOM", 0, -1)
+                b.cuiTime:SetFont(font, math.max(7, math.floor(size / 2)), "OUTLINE")
+                b.cuiTime:SetTextColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+            end
+            if b.cuiCount then
+                b.cuiCount:ClearAllPoints()
+                b.cuiCount:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -1, 1)
+                b.cuiCount:SetFont(font, math.max(7, math.floor(size / 2)), "OUTLINE")
+            end
+        else
+            b:SetAlpha(0)
+        end
+    end
+    laying = false
+end
+
+-- Le jeu range ses icônes à chaque changement : on repasse derrière lui (crochets, une fois par cadre).
+local auraHooked = {}
+local function hookAuras(p)
+    local container = auraContainer(p.base)
+    if not container then return end
+    local function hookFrame(frame)
+        if auraHooked[frame] then return end
+        auraHooked[frame] = true
+        for _, method in ipairs({ "Layout", "MarkDirty", "UpdateBuffs", "RefreshList" }) do
+            if type(frame[method]) == "function" then
+                _G.hooksecurefunc(frame, method, function()
+                    local plate = p.base.cuiPlate
+                    if M.enabled and not laying and plate and plate.unit then
+                        M:After(0, function() if plate.unit then layoutAuras(plate) end end)
+                    end
+                end)
+            end
+        end
+    end
+    hookFrame(container)
+    for _, child in ipairs({ container:GetChildren() }) do hookFrame(child) end
 end
 
 -- Plaques qui arrivent et qui partent ------------------------------------------------------
@@ -336,11 +517,17 @@ local function attach(unit)
     if not base or (base.IsForbidden and base:IsForbidden()) then return end
     if not isEnemy(unit) then
         hideGame(base, false)
+        local container = auraContainer(base)
+        if container then
+            if container.SetIgnoreParentAlpha then container:SetIgnoreParentAlpha(false) end
+            container:SetAlpha(1)
+        end
         if base.cuiPlate then base.cuiPlate:Hide() end
         return
     end
     base.cuiPlate = base.cuiPlate or createPlate(base)
     local p = base.cuiPlate
+    p.base = base
     p.unit = unit
     p.isQuest, p.questRest = false, nil
     plates[unit] = p
@@ -348,6 +535,8 @@ local function attach(unit)
     layoutPlate(p)
     updateAll(p)
     p:Show()
+    hookAuras(p)
+    layoutAuras(p)
 end
 
 local function forEach(fn)
@@ -371,6 +560,7 @@ function M:OnEnable()
     self:On("NAME_PLATE_UNIT_ADDED", function(_, unit) attach(unit) end)
     self:On("NAME_PLATE_UNIT_REMOVED", function(_, unit) release(unit) end)
     self:On("PLAYER_TARGET_CHANGED", function() forEach(updateTarget) end)
+    self:On("RAID_TARGET_UPDATE", function() forEach(updateRaidMark) end)
     local function onUnit(fn)
         return function(_, unit)
             local p = unit and plates[unit]
@@ -382,6 +572,10 @@ function M:OnEnable()
     self:On("UNIT_NAME_UPDATE", onUnit(updateAll))
     self:On("UNIT_FACTION", function(_, unit) if unit and plates[unit] then attach(unit) end end)
     self:On("UNIT_THREAT_LIST_UPDATE", onUnit(updateThreat))
+    self:On("UNIT_AURA", function(_, unit)
+        local p = unit and plates[unit]
+        if p then self:After(0, function() if p.unit == unit then layoutAuras(p) end end) end
+    end)
     self:On("UNIT_THREAT_SITUATION_UPDATE", function() forEach(updateThreat) end)
     self:On("QUEST_LOG_UPDATE", refreshQuests)
     self:On("UNIT_QUEST_LOG_CHANGED", refreshQuests)
@@ -405,9 +599,13 @@ function M:OnSettingChanged()
     forEach(function(p)
         layoutPlate(p)
         updateAll(p)
+        layoutAuras(p)
     end)
 end
 
 function M:OnFontChanged()
-    forEach(layoutPlate)
+    forEach(function(p)
+        layoutPlate(p)
+        layoutAuras(p)
+    end)
 end

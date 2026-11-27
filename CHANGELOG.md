@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.26.0 · 27/11/2026
+
+- Plaques de nom : vos affaiblissements au-dessus du nom des ennemis, en petits carrés au liseré gris fin, temps
+  restant dessous. Ils avaient disparu avec la première étape (les icônes du jeu étaient cachées avec sa plaque).
+- Réglages : afficher ou non, taille, nombre au plus.
+- Plaques de nom : les marqueurs de raid (crâne, croix...) reviennent, à droite de la barre. Ils avaient disparu avec
+  la première étape.
+
 ## 0.25.0 · 27/11/2026
 
 - Nouveau module « Plaques de nom » (coupé d'office), première étape : les plaques ennemies au style de CœurUI.

@@ -22,3 +22,16 @@
     menace et rôle. Chacun s'applique tout de suite.
 13. Couper le module : demande un rechargement ; après : les plaques du jeu reviennent.
 14. Langue anglaise : module « Nameplates », page « Enemies ».
+
+## 0.26.0 · étape 2 : mes affaiblissements
+
+1. `/reload` (pas de nouveau fichier). Aucune erreur Lua. `/cui version` : « 0.26.0 ».
+2. Poser un affaiblissement (DoT, ralentissement...) sur un ennemi : un petit carré au-dessus de son nom, icône rognée,
+   liseré gris fin, temps restant dessous ; il disparaît à la fin de l'effet.
+3. Plusieurs effets : en ligne, centrés au-dessus du nom ; au-delà de « Nombre au plus » : cachés.
+4. Effet qui se cumule : le nombre en bas à droite du carré.
+5. Les affaiblissements des autres joueurs ne s'affichent pas (seulement les miens, comme le jeu).
+6. En combat : les effets apparaissent, se mettent à jour et disparaissent ; aucune erreur.
+7. Réglages « Mes affaiblissements » : afficher (coupé : plus rien), taille, nombre au plus.
+8. Plaques amies : leurs effets comme le jeu, inchangés.
+9. Poser un marqueur de raid (crâne...) sur un ennemi : il s'affiche à droite de sa plaque ; l'enlever : il disparaît.
