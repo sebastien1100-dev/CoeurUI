@@ -15,8 +15,8 @@
 8. Combat en dégâts : le liseré devient orange quand on approche de la menace du tank, rouge cœur quand le monstre nous
    attaque. En solo : rouge dès que le monstre nous tape. En tank (spécialisation) : rouge quand on perd la menace.
 9. En combat : la vie et le pourcentage bougent ; aucune erreur.
-10. Quête « tuer 8 gnolls » en cours : les gnolls ont le nom en jaune, un « ! » jaune à gauche et « 3/8 » (ce qu'il
-    reste) dessous ; quête finie : plus rien. Noter si le « ! » n'apparaît qu'hors combat.
+10. Quête « tuer 8 gnolls » en cours : les gnolls ont le nom en jaune, un « ! » jaune à gauche et « 0/8 » dessous
+    (puis « 1/8 »... comme le journal) ; quête finie : plus rien. Noter si le « ! » n'apparaît qu'hors combat.
 11. Plaques amies (PNJ, joueurs alliés) : celles du jeu, inchangées.
 12. Réglages « Ennemis » : largeur, hauteur, taille de la cible, niveau, pourcentage, taille du nom, quêtes (trois),
     menace et rôle. Chacun s'applique tout de suite.
@@ -35,3 +35,19 @@
 7. Réglages « Mes affaiblissements » : afficher (coupé : plus rien), taille, nombre au plus.
 8. Plaques amies : leurs effets comme le jeu, inchangés.
 9. Poser un marqueur de raid (crâne...) sur un ennemi : il s'affiche à droite de sa plaque ; l'enlever : il disparaît.
+
+## 0.27.0 · étape 3 : incantation
+
+1. `/reload` (pas de nouveau fichier). Aucune erreur Lua. `/cui version` : « 0.27.0 ».
+2. Ennemi qui lance un sort : barre bleu acier sous sa vie qui se remplit, nom du sort à gauche dessous, temps
+   restant à droite (« 1,2 s ») ; la barre disparaît à la fin du sort.
+3. Canalisation : barre verte qui se vide.
+4. Sort qu'on ne peut pas interrompre : barre grise, petit cadenas devant le nom.
+5. Interrompre un sort : barre rouge « Interrompu » un court instant, puis plus rien.
+6. Plusieurs ennemis qui incantent en même temps : chaque plaque a sa barre, sans mélange.
+7. En combat : aucune erreur ; si le jeu cache les temps, la barre bouge quand même (ou reste pleine) sans chiffres.
+8. Réglages « Incantation » : afficher (coupé : plus de barre), hauteur.
+9. Langue anglaise : « Interrupted », « 1.2s ».
+10. Quête « tuer 8 » : « 0/8 » au début, « 1/8 » après le premier, comme le journal de quêtes.
+11. En groupe : les monstres de mes quêtes ont toujours leur « ! » et mon avancement ; ceux qui ne servent qu'aux
+    quêtes des autres membres n'en ont pas.

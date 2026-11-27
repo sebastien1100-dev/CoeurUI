@@ -108,7 +108,8 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
        d'abord (vie et nom, monstres de quête avec ce qu'il reste à faire, incantation, mes affaiblissements, menace),
        cible plus grande. Maquette validée le 27/11/2026
        (« CœurUI · Maquette Plaques de nom ») : monstre de quête = nom jaune + « ! » au trait jaune à gauche, ce qu'il
-       reste à faire dessous (planche C, choix 1). Étape 1 validée en jeu (0.25.0). Étape 2 validée en jeu (0.26.0, avec les marqueurs de raid). Étapes : 1) vie, nom, cible plus grande, menace, monstres de quête ;
+       reste à faire dessous (planche C, choix 1). Étape 1 validée en jeu (0.25.0). Étape 2 validée en jeu (0.26.0, avec les marqueurs de raid). Étape 3 validée en jeu (0.27.0, avec l'avancement des quêtes comme le journal et les
+       quêtes en groupe). Étapes : 1) vie, nom, cible plus grande, menace, monstres de quête ;
        2) mes affaiblissements (avancée, demandé le 27/11/2026) ; 3) incantation ; 4) plaques amies.
 4. Client PC minimal : mises à jour de l'addon.
 

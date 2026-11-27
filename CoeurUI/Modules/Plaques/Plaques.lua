@@ -4,17 +4,21 @@
 -- d'attitude (hostile rouge, neutre jaune, gris si le monstre est pris par un autre), couleur de
 -- classe pour un joueur adverse. Cible plus grande. Menace sur le liseré (orange : ça bascule ;
 -- rouge cœur : danger), selon le rôle (pris de la spécialisation, ou réglé). Monstre de quête :
--- nom en jaune, « ! » au trait jaune à gauche, ce qu'il reste à faire dessous. Marqueur de raid à droite.
+-- nom en jaune, « ! » au trait jaune à gauche, l'avancement dessous (« 0/8 » comme le journal). Marqueur de raid à droite.
 -- Étape 2 : mes affaiblissements au-dessus du nom. Ce sont les icônes d'effets de la plaque du jeu
 -- (le jeu les tient à jour, même en combat quand il cache les effets aux addons) : rendues visibles
 -- malgré la plaque du jeu invisible, habillées (carrés, liseré gris fin, temps dessous) et rangées
--- par CœurUI. Étapes suivantes : incantation, plaques amies.
+-- par CœurUI. Marqueur de raid à droite de la barre.
+-- Étape 3 : incantation sous la vie (bleu acier ; canalisation en vert ; grise avec un cadenas si on
+-- ne peut pas l'interrompre ; rouge cœur un instant si elle est interrompue), nom du sort et temps.
+-- Étape suivante : plaques amies.
 --
 -- Les plaques du jeu restent en place (le jeu les crée, les place, les rend cliquables) : CœurUI
 -- pose son dessin dessus et rend celui du jeu invisible. Les plaques amies (et les plaques interdites
 -- aux addons) restent celles du jeu. Valeurs cachées par le jeu (vie en combat...) : passées telles
 -- quelles aux barres et aux textes, jamais calculées. Couper le module demande un /reload.
 local _, CUI = ...
+local L = CUI.L
 local C = CUI.Colors
 
 local issecret = _G.issecretvalue or function() return false end
@@ -27,6 +31,10 @@ local GRIS = { 0.45, 0.47, 0.51 }
 local VERT = { 0.31, 0.64, 0.29 }
 local JAUNE_QUETE = { 0.890, 0.773, 0.290 } -- #E3C54A
 local ORANGE = { 0.878, 0.541, 0.235 }  -- #E08A3C
+local INC_CAST = { 0.310, 0.498, 0.722 }   -- #4F7FB8, bleu acier
+local INC_CANAL = { 0.310, 0.600, 0.420 }  -- vert
+local INC_PROTEGE = { 0.478, 0.494, 0.533 } -- #7A7E88, gris
+local INC_TENUE = 0.6 -- secondes en rouge après une interruption
 
 local ROLES = {
     { value = "auto", text = "PN_ROLE_AUTO" }, { value = "tank", text = "PN_ROLE_TANK" },
@@ -46,6 +54,7 @@ local M = CUI:RegisterModule({
             largeur = 150, hauteur = 10, cible = 125, niveau = true, pourcentage = true, tailleNom = 12,
             quetes = true, nomJaune = true, reste = true, menace = true, role = "auto",
             effets = true, tailleEffets = 18, nombreEffets = 6,
+            incantation = true, hauteurInc = 8,
         },
     },
     subs = {
@@ -59,6 +68,10 @@ local M = CUI:RegisterModule({
             { type = "toggle", key = "pourcentage", label = "PN_POURCENTAGE" },
             { type = "slider", key = "tailleNom", label = "PN_TAILLE_NOM", min = 8, max = 18, step = 1, format = "%d pt" },
             { type = "column" },
+            { type = "section", text = "PN_INC" },
+            { type = "toggle", key = "incantation", label = "PN_INC_AFFICHER" },
+            { type = "slider", key = "hauteurInc", label = "PN_INC_HAUTEUR", min = 4, max = 16, step = 1, format = "%d",
+              enabledIf = function(read) return read("incantation") end },
             { type = "section", text = "PN_EFFETS" },
             { type = "toggle", key = "effets", label = "PN_EFFETS_AFFICHER" },
             { type = "slider", key = "tailleEffets", label = "PN_EFFETS_TAILLE", min = 12, max = 32, step = 1, format = "%d",
@@ -136,23 +149,30 @@ end
 local LINE_OBJECTIVE = _G.Enum and _G.Enum.TooltipDataLineType and _G.Enum.TooltipDataLineType.QuestObjective
 local LINE_PLAYER = _G.Enum and _G.Enum.TooltipDataLineType and _G.Enum.TooltipDataLineType.QuestPlayer
 
--- Renvoie false (pas de quête), ou true et le texte de ce qu'il reste (« 3/8 », « 45 % » ou "").
+-- Renvoie false (pas de quête), ou true et l'avancement (« 5/8 », « 45 % » ou ""), comme le journal.
 -- nil : on ne peut pas savoir (infobulle cachée par le jeu) ; garder ce qu'on savait.
 local function questInfo(unit)
     local TI = _G.C_TooltipInfo
     if not (TI and TI.GetUnit and LINE_OBJECTIVE) then return false end
     local ok, data = pcall(TI.GetUnit, unit)
     if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+    -- En groupe, les objectifs sont rangés sous le nom de chaque joueur (le mien compris) : seuls
+    -- ceux d'avant le premier nom, ou sous mon nom, sont à moi.
+    local me = _G.UnitName("player")
+    local mine = true
     for _, line in ipairs(data.lines) do
-        if LINE_PLAYER and line.type == LINE_PLAYER then break end -- objectifs des autres joueurs du groupe
-        if line.type == LINE_OBJECTIVE then
+        if LINE_PLAYER and line.type == LINE_PLAYER then
+            local who = line.leftText
+            if issecret(who) or not known(me) then return nil end
+            mine = type(who) == "string" and who:find(me, 1, true) ~= nil
+        elseif mine and line.type == LINE_OBJECTIVE then
             local text = line.leftText
             if issecret(text) or issecret(line.completed) then return nil end
             if not line.completed and type(text) == "string" then
                 local done, total = text:match("(%d+)%s*/%s*(%d+)")
                 done, total = tonumber(done), tonumber(total)
                 if done and total then
-                    if done < total then return true, (total - done) .. "/" .. total end
+                    if done < total then return true, done .. "/" .. total end
                 else
                     local pct = tonumber(text:match("(%d+)%s*%%"))
                     if pct then
@@ -215,13 +235,38 @@ local function createPlate(base)
     p.pct = newText(p.health)
     p.pct:SetPoint("RIGHT", p.health, "RIGHT", -2, 0)
     p.pct:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
-    -- Quête : « ! » au trait jaune à gauche, ce qu'il reste à faire dessous.
+    -- Quête : « ! » au trait jaune à gauche, l'avancement dessous.
     p.quest = p:CreateTexture(nil, "OVERLAY")
     p.quest:SetTexture(CUI.MEDIA .. "Icones\\Quetes")
     p.quest:SetVertexColor(JAUNE_QUETE[1], JAUNE_QUETE[2], JAUNE_QUETE[3], 1)
     p.questText = newText(p)
     p.questText:SetPoint("TOP", p.quest, "BOTTOM", 0, 2)
     p.questText:SetTextColor(JAUNE_QUETE[1], JAUNE_QUETE[2], JAUNE_QUETE[3])
+    -- Incantation : barre sous la vie, cadenas, nom du sort et temps dessous.
+    p.cast = _G.CreateFrame("Frame", nil, p)
+    texture(p.cast, "BACKGROUND", -8, C.fond):SetAllPoints()
+    p.cast.border = {}
+    for i = 1, 4 do p.cast.border[i] = texture(p.cast, "OVERLAY", 6, C.bordureDiscrete) end
+    local cb = p.cast.border
+    cb[1]:SetPoint("TOPLEFT"); cb[1]:SetPoint("TOPRIGHT"); cb[1]:SetHeight(1)
+    cb[2]:SetPoint("BOTTOMLEFT"); cb[2]:SetPoint("BOTTOMRIGHT"); cb[2]:SetHeight(1)
+    cb[3]:SetPoint("TOPLEFT"); cb[3]:SetPoint("BOTTOMLEFT"); cb[3]:SetWidth(1)
+    cb[4]:SetPoint("TOPRIGHT"); cb[4]:SetPoint("BOTTOMRIGHT"); cb[4]:SetWidth(1)
+    p.cast.bar = _G.CreateFrame("StatusBar", nil, p.cast)
+    p.cast.bar:SetStatusBarTexture(WHITE)
+    p.cast.bar:SetPoint("TOPLEFT", 1, -1)
+    p.cast.bar:SetPoint("BOTTOMRIGHT", -1, 1)
+    p.cast.bar:SetMinMaxValues(0, 1)
+    p.cast.lock = p.cast:CreateTexture(nil, "OVERLAY")
+    p.cast.lock:SetTexture(CUI.MEDIA .. "Cadenas")
+    p.cast.lock:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+    p.cast.name = newText(p.cast)
+    p.cast.name:SetJustifyH("LEFT")
+    p.cast.name:SetTextColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+    p.cast.time = newText(p.cast)
+    p.cast.time:SetJustifyH("RIGHT")
+    p.cast.time:SetTextColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+    p.cast:Hide()
     -- Marqueur de raid (crâne, croix...) : à droite de la barre.
     p.raid = p:CreateTexture(nil, "OVERLAY")
     p.raid:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
@@ -246,6 +291,22 @@ local function layoutPlate(p)
     p.raid:SetSize(icon, icon)
     p.raid:ClearAllPoints()
     p.raid:SetPoint("LEFT", p, "RIGHT", 4, (s.tailleNom + 3) / 2)
+    -- Incantation : collée sous la vie, textes dessous.
+    local small = math.max(7, s.tailleNom - 3)
+    p.cast:ClearAllPoints()
+    p.cast:SetPoint("TOPLEFT", p, "BOTTOMLEFT", 0, -2)
+    p.cast:SetPoint("TOPRIGHT", p, "BOTTOMRIGHT", 0, -2)
+    p.cast:SetHeight(s.hauteurInc)
+    p.cast.lock:SetSize(small, small)
+    p.cast.lock:ClearAllPoints()
+    p.cast.lock:SetPoint("TOPLEFT", p.cast, "BOTTOMLEFT", 0, -2)
+    p.cast.name:SetFont(font, small, "OUTLINE")
+    p.cast.time:SetFont(font, small, "OUTLINE")
+    p.cast.time:ClearAllPoints()
+    p.cast.time:SetPoint("TOPRIGHT", p.cast, "BOTTOMRIGHT", 0, -2)
+    p.cast.name:ClearAllPoints()
+    p.cast.name:SetPoint("TOPLEFT", p.cast, "BOTTOMLEFT", p.cast.lock:IsShown() and (small + 3) or 0, -2)
+    p.cast.name:SetPoint("TOPRIGHT", p.cast.time, "TOPLEFT", -4, 0)
 end
 
 -- Le dessin du jeu, invisible sous le nôtre (et rendu quand la plaque redevient amie).
@@ -495,6 +556,154 @@ local function hookAuras(p)
     for _, child in ipairs({ container:GetChildren() }) do hookFrame(child) end
 end
 
+-- Incantation ---------------------------------------------------------------------------------
+
+local function castColor(cast, color)
+    cast.bar:SetStatusBarColor(color[1], color[2], color[3])
+end
+
+-- Nom du sort : après le cadenas s'il est là.
+local function placeCastName(cast, lock)
+    cast.lock:SetShown(lock)
+    cast.name:SetPoint("TOPLEFT", cast, "BOTTOMLEFT", lock and (cast.lock:GetWidth() + 3) or 0, -2)
+end
+
+local function paintProtect(p, notInterruptible)
+    local cast = p.cast
+    local protect = known(notInterruptible) and notInterruptible or false
+    castColor(cast, protect and INC_PROTEGE or (cast.mode == "canal" and INC_CANAL or INC_CAST))
+    placeCastName(cast, protect)
+end
+
+local function hideCast(p)
+    local cast = p.cast
+    cast.mode, cast.start = nil, nil
+    if cast.timer and cast.bar.ClearTimerDuration then pcall(cast.bar.ClearTimerDuration, cast.bar) end
+    cast.timer = nil
+    cast:Hide()
+end
+
+-- Temps restant : « 1,2 s » (séparateur décimal de la langue).
+local function setCastTime(cast, remaining)
+    if not remaining then
+        cast.time:SetText("")
+        return
+    end
+    local text = ("%.1f"):format(math.max(0, remaining))
+    if L.PN_INC_VIRGULE ~= "." then text = text:gsub("%.", L.PN_INC_VIRGULE) end
+    cast.time:SetText(L.PN_INC_TEMPS:format(text))
+end
+
+local function onCastUpdate(p)
+    local cast = p.cast
+    if (cast.mode == "cast" or cast.mode == "canal") and cast.start then
+        local now = _G.GetTime()
+        local total = cast.finish - cast.start
+        local elapsed = math.min(math.max(now - cast.start, 0), total)
+        local f = total > 0 and elapsed / total or 1
+        cast.bar:SetValue(cast.mode == "canal" and 1 - f or f)
+        setCastTime(cast, total - elapsed)
+        if now > cast.finish + 1 then hideCast(p) end -- sans évènement de fin (rare)
+    elseif cast.mode == "echec" and _G.GetTime() - cast.endTime > INC_TENUE then
+        hideCast(p)
+    end
+end
+
+-- Une incantation (ou canalisation) commence ou change : tout est relu au jeu.
+local function startCast(p, channel)
+    if not M.db.ennemis.incantation then return end
+    local unit, cast = p.unit, p.cast
+    local name, startMS, endMS, notInterruptible, castID
+    if channel then
+        local n, _, _, st, en, _, ni = _G.UnitChannelInfo(unit)
+        name, startMS, endMS, notInterruptible = n, st, en, ni
+    else
+        local n, _, _, st, en, _, cid, ni = _G.UnitCastingInfo(unit)
+        name, startMS, endMS, castID, notInterruptible = n, st, en, cid, ni
+    end
+    if name == nil then return end
+    hideCast(p)
+    cast.mode = channel and "canal" or "cast"
+    cast.castID = known(castID) and castID or nil
+    cast.name:SetText(name)
+    paintProtect(p, notInterruptible)
+    cast.bar:SetMinMaxValues(0, 1)
+    if known(startMS) and known(endMS) and startMS and endMS and endMS > startMS then
+        cast.start, cast.finish = startMS / 1000, endMS / 1000
+    else
+        -- Temps cachés par le jeu : il anime la barre s'il le sait, sinon elle reste pleine. Pas de chiffres.
+        setCastTime(cast, nil)
+        local getDuration = channel and _G.UnitChannelDuration or _G.UnitCastingDuration
+        local ok, duration = false, nil
+        if getDuration and cast.bar.SetTimerDuration then ok, duration = pcall(getDuration, unit) end
+        if ok and duration and pcall(cast.bar.SetTimerDuration, cast.bar, duration) then
+            cast.timer = true
+        else
+            cast.bar:SetValue(1)
+        end
+    end
+    cast:Show()
+end
+
+-- Interrompue : rouge cœur un instant, puis cachée.
+local function failCast(p)
+    local cast = p.cast
+    if cast.timer and cast.bar.ClearTimerDuration then pcall(cast.bar.ClearTimerDuration, cast.bar) end
+    cast.timer, cast.start = nil, nil
+    cast.mode, cast.endTime = "echec", _G.GetTime()
+    cast.bar:SetMinMaxValues(0, 1)
+    cast.bar:SetValue(1)
+    castColor(cast, C.coeur)
+    placeCastName(cast, false)
+    cast.name:SetText(L.PN_INC_INTERROMPU)
+    setCastTime(cast, nil)
+end
+
+local function sameCast(cast, castGUID)
+    if not cast.castID or castGUID == nil or not known(castGUID) then return true end
+    return castGUID == cast.castID
+end
+
+local function onSpellEvent(event, unit, castGUID)
+    local p = unit and plates[unit]
+    if not p then return end
+    local cast = p.cast
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_DELAYED" then
+        startCast(p, false)
+    elseif event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_CHANNEL_UPDATE" then
+        startCast(p, true)
+    elseif event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_FAILED" then
+        if cast.mode == "cast" and sameCast(cast, castGUID) then hideCast(p) end
+    elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" then
+        if cast.mode == "canal" then hideCast(p) end
+    elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+        if (cast.mode == "cast" and sameCast(cast, castGUID)) or cast.mode == "canal" then failCast(p) end
+    elseif event == "UNIT_SPELLCAST_INTERRUPTIBLE" then
+        if cast.mode == "cast" or cast.mode == "canal" then paintProtect(p, false) end
+    elseif event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" then
+        if cast.mode == "cast" or cast.mode == "canal" then paintProtect(p, true) end
+    end
+end
+
+-- Incantation déjà en cours quand la plaque arrive.
+local function resumeCast(p)
+    hideCast(p)
+    if not M.db.ennemis.incantation then return end
+    if _G.UnitCastingInfo(p.unit) ~= nil then
+        startCast(p, false)
+    elseif _G.UnitChannelInfo(p.unit) ~= nil then
+        startCast(p, true)
+    end
+end
+
+local SPELL_EVENTS = {
+    "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED",
+    "UNIT_SPELLCAST_INTERRUPTED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE",
+    "UNIT_SPELLCAST_CHANNEL_STOP",
+}
+-- Pas sur tous les clients : inscrits seulement s'ils existent.
+local SPELL_EVENTS_OPTIONAL = { "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" }
+
 -- Plaques qui arrivent et qui partent ------------------------------------------------------
 
 local function isEnemy(unit)
@@ -506,6 +715,7 @@ local function release(unit)
     local p = plates[unit]
     if not p then return end
     plates[unit] = nil
+    hideCast(p)
     p:Hide()
     p.unit = nil
 end
@@ -537,6 +747,7 @@ local function attach(unit)
     p:Show()
     hookAuras(p)
     layoutAuras(p)
+    resumeCast(p)
 end
 
 local function forEach(fn)
@@ -561,6 +772,18 @@ function M:OnEnable()
     self:On("NAME_PLATE_UNIT_REMOVED", function(_, unit) release(unit) end)
     self:On("PLAYER_TARGET_CHANGED", function() forEach(updateTarget) end)
     self:On("RAID_TARGET_UPDATE", function() forEach(updateRaidMark) end)
+    for _, event in ipairs(SPELL_EVENTS) do
+        self:On(event, function(ev, unit, castGUID) onSpellEvent(ev, unit, castGUID) end)
+    end
+    for _, event in ipairs(SPELL_EVENTS_OPTIONAL) do
+        pcall(self.On, self, event, function(ev, unit, castGUID) onSpellEvent(ev, unit, castGUID) end)
+    end
+    -- Temps de l'incantation : une seule minuterie pour toutes les plaques.
+    self:Every(0.05, function()
+        for _, p in pairs(plates) do
+            if p.cast.mode then onCastUpdate(p) end
+        end
+    end)
     local function onUnit(fn)
         return function(_, unit)
             local p = unit and plates[unit]
@@ -595,11 +818,12 @@ end
 function M:OnDisable()
 end
 
-function M:OnSettingChanged()
+function M:OnSettingChanged(key)
     forEach(function(p)
         layoutPlate(p)
         updateAll(p)
         layoutAuras(p)
+        if key == "incantation" then resumeCast(p) end
     end)
 end
 

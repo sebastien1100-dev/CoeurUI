@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.27.0 · 27/11/2026
+
+- Plaques de nom : l'incantation des ennemis sous leur barre de vie, avec le nom du sort et le temps restant. Bleu
+  acier (vert pour une canalisation) ; grise avec un petit cadenas si on ne peut pas l'interrompre ; rouge un instant
+  quand elle est interrompue.
+- Réglages : afficher ou non, hauteur.
+- Plaques de nom : l'avancement d'une quête se lit comme dans le journal (« 0/8 » au début, « 5/8 » ensuite) ; il
+  affichait ce qu'il restait à faire, à l'envers du journal.
+- Plaques de nom : en groupe, les monstres de vos quêtes sont de nouveau signalés (le « ! » disparaissait dès qu'on
+  était en groupe).
+
 ## 0.26.0 · 27/11/2026
 
 - Plaques de nom : vos affaiblissements au-dessus du nom des ennemis, en petits carrés au liseré gris fin, temps
