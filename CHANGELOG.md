@@ -2,6 +2,20 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.25.0 · 27/11/2026
+
+- Nouveau module « Plaques de nom » (coupé d'office), première étape : les plaques ennemies au style de CœurUI.
+  Barre de vie fine, liseré gris fin, nom au-dessus avec le niveau en petit gris devant (« 35+ » pour une élite),
+  pourcentage de vie dans la barre.
+- Couleur d'attitude (hostile rouge, neutre jaune, gris si le monstre est pris par un autre), couleur de classe pour
+  un joueur adverse.
+- La plaque de la cible est plus grande (125 %, réglable).
+- Menace sur le liseré : orange quand ça bascule, rouge cœur quand il y a danger (selon le rôle, pris de la
+  spécialisation ou réglé).
+- Monstre de quête : nom en jaune, « ! » jaune à gauche, ce qu'il reste à faire dessous.
+- Les plaques amies restent celles du jeu pour l'instant. Couper le module demande un rechargement.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.24.0 · 27/11/2026
 
 - Barres d'actions : nouvelle page « Expérience et réputation ». Deux barres fines au style de CœurUI à la place de

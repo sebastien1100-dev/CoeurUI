@@ -104,6 +104,12 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
        (page « Expérience et réputation », cadre à elles au cadenas). Maquette validée le 27/11/2026 (« CœurUI ·
        Maquette Barres d'expérience et de réputation ») : violet, quêtes à rendre en jaune (« +1 niveau »), repos
        en bleu ; réputation couleur du rang ; un cadre au cadenas chacune.~~ Validé en jeu (0.24.0).
+   13. Plaques de nom (nameplates), demandées le 27/11/2026. Module « Plaques de nom ». Choix du joueur : ennemis
+       d'abord (vie et nom, monstres de quête avec ce qu'il reste à faire, incantation, mes affaiblissements, menace),
+       cible plus grande. Maquette validée le 27/11/2026
+       (« CœurUI · Maquette Plaques de nom ») : monstre de quête = nom jaune + « ! » au trait jaune à gauche, ce qu'il
+       reste à faire dessous (planche C, choix 1). Étape 1 validée en jeu (0.25.0). Étapes : 1) vie, nom, cible plus grande, menace, monstres de quête ;
+       2) mes affaiblissements (avancée, demandé le 27/11/2026) ; 3) incantation ; 4) plaques amies.
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication
