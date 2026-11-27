@@ -7,7 +7,10 @@
 --   - rôle en icône au trait, chef, marqueur de raid ; cadre pâli hors de portée ; « Mort »,
 --     « Fantôme », « Déconnecté » à la place de la vie ; liseré blanc sur la cible, rouge sur la menace ;
 --   - cadenas ouvert : un groupe de test animé à la place du vrai, pour placer et régler les cadres.
--- Étapes suivantes : effets (soins à venir, soins sur la durée, affaiblissements à dissiper), familiers.
+-- Étape 2 : les effets. Soins à venir (prolongement vert clair de la vie), mes soins sur la durée
+-- (liseré vert) et affaiblissements à dissiper (liseré de leur type), seulement ceux que ma classe dissipe
+-- (réglable), en petites icônes ; chaque sorte à sa place (un coin du cadre ou le centre, réglable).
+-- Étape suivante : familiers.
 --
 -- Les cadres sont créés par un en-tête protégé du jeu (SecureGroupHeaderTemplate) : lui seul peut
 -- montrer, cacher et ranger les cadres en combat quand le groupe change. Nous ne faisons que dessiner
@@ -27,6 +30,9 @@ M.defaults.groupe = {
     texteVie = "p", couleur = "classe",
     role = true, ressource = true, chef = true, marqueur = true,
     palir = true, opacitePortee = 45, etats = true,
+    soinsAVenir = true, hots = true, dissipes = true, dissipesClasse = true, effetsMax = 3, tailleDissipes = 18, tailleHots = 14,
+    lisereDissipe = true,
+    placeDissipes = "centre", placeHots = "basDroite",
 }
 
 local SENS = {
@@ -43,6 +49,13 @@ local TEXTE_VIE = {
 }
 local function on(read) return read("actif") end
 local function palirOn(read) return read("actif") and read("palir") end
+local function dissipesOn(read) return read("actif") and read("dissipes") end
+local function hotsOn(read) return read("actif") and read("hots") end
+local PLACES = {
+    { value = "basDroite", text = "CU_GR_PLACE_BAS_DROITE" }, { value = "basGauche", text = "CU_GR_PLACE_BAS_GAUCHE" },
+    { value = "hautDroite", text = "CU_GR_PLACE_HAUT_DROITE" }, { value = "hautGauche", text = "CU_GR_PLACE_HAUT_GAUCHE" },
+    { value = "centre", text = "CU_GR_PLACE_CENTRE" },
+}
 
 M.subs[#M.subs + 1] = {
     key = "groupe", name = "CU_GROUPE", intro = false,
@@ -75,6 +88,22 @@ M.subs[#M.subs + 1] = {
         { type = "slider", key = "opacitePortee", label = "CU_GR_OPACITE", min = 10, max = 90, step = 5,
           format = "%d %%", enabledIf = palirOn },
         { type = "toggle", key = "etats", label = "CU_GR_ETATS", description = "CU_GR_ETATS_NOTE", enabledIf = on },
+        { type = "section", text = "CU_GR_EFFETS" },
+        { type = "toggle", key = "soinsAVenir", label = "CU_GR_SOINS_A_VENIR", enabledIf = on },
+        { type = "toggle", key = "hots", label = "CU_GR_HOTS", enabledIf = on },
+        { type = "dropdown", key = "placeHots", label = "CU_GR_PLACE", options = PLACES, enabledIf = hotsOn },
+        { type = "slider", key = "tailleHots", label = "CU_GR_TAILLE_ICONES", min = 10, max = 32, step = 1, format = "%d",
+          enabledIf = hotsOn },
+        { type = "toggle", key = "dissipes", label = "CU_GR_DISSIPES", enabledIf = on },
+        { type = "toggle", key = "dissipesClasse", label = "CU_GR_DISSIPES_CLASSE", description = "CU_GR_DISSIPES_CLASSE_NOTE",
+          enabledIf = dissipesOn },
+        { type = "dropdown", key = "placeDissipes", label = "CU_GR_PLACE", options = PLACES, enabledIf = dissipesOn },
+        { type = "slider", key = "tailleDissipes", label = "CU_GR_TAILLE_ICONES", min = 10, max = 32, step = 1,
+          format = "%d", enabledIf = dissipesOn },
+        { type = "toggle", key = "lisereDissipe", label = "CU_GR_LISERE_DISSIPE", description = "CU_GR_LISERE_DISSIPE_NOTE",
+          enabledIf = dissipesOn },
+        { type = "slider", key = "effetsMax", label = "CU_GR_EFFETS_MAX_CHACUN", min = 1, max = 6, step = 1, format = "%d",
+          enabledIf = function(read) return read("actif") and (read("hots") or read("dissipes")) end },
     },
 }
 
@@ -111,6 +140,28 @@ local function createVisual(f)
     v.health:SetMinMaxValues(0, 1)
     v.power = _G.CreateFrame("StatusBar", nil, f)
     v.power:SetMinMaxValues(0, 1)
+    -- Trait de 1 point juste sous le contour et léger voile sur tout le cadre, par-dessus les barres : la
+    -- couleur d'un affaiblissement à dissiper (cachés sinon).
+    local glow = _G.CreateFrame("Frame", nil, f)
+    glow:SetPoint("TOPLEFT", 1, -1)
+    glow:SetPoint("BOTTOMRIGHT", -1, 1)
+    glow:SetFrameLevel(v.health:GetFrameLevel() + 3)
+    glow.lines = {}
+    for i = 1, 4 do
+        local t = glow:CreateTexture(nil, "OVERLAY")
+        t:SetTexture("Interface\\Buttons\\WHITE8x8")
+        glow.lines[i] = t
+    end
+    local l = glow.lines
+    l[1]:SetPoint("TOPLEFT"); l[1]:SetPoint("TOPRIGHT"); l[1]:SetHeight(1)
+    l[2]:SetPoint("BOTTOMLEFT"); l[2]:SetPoint("BOTTOMRIGHT"); l[2]:SetHeight(1)
+    l[3]:SetPoint("TOPLEFT"); l[3]:SetPoint("BOTTOMLEFT"); l[3]:SetWidth(1)
+    l[4]:SetPoint("TOPRIGHT"); l[4]:SetPoint("BOTTOMRIGHT"); l[4]:SetWidth(1)
+    glow.veil = glow:CreateTexture(nil, "ARTWORK")
+    glow.veil:SetTexture("Interface\\Buttons\\WHITE8x8")
+    glow.veil:SetAllPoints()
+    glow:Hide()
+    v.glow = glow
     local texts = _G.CreateFrame("Frame", nil, v.health)
     texts:SetAllPoints()
     texts:SetFrameLevel(v.health:GetFrameLevel() + 2)
@@ -122,6 +173,15 @@ local function createVisual(f)
     v.leader:SetTexture("Interface\\GroupFrame\\UI-Group-LeaderIcon")
     v.mark = texts:CreateTexture(nil, "OVERLAY")
     v.mark:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+    -- Soins à venir : une barre qui part du bout de la vie, rognée au bord de la barre de vie.
+    v.health:SetClipsChildren(true)
+    v.incoming = _G.CreateFrame("StatusBar", nil, v.health)
+    v.incoming:SetFrameLevel(v.health:GetFrameLevel() + 1)
+    v.incoming:SetMinMaxValues(0, 1)
+    v.incoming:SetValue(0)
+    v.incoming:Hide()
+    v.auras = { dispel = {}, hot = {} } -- icônes de chaque sorte (affaiblissements, soins sur la durée)
+    v.owner = f
     return v
 end
 
@@ -164,6 +224,18 @@ local function layoutVisual(f, v)
     v.mark:SetSize(14, 14)
     v.mark:ClearAllPoints()
     v.mark:SetPoint("CENTER", f, "TOPRIGHT", -2, 0)
+    v.incoming:SetStatusBarTexture(texture)
+    -- Accrochée au bout de la vie : à refaire après chaque changement de texture de la barre de vie
+    -- (sans texture, il n'y a pas de bout où s'accrocher).
+    local fillTex = v.health:GetStatusBarTexture()
+    v.incoming:ClearAllPoints()
+    if fillTex then
+        v.incoming:SetPoint("TOPLEFT", fillTex, "TOPRIGHT")
+        v.incoming:SetPoint("BOTTOMLEFT", fillTex, "BOTTOMRIGHT")
+    end
+    local inc = C.actif
+    v.incoming:SetStatusBarColor(inc[1], inc[2], inc[3], 0.45)
+    v.incoming:SetWidth(math.max(1, s.largeur - 2))
 end
 
 local function setRole(v, role)
@@ -185,8 +257,184 @@ local function setMark(v, index)
     end
 end
 
-local function setBorder(v, target, threat)
-    v.border:SetColor(target and C.texte or (threat and C.coeur or C.graphite))
+-- Liseré du cadre : couleur d'un affaiblissement à dissiper (réglage), sinon blanc sur la cible, rouge sur
+-- qui a la menace, gris fin.
+local function setBorder(v, target, threat, dispel)
+    local glow = dispel and db().lisereDissipe
+    v.glow:SetShown(glow and true or false)
+    if glow then
+        for _, t in ipairs(v.glow.lines) do t:SetVertexColor(dispel[1], dispel[2], dispel[3], 1) end
+        v.glow.veil:SetVertexColor(dispel[1], dispel[2], dispel[3], 0.18)
+        v.border:SetColor(dispel)
+    else
+        v.border:SetColor(target and C.texte or (threat and C.coeur or C.graphite))
+    end
+end
+
+-- Effets ------------------------------------------------------------------------------------------
+-- Lus avec les filtres du jeu : « HELPFUL|PLAYER » (mes effets bénéfiques), « HARMFUL|RAID » (ceux que
+-- je peux dissiper), « HARMFUL » (tous, gardés s'ils ont un type de dissipation). En combat, le jeu peut
+-- cacher les détails (valeurs secrètes) : l'icône et la durée passent telles quelles au jeu, les tris
+-- qui demandent de les lire ne se font que si elles sont connues.
+
+local HOT = { 0.31, 0.62, 0.29 }
+local DISPEL_COLORS = {
+    Magic = { 0.18, 0.48, 0.88 }, Curse = { 0.61, 0.31, 0.82 },
+    Poison = { 0.31, 0.62, 0.29 }, Disease = { 0.65, 0.49, 0.23 },
+}
+local HOT_MAX_DURATION = 60 -- au-delà : une amélioration longue (endurance...), pas un soin sur la durée
+
+local function auraButton(v, kind, i)
+    local list = v.auras[kind]
+    local a = list[i]
+    if a then return a end
+    local f = v.owner
+    a = _G.CreateFrame("Frame", nil, f)
+    a:SetFrameLevel(f:GetFrameLevel() + 8)
+    a.border, a.fill = CUI:CreateBorderedRect(a, 2, C.graphite, C.fond)
+    a.icon = a:CreateTexture(nil, "ARTWORK")
+    a.icon:SetPoint("TOPLEFT", 1, -1)
+    a.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    a.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    a.cd = _G.CreateFrame("Cooldown", nil, a, "CooldownFrameTemplate")
+    a.cd:SetAllPoints(a.icon)
+    a.cd:SetReverse(true)
+    if a.cd.SetHideCountdownNumbers then a.cd:SetHideCountdownNumbers(true) end
+    local top = _G.CreateFrame("Frame", nil, a)
+    top:SetAllPoints()
+    top:SetFrameLevel(a.cd:GetFrameLevel() + 1)
+    a.count = top:CreateFontString(nil, "OVERLAY")
+    a.count:SetPoint("BOTTOMRIGHT", 1, 0)
+    -- Police posée tout de suite : un texte sans police ne s'affiche pas (et fait une erreur).
+    a.count:SetFont(CUI:GetFont(), math.max(7, math.floor(db().tailleHots / 2)), "OUTLINE")
+    a:Hide()
+    list[i] = a
+    return a
+end
+
+-- Place de chaque sorte d'icônes (réglage) : un coin du cadre, à cheval sur son bord, les icônes en
+-- rang vers l'intérieur ; ou au centre, le rang centré.
+local CORNERS = {
+    basDroite = { point = "BOTTOMRIGHT", x = -4, y = -0.5, step = -1 },
+    basGauche = { point = "BOTTOMLEFT", x = 4, y = -0.5, step = 1 },
+    hautDroite = { point = "TOPRIGHT", x = -4, y = 0.5, step = -1 },
+    hautGauche = { point = "TOPLEFT", x = 4, y = 0.5, step = 1 },
+}
+
+-- Les n premières icônes d'une sorte, placées selon le réglage place ; les autres cachées.
+local function placeAuras(v, kind, n, place)
+    local size = kind == "dispel" and db().tailleDissipes or db().tailleHots
+    local font = CUI:GetFont()
+    local corner = CORNERS[place]
+    for i, a in ipairs(v.auras[kind]) do
+        if i > n then
+            a:Hide()
+        else
+            a:SetSize(size, size)
+            a:ClearAllPoints()
+            if corner then
+                a:SetPoint(corner.point, v.owner, corner.point, corner.x + corner.step * (i - 1) * (size + 2),
+                    math.floor(corner.y * size))
+            else
+                a:SetPoint("CENTER", v.owner, "CENTER", (i - 1 - (n - 1) / 2) * (size + 2), 0)
+            end
+            a.count:SetFont(font, math.max(7, math.floor(size / 2)), "OUTLINE")
+        end
+    end
+end
+
+-- Une icône : image, durée et nombre (valeurs possiblement secrètes : passées au jeu), liseré.
+local function showAura(a, unit, data, color)
+    local known = sh().known
+    a.icon:SetTexture(data.icon)
+    a.border:SetColor(color)
+    local CU = _G.C_UnitAuras
+    local done = false
+    if CU and CU.GetAuraDuration and a.cd.SetCooldownFromDurationObject and data.auraInstanceID then
+        done = pcall(function() a.cd:SetCooldownFromDurationObject(CU.GetAuraDuration(unit, data.auraInstanceID)) end)
+    end
+    if not done then
+        local dur, exp = data.duration, data.expirationTime
+        if known(dur) and known(exp) and dur > 0 then
+            _G.CooldownFrame_Set(a.cd, exp - dur, dur, true)
+        else
+            a.cd:Clear()
+        end
+    end
+    local stacks = data.applications
+    if known(stacks) then
+        a.count:SetText(stacks > 1 and stacks or "")
+    elseif CU and CU.GetAuraApplicationDisplayCount and data.auraInstanceID then
+        local ok, text = pcall(CU.GetAuraApplicationDisplayCount, unit, data.auraInstanceID, 2, 99)
+        a.count:SetText(ok and text or "")
+    else
+        a.count:SetText("")
+    end
+    a:Show()
+end
+
+-- Effets lus au jeu avec un filtre ; keep(data) choisit ceux à garder.
+local function collect(unit, filter, out, max, keep)
+    local get = _G.C_UnitAuras and _G.C_UnitAuras.GetAuraDataByIndex
+    if not get then return end
+    for i = 1, 40 do
+        if #out >= max then return end
+        local ok, data = pcall(get, unit, i, filter)
+        if not ok or not data then return end
+        if keep(data) then out[#out + 1] = data end
+    end
+end
+
+local function isHot(data)
+    local known, dur = sh().known, data.duration
+    if not known(dur) then return true end -- durée cachée (combat) : on ne peut pas trier
+    return dur > 0 and dur <= HOT_MAX_DURATION
+end
+
+local function hasDispelType(data)
+    local known, kind = sh().known, data.dispelName
+    return known(kind) and DISPEL_COLORS[kind] ~= nil
+end
+
+local function always() return true end
+
+local function updateAuras(f)
+    local v, unit, s = f.visual, f.unit, db()
+    local dispels, hots = {}, {}
+    if unit and s.dissipes then
+        if s.dissipesClasse then
+            collect(unit, "HARMFUL|RAID", dispels, s.effetsMax, always)
+        else
+            collect(unit, "HARMFUL", dispels, s.effetsMax, hasDispelType)
+        end
+    end
+    if unit and s.hots then collect(unit, "HELPFUL|PLAYER", hots, s.effetsMax, isHot) end
+    local known = sh().known
+    local first -- couleur du premier affaiblissement à dissiper (liseré du cadre)
+    for i, data in ipairs(dispels) do
+        local kind = data.dispelName
+        local color = known(kind) and DISPEL_COLORS[kind] or C.coeur
+        first = first or color
+        showAura(auraButton(v, "dispel", i), unit, data, color)
+    end
+    for i, data in ipairs(hots) do
+        showAura(auraButton(v, "hot", i), unit, data, HOT)
+    end
+    placeAuras(v, "dispel", #dispels, s.placeDissipes)
+    placeAuras(v, "hot", #hots, s.placeHots)
+    return first
+end
+
+-- Soins à venir (valeurs possiblement secrètes : passées telles quelles à la barre).
+local function updateIncoming(v, unit, maxHp, dead)
+    local amount = (db().soinsAVenir and not dead and _G.UnitGetIncomingHeals) and _G.UnitGetIncomingHeals(unit) or nil
+    if amount == nil then
+        v.incoming:Hide()
+        return
+    end
+    v.incoming:SetMinMaxValues(0, maxHp)
+    v.incoming:SetValue(amount)
+    v.incoming:Show()
 end
 
 -- Vrais cadres ----------------------------------------------------------------------------------
@@ -242,7 +490,9 @@ local function update(f)
 
     local isTarget = _G.UnitIsUnit(unit, "target")
     local threat = _G.UnitThreatSituation(unit)
-    setBorder(v, known(isTarget) and isTarget, known(threat) and threat and threat >= 2)
+    updateIncoming(v, unit, maxHp, state ~= nil)
+    local dispel = updateAuras(f)
+    setBorder(v, known(isTarget) and isTarget, known(threat) and threat and threat >= 2, dispel)
 end
 
 -- Portée : relue souvent (le jeu ne prévient pas toujours). Valeur cachée : le jeu pose l'opacité.
@@ -394,10 +644,16 @@ end
 
 -- Groupe de test (cadenas ouvert) ---------------------------------------------------------------
 
+local TEST_HOT = "Interface\\Icons\\Spell_Holy_Renew"
+local TEST_MAGIE = "Interface\\Icons\\Spell_Frost_FrostNova"
+local TEST_POISON = "Interface\\Icons\\Spell_Nature_CorrosiveBreath"
 local TEST = {
-    { class = "WARRIOR", role = "TANK", phase = 0.0, leader = true, threat = true },
-    { class = "PRIEST", role = "HEALER", phase = 1.3, target = true },
-    { class = "MAGE", role = "DAMAGER", phase = 2.1, mark = 1 },
+    { class = "WARRIOR", role = "TANK", phase = 0.0, leader = true, threat = true,
+      auras = { { icon = TEST_HOT, kind = "hot" } } },
+    { class = "PRIEST", role = "HEALER", phase = 1.3, target = true,
+      auras = { { icon = TEST_POISON, kind = "dispel", dispelName = "Poison" } } },
+    { class = "MAGE", role = "DAMAGER", phase = 2.1, mark = 1, incoming = 20,
+      auras = { { icon = TEST_MAGIE, kind = "dispel", dispelName = "Magic" }, { icon = TEST_HOT, kind = "hot" } } },
     { class = "HUNTER", role = "DAMAGER", phase = 3.4, far = true },
     { class = "WARLOCK", role = "DAMAGER", phase = 4.6, dies = true },
 }
@@ -435,7 +691,54 @@ local function animateTest(t)
         end
         local far = s.palir and d.far and math.floor(t / 3) % 2 == 1
         f:SetAlpha(far and s.opacitePortee / 100 or 1)
+        -- Soins à venir : un peu de vie en plus, en vert clair.
+        local inc = s.soinsAVenir and not dead and d.incoming
+        v.incoming:SetShown(inc and true or false)
+        if inc then
+            v.incoming:SetMinMaxValues(0, 100)
+            v.incoming:SetValue(inc)
+        end
     end
+    -- Toutes les 12 secondes, les durées des effets d'exemple repartent.
+    local cycle = math.floor(t / 12)
+    if cycle ~= test.cycle then
+        test.cycle = cycle
+        for _, f in ipairs(test.frames) do
+            for _, list in pairs(f.visual.auras) do
+                for _, a in ipairs(list) do
+                    if a:IsShown() then _G.CooldownFrame_Set(a.cd, _G.GetTime(), 12, true) end
+                end
+            end
+        end
+    end
+end
+
+-- Effets d'exemple selon les réglages (« seulement ma classe » : ils sont tous censés l'être).
+local function fillTestAuras(f, d)
+    local s, v = db(), f.visual
+    local n = { dispel = 0, hot = 0 }
+    for _, e in ipairs(d.auras or {}) do
+        local wanted = (e.kind == "hot" and s.hots) or (e.kind == "dispel" and s.dissipes)
+        if wanted and n[e.kind] < s.effetsMax then
+            n[e.kind] = n[e.kind] + 1
+            local a = auraButton(v, e.kind, n[e.kind])
+            a.icon:SetTexture(e.icon)
+            a.border:SetColor(e.kind == "hot" and HOT or DISPEL_COLORS[e.dispelName])
+            a.count:SetText("")
+            _G.CooldownFrame_Set(a.cd, _G.GetTime(), 12, true)
+            a:Show()
+        end
+    end
+    placeAuras(v, "dispel", n.dispel, s.placeDissipes)
+    placeAuras(v, "hot", n.hot, s.placeHots)
+    local first
+    for _, e in ipairs(d.auras or {}) do
+        if e.kind == "dispel" and s.dissipes then
+            first = DISPEL_COLORS[e.dispelName]
+            break
+        end
+    end
+    return first
 end
 
 local function fillTest()
@@ -448,8 +751,9 @@ local function fillTest()
         setRole(v, d.role)
         v.leader:SetShown(s.chef and d.leader or false)
         setMark(v, d.mark)
-        setBorder(v, d.target, d.threat)
+        setBorder(v, d.target, d.threat, fillTestAuras(f, d))
     end
+    test.cycle = math.floor((test.elapsed or 0) / 12)
     animateTest(test.elapsed or 0)
 end
 
@@ -556,7 +860,8 @@ end
 -- Appelés par CadresUnite.lua ------------------------------------------------------------------
 
 local UNIT_EVENTS = { "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_POWER_UPDATE", "UNIT_MAXPOWER", "UNIT_DISPLAYPOWER",
-                      "UNIT_NAME_UPDATE", "UNIT_CONNECTION", "UNIT_FLAGS", "UNIT_THREAT_SITUATION_UPDATE" }
+                      "UNIT_NAME_UPDATE", "UNIT_CONNECTION", "UNIT_FLAGS", "UNIT_THREAT_SITUATION_UPDATE",
+                      "UNIT_AURA", "UNIT_HEAL_PREDICTION" }
 local ALL_EVENTS = { "GROUP_ROSTER_UPDATE", "PARTY_LEADER_CHANGED", "PLAYER_ROLES_ASSIGNED", "RAID_TARGET_UPDATE",
                      "PLAYER_TARGET_CHANGED", "PLAYER_ENTERING_WORLD" }
 

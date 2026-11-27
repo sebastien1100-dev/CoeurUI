@@ -121,7 +121,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
    15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le
        27/11/2026 (« CœurUI · Maquette Cadres de groupe »). Étapes : 1) cadres (disposition, tri, rôle, ressource,
        portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
-       dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0).
+       dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0). Étape 2 validée (0.34.0).
    16. Cadres de raid (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
    17. Cadres de boss (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
    18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,
@@ -159,6 +159,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Plus de polices et de textures de barre (demandé le 27/11/2026) : aujourd'hui, seulement les quatre polices du
+  jeu (Friz Quadrata, Arial Narrow, Morpheus, Skurri) et une texture lisse (`Media/BarreLisse.tga`). En ajouter
+  dans `CoeurUI/Media/` et dans la liste du noyau (`Core/UI/Media.lua`) ; polices seulement sous licence libre
+  (OFL...), licence gardée et citée ; textures générées par un script de `tools/`. Vérifier que les polices
+  ajoutées ont bien les lettres françaises (é, è, à, ç, œ...).
 - Effets sur les cadres d'unité (ex. affaiblissements posés par le joueur sous le cadre de la cible), dans le
   module « Cadres d'unité » (proposé le 27/11/2026).
 - Profils de réglages (plusieurs jeux de réglages, choisis par perso). Pas avant que les modules d'interface soient

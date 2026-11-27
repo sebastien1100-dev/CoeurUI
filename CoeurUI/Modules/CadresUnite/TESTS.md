@@ -118,3 +118,23 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 11. Combat : un équipier rejoint ou quitte le groupe : les cadres suivent, aucune erreur.
 12. Réglage changé en combat : appliqué à la sortie du combat, aucune erreur.
 13. Couper « Cadres de groupe de CœurUI » : nos cadres partent ; /reload : ceux du jeu reviennent.
+
+## 0.34.0 · cadres de groupe, étape 2 : les effets
+
+1. /reload. `/cui version` : « 0.34.0 ». Page « Groupe » : section Effets (soins à venir, mes soins sur la
+   durée, affaiblissements à dissiper, seulement ma classe, effets au plus, taille des effets).
+2. Cadenas ouvert : guerrier avec un soin sur la durée (liseré vert), prêtre avec un poison (liseré vert de
+   poison), mage avec une magie (liseré bleu) et un soin, et un bout de vie vert clair (soins à venir). Les
+   durées tournent et repartent. Chaque réglage d'effet change le groupe de test.
+3. En groupe, un soigneur soigne un équipier : la vie de l'équipier se prolonge en vert clair pendant le sort.
+4. (Classe qui soigne sur la durée) Lancer un soin sur la durée : icône sur le cadre, liseré vert, durée qui
+   tourne ; une amélioration longue (endurance...) n'apparaît pas hors combat.
+5. (Classe qui dissipe) Un équipier prend un affaiblissement que tu peux dissiper : icône, liseré de son type ;
+   le dissiper : l'icône part. Un affaiblissement que ta classe ne dissipe pas : rien (option active) ; option
+   coupée : il apparaît s'il a un type.
+6. En combat : les icônes suivent toujours, aucune erreur.
+7. Cadenas ouvert : « Place » des soins et des affaiblissements (4 coins, centre) : les icônes du groupe de test
+   bougent ; au centre, le rang est centré ; deux sortes au même coin peuvent se chevaucher.
+8. Taille des icônes des soins et des affaiblissements : chacune change seule.
+9. Groupe de test : liseré du prêtre vert (poison), du mage bleu (magie). En groupe, un équipier avec un
+   affaiblissement à dissiper : liseré de sa couleur ; dissipé : liseré normal. Réglage coupé : liseré normal.

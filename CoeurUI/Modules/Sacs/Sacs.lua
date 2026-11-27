@@ -493,7 +493,7 @@ local function layout(v)
         local slots = CUI:BagSlots(bag)
         if slots > 0 then
             local free, family = CUI:BagFree(bag)
-            if s.aPart and family ~= 0 then
+            if s.aPart and (family ~= 0 or CUI:IsReagentBag(bag)) then
                 special[#special + 1] = { bag = bag, slots = slots, free = free }
             else
                 normal[#normal + 1] = { bag = bag, slots = slots }
@@ -723,11 +723,33 @@ local function buildView(v)
     local slotsToggle = titleToggle(close, "Tiroir", v.slotsKey, "SAC_EMPLACEMENTS_CACHER",
         "SAC_EMPLACEMENTS_AFFICHER")
     local catToggle = titleToggle(slotsToggle, "Categories", v.catKey, "SAC_VRAC", "SAC_PAR_CATEGORIES")
+    -- « Trier » : le tri du jeu, pour les sacs ou pour la banque (chaque fenêtre le sien).
+    local sortButton = _G.CreateFrame("Button", nil, win)
+    sortButton:SetSize(18, 18)
+    sortButton:SetPoint("RIGHT", catToggle, "LEFT", -4, 0)
+    sortButton.icon = sortButton:CreateTexture(nil, "ARTWORK")
+    sortButton.icon:SetAllPoints()
+    sortButton.icon:SetTexture(CUI.MEDIA .. "Icones\\Trier")
+    local function paintSort(over)
+        local c = over and C.texte or C.texteSecondaire
+        sortButton.icon:SetVertexColor(c[1], c[2], c[3], 1)
+    end
+    paintSort(false)
+    local sortTip = v.isBank and "SAC_TRIER_BANQUE" or "SAC_TRIER_SACS"
+    sortButton:SetScript("OnClick", function()
+        local sound = _G.SOUNDKIT and _G.SOUNDKIT.UI_BAG_SORTING_01
+        if sound then _G.PlaySound(sound) end
+        CUI:SafeCall(CUI:Tr("SAC_NOM"), function()
+            if v.isBank then CUI:SortBank() else CUI:SortBags() end
+        end)
+    end)
+    sortButton:SetScript("OnEnter", function(self) paintSort(true); CUI:ShowTooltip(self, L[sortTip]) end)
+    sortButton:SetScript("OnLeave", function(self) paintSort(false); CUI:HideTooltip(self) end)
     -- Barre de titre : on glisse la fenêtre pour la déplacer (place gardée comme celle du cadenas).
     win:SetMovable(true)
     local drag = _G.CreateFrame("Frame", nil, win)
     drag:SetPoint("TOPLEFT", 1, -1)
-    drag:SetPoint("TOPRIGHT", catToggle, "TOPLEFT", -2, 5)
+    drag:SetPoint("TOPRIGHT", sortButton, "TOPLEFT", -2, 5)
     drag:SetHeight(HEADER - 1)
     drag:EnableMouse(true)
     drag:RegisterForDrag("LeftButton")

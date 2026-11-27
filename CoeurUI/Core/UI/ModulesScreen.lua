@@ -13,7 +13,7 @@ local SIDE = 220                  -- colonne de gauche
 local TOP = 70                    -- en-tête de la zone de droite
 local PAD = 20                    -- marge de la zone de droite
 local MAIN_W = WIDTH - 2 - SIDE - 1
-local CARD_GAP, CARD_H = 8, 92
+local CARD_GAP, CARD_H = 6, 72 -- six rangées de cartes tiennent dans la fenêtre sans défiler
 local PANEL_W = MAIN_W - PAD * 2  -- largeur des réglages d'une page (une colonne : 400 au plus)
 local NAV_H = 32                  -- hauteur d'une ligne de la colonne de gauche
 
@@ -262,22 +262,31 @@ local function createCard()
     card.switch = CUI:CreateSwitch(card, function(switch, checked)
         toggleModule(card.module, checked, switch)
     end)
-    card.switch:SetPoint("TOPRIGHT", -10, -8)
+    card.switch:SetPoint("TOPRIGHT", -10, -7)
     card.name = CUI:CreateText(card, "normal", "texte")
-    card.name:SetPoint("TOPLEFT", 12, -13)
+    card.name:SetPoint("TOPLEFT", 12, -12)
     card.name:SetPoint("RIGHT", card.switch, "LEFT", -10, 0)
     card.name:SetWordWrap(false)
     card.state = CUI:CreateText(card, "petit", "texteDiscret")
     card.state:SetJustifyH("RIGHT")
     card.state:SetPoint("RIGHT", card.switch, "LEFT", -10, 0)
     card.desc = CUI:CreateText(card, "petit", "texteDiscret")
-    card.desc:SetPoint("TOPLEFT", 12, -38)
+    card.desc:SetPoint("TOPLEFT", 12, -34)
     card.desc:SetPoint("RIGHT", -12, 0)
     card.desc:SetWordWrap(true)
     card.desc:SetMaxLines(2)
-    card.link = CUI:CreateLinkButton(card, L.REGLAGES_LIEN, true)
-    card.link:SetPoint("BOTTOMLEFT", 2, 4)
-    card.link:SetScript("OnClick", function() openPage(card.module) end)
+    -- Clic sur la carte (ailleurs que sur l'interrupteur) : la page de réglages du module, s'il en a.
+    -- Survol : liseré plus clair, pour montrer qu'elle s'ouvre.
+    card:EnableMouse(true)
+    card:SetScript("OnMouseUp", function(self, button)
+        if button == "LeftButton" and self.hasSettings and self:IsMouseOver() then openPage(self.module) end
+    end)
+    card:SetScript("OnEnter", function(self)
+        if self.hasSettings then self.border:SetColor(C.bordure) end
+    end)
+    card:SetScript("OnLeave", function(self)
+        self.border:SetColor(self.module:IsWanted() and C.bordureDiscrete or C.graphite)
+    end)
     return card
 end
 
@@ -294,7 +303,7 @@ local function refreshHome()
         card.fill:SetColor(wanted and C.ligne or C.fenetre)
         card.name:SetText(CUI:Tr(m.name))
         card.desc:SetText(CUI:Tr(m.description))
-        card.link:SetShown(CUI:HasModuleSettings(m))
+        card.hasSettings = CUI:HasModuleSettings(m)
 
         -- État écrit seulement quand il y a quelque chose à signaler.
         local text, color = stateInfo(m)

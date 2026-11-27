@@ -2,6 +2,28 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.34.0 · 27/11/2026
+
+- Cadres de groupe, deuxième étape : les effets (section « Effets » de la page « Groupe »).
+- Soins à venir : la vie se prolonge en vert clair pendant qu'un soin arrive sur l'équipier.
+- Mes soins sur la durée (liseré vert) et affaiblissements à dissiper (liseré de leur type : magie bleu,
+  malédiction violet, poison vert, maladie brun), en petites icônes en bas à droite du cadre, avec leur durée.
+- « Seulement ceux que ma classe dissipe » (actif d'office) ; nombre d'effets au plus et taille des effets.
+- Place des affaiblissements et des soins sur la durée, chacun la sienne : un coin du cadre ou le centre
+  (d'office : affaiblissements au centre, soins en bas à droite). Le nombre au plus vaut pour chaque sorte.
+- Taille des icônes réglable à part pour les affaiblissements et pour les soins sur la durée.
+- Un équipier qui a un affaiblissement à dissiper : le liseré de son cadre prend la couleur de l'affaiblissement
+  (réglable, actif d'office), avec un trait de 1 point de cette couleur juste sous le contour et un léger voile sur le cadre.
+- Correction : les soins à venir ne s'affichaient pas (barre accrochée avant que la barre de vie ait sa texture).
+- Le groupe de test (cadenas ouvert) montre des effets d'exemple.
+- Correction : erreur « Font not set » en ouvrant le cadenas (texte du nombre d'effets créé sans police).
+- Fenêtre de CœurUI, page « Tous les modules » : cartes plus basses, toutes visibles sans défiler ; plus de lien
+  « Réglages » : un clic sur la carte ouvre ses réglages (liseré plus clair au survol).
+- Sacs : le sac de composants (emplacement à part, après les quatre sacs) est rangé à part en bas, comme les
+  autres sacs de composants ; il se mêlait aux sacs ordinaires.
+- Sacs et banque : bouton « Trier » dans la barre de titre de chacun (le tri du jeu).
+- Redémarrer le jeu (nouvelle icône).
+
 ## 0.33.0 · 27/11/2026
 
 - Cadres d'unité : cadres de groupe, première étape (page « Groupe »). Un cadre par membre, toi compris (réglable),

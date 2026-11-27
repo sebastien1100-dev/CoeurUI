@@ -130,6 +130,15 @@ def role_degats(d):
     ligne(d, (7, 17), (4.5, 19.5))
 
 
+def trier(d):
+    """Trier : trois traits de plus en plus courts, flèche vers le bas à droite."""
+    ligne(d, (4, 6.5), (13, 6.5))
+    ligne(d, (4, 12), (10.5, 12))
+    ligne(d, (4, 17.5), (8, 17.5))
+    ligne(d, (17.5, 5), (17.5, 19))
+    ligne(d, (14, 15.5), (17.5, 19), (21, 15.5))
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -270,7 +279,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

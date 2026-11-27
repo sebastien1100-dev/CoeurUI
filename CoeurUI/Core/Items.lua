@@ -25,6 +25,18 @@ function CUI:BagFree(bag)
     return free or 0, family or 0
 end
 
+-- Sac de composants du joueur (l'emplacement à part, après les quatre sacs) : le jeu le compte comme un
+-- sac ordinaire (famille 0), alors qu'il ne prend que des composants.
+function CUI:IsReagentBag(bag)
+    local B = _G.Enum and _G.Enum.BagIndex
+    local reagent = B and B.ReagentBag
+    if not reagent then
+        local last, bags = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS, _G.NUM_BAG_SLOTS
+        reagent = (last and bags and last > bags) and last or nil
+    end
+    return reagent ~= nil and bag == reagent
+end
+
 function CUI:BagName(bag)
     local CC = container()
     return CC and CC.GetBagName and CC.GetBagName(bag) or nil
@@ -145,6 +157,22 @@ function CUI:BankPurchaseButton()
     if not panel then return nil end
     local prompt = panel.PurchasePrompt
     return panel.PurchaseButton or (prompt and prompt.TabCostFrame and prompt.TabCostFrame.PurchaseButton)
+end
+
+-- Tri du jeu : les sacs du joueur, la banque (page et sacs de banque).
+function CUI:SortBags()
+    local CC = container()
+    if CC and CC.SortBags then CC.SortBags() end
+end
+
+function CUI:SortBank()
+    local CC = container()
+    if not CC then return end
+    if CC.SortBankBags then
+        CC.SortBankBags()
+    elseif CC.SortBank then
+        CC.SortBank(BANK_CHARACTER)
+    end
 end
 
 -- Fermer la banque (comme quitter le banquier).
