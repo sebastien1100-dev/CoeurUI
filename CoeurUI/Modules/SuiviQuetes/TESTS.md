@@ -79,3 +79,15 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
    il remarche.
 5. Quête finie (objet plus utile) : le bouton disparaît, sauf si le jeu le garde jusqu'au rendu.
 6. Replier la zone de la quête : le bouton disparaît ; la déplier : il revient.
+
+## 0.42.0 · notre suivi, étape 3 : finitions
+
+1. /reload. `/cui version` : « 0.42.0 ». Réglages : section Affichage (nombre, distance, quête suivie sur la
+   carte, regrouper au-delà de 2).
+2. En tête : « Quêtes · 19/40 » (« · 17 suivies » en plus si toutes ne sont pas suivies) ; « – » : tout se replie (il devient « + ») ; « + » : tout revient.
+3. Distance à droite du titre des quêtes qui en ont une ; elle change en marchant ; vide quand le jeu ne sait pas.
+4. Clic sur la pastille d'une quête : fond plus clair et anneau blanc ; la flèche du jeu la suit ; clic de
+   nouveau : plus suivie. Changer de quête suivie depuis la carte du jeu : le suivi le montre.
+5. Plus de 2 quêtes à rendre dans une zone : 2 affichées, puis « N autres quêtes à rendre » ; clic : elles
+   apparaissent dessous ; clic : elles se rangent. Réglage à 0 : toutes affichées.
+6. Chaque réglage coupé : l'élément disparaît, la liste se remet en place.

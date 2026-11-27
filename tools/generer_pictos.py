@@ -144,6 +144,38 @@ def chevron(d):
     ligne(d, (6, 9), (12, 15), (18, 9))
 
 
+def tag_elite(d):
+    """Couronne (quête élite)."""
+    ligne(d, (4.5, 18), (19.5, 18))
+    ligne(d, (4.5, 18), (4, 8), (8.5, 12), (12, 5.5), (15.5, 12), (20, 8), (19.5, 18))
+
+
+def tag_donjon(d):
+    """Porte en arc (quête de donjon)."""
+    arc = bezier((5, 11), (5, 3.5), (19, 3.5), (19, 11))
+    tampon(d, [p(*q) for q in [(5, 20)] + arc + [(19, 20)]])
+    ligne(d, (3.5, 20), (20.5, 20))
+    ligne(d, (12, 7.5), (12, 20))
+
+
+def tag_raid(d):
+    """Crâne (quête de raid)."""
+    gauche = bezier((8.5, 17), (4.5, 15.5), (4, 11), (5, 9))
+    haut = bezier((5, 9), (6.5, 3.5), (17.5, 3.5), (19, 9))
+    droite = bezier((19, 9), (20, 11), (19.5, 15.5), (15.5, 17))
+    tampon(d, [p(*q) for q in gauche + haut + droite + [(15.5, 20.5), (8.5, 20.5), (8.5, 17)]])
+    cercle(d, 9.2, 11.5, 1.6)
+    cercle(d, 14.8, 11.5, 1.6)
+
+
+def tag_groupe(d):
+    """Deux silhouettes (quête de groupe)."""
+    cercle(d, 9, 8, 3)
+    tampon(d, [p(*q) for q in bezier((3.5, 19.5), (3.5, 13), (14.5, 13), (14.5, 19.5))])
+    cercle(d, 16.5, 7, 2.5)
+    tampon(d, [p(*q) for q in bezier((16, 12.5), (19.5, 12.5), (21, 14.5), (21, 18))])
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -284,7 +316,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

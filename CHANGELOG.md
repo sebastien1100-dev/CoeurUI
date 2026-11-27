@@ -2,6 +2,21 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.42.0 · 28/11/2026
+
+- Suivi des quêtes, troisième étape (finitions, chacune réglable dans la section Affichage) :
+- Nombre de quêtes en tête (« Quêtes · 19/40 » : dans le journal sur le maximum ; « · 17 suivies » si toutes ne
+  le sont pas) ; le « – »
+  replie tout, « + » déplie.
+- Distance à droite du titre (« 120 m »), mise à jour en marchant.
+- Clic sur la pastille d'une quête : elle est suivie sur la carte (flèche et point du jeu) ; elle se démarque par
+  un fond plus clair et un anneau blanc autour de sa pastille.
+- Au-delà de 2 quêtes à rendre dans une zone, les autres se rangent sous « N autres quêtes à rendre », qui se
+  déplie d'un clic.
+- Sortes de quêtes en petits pictos au trait derrière le titre, à la place de « (Élite) »... : couronne (élite),
+  porte (donjon), crâne (raid), deux silhouettes (groupe, avec le nombre conseillé).
+- Redémarrer le jeu (nouvelles icônes).
+
 ## 0.41.0 · 28/11/2026
 
 - Suivi des quêtes, deuxième étape : les objets de quête. Leur bouton est à droite de leur quête, avec ses

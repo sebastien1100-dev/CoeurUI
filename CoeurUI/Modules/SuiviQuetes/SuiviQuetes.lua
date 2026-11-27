@@ -14,6 +14,9 @@
 -- au même style, sans ses quêtes ; ou caché (réglage).
 -- Étape 2 : les objets de quête, à droite de leur quête, utilisables d'un clic (bouton protégé posé
 -- par-dessus, hors combat ; il reste en combat à sa dernière place).
+-- Étape 3 (finitions, réglables) : nombre de quêtes en tête (« Quêtes · 19 / 25 », « – » replie tout) ;
+-- distance à droite du titre ; quête suivie sur la carte (clic sur la pastille) en évidence ; quêtes à
+-- rendre au-delà d'un nombre regroupées sous une ligne qui se déplie.
 -- Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -31,6 +34,7 @@ local M = CUI:RegisterModule({
         defilement = true, avanceeDebut = true,
         parZone = true, rendreEnPremier = true, garderReplis = true, reste = true, seuleMaZone = true,
         zonesRepliees = {}, -- zone -> true : repliée par le joueur
+        afficherNombre = true, distance = true, superSuivi = true, regrouper = 2,
     },
     settings = {
         { type = "section", text = "SQ_PLACE" },
@@ -49,6 +53,12 @@ local M = CUI:RegisterModule({
         { type = "slider", key = "tailleTitres", label = "SQ_TAILLE_TITRES", min = 10, max = 18, step = 1, format = "%d pt" },
         { type = "slider", key = "tailleObjectifs", label = "SQ_TAILLE_OBJECTIFS", min = 9, max = 16, step = 1, format = "%d pt" },
         { type = "toggle", key = "avanceeDebut", label = "SQ_AVANCEE_DEBUT", description = "SQ_AVANCEE_DEBUT_NOTE" },
+        { type = "section", text = "SQ_AFFICHAGE" },
+        { type = "toggle", key = "afficherNombre", label = "SQ_AFFICHER_NOMBRE" },
+        { type = "toggle", key = "distance", label = "SQ_AFFICHER_DISTANCE" },
+        { type = "toggle", key = "superSuivi", label = "SQ_SUPER_SUIVI", description = "SQ_SUPER_SUIVI_NOTE" },
+        { type = "slider", key = "regrouper", label = "SQ_REGROUPER", min = 0, max = 10, step = 1, format = "%d",
+          description = "SQ_REGROUPER_NOTE" },
         { type = "column" },
         { type = "section", text = "SQ_REPLI" },
         { type = "toggle", key = "replierCombat", label = "SQ_REPLI_COMBAT" },
@@ -72,6 +82,8 @@ local DONE = C.actif
 local PAD = 10      -- marge intérieure du cadre
 local INDENT = 22   -- retrait des quêtes (place de la pastille)
 local ITEM = 24     -- bouton d'objet de quête
+local HEAD = 24     -- barre du nombre de quêtes
+local DIST = 46     -- place de la distance
 
 -- Couleurs ---------------------------------------------------------------------------------------
 
@@ -119,6 +131,31 @@ end
 
 -- Données : les quêtes suivies, rangées ----------------------------------------------------------
 
+-- Sorte de quête en petit picto au trait (élite, donjon, raid, groupe) à la place de « (Élite) »... ;
+-- les autres sortes gardent leur nom entre parenthèses.
+local TAG_DUNGEON = { [81] = true }               -- Enum.QuestTag.Dungeon
+local TAG_RAID = { [62] = true, [88] = true, [89] = true }
+local TAG_GROUP = { [1] = true }
+local function tagIconOf(t)
+    local id, name = t.tagID, t.tagName
+    -- Élite d'abord : sur certains clients, une quête élite porte le numéro de « groupe ».
+    if (known(t.isElite) and t.isElite) or (known(name) and _G.ELITE and name == _G.ELITE) then
+        return "TagElite"
+    end
+    if known(id) then
+        if TAG_DUNGEON[id] then return "TagDonjon" end
+        if TAG_RAID[id] then return "TagRaid" end
+        if TAG_GROUP[id] then return "TagGroupe" end
+    end
+end
+
+-- Picto dans un texte : 12 points, gris clair.
+local function inlineIcon(icon, size)
+    local c = LIGHT
+    return ("|T%sIcones\\%s:%d:%d:0:0:64:64:0:64:0:64:%d:%d:%d|t"):format(CUI.MEDIA, icon, size, size,
+        math.floor(c[1] * 255), math.floor(c[2] * 255), math.floor(c[3] * 255))
+end
+
 local function zoneHere()
     local z = _G.GetRealZoneText and _G.GetRealZoneText() or _G.GetZoneText()
     return known(z) and z or nil
@@ -155,13 +192,19 @@ local function collect()
                     zones[#zones + 1] = zone
                 end
                 local complete = QL.IsComplete and QL.IsComplete(id)
-                local tag
+                local tag, tagIcon
                 if QL.GetQuestTagInfo then
                     local ok, t = pcall(QL.GetQuestTagInfo, id)
-                    if ok and t and known(t.tagName) then tag = t.tagName end
+                    if ok and t then
+                        tagIcon = tagIconOf(t)
+                        if not tagIcon and known(t.tagName) then tag = t.tagName end
+                    end
                 end
+                -- Quête de groupe : le nombre conseillé après son picto.
+                local groupSize = known(info.suggestedGroup) and info.suggestedGroup or 0
                 local q = {
-                    id = id, title = info.title, level = info.level, tag = tag, logIndex = i,
+                    id = id, title = info.title, level = info.level, tag = tag, tagIcon = tagIcon,
+                    groupSize = groupSize, logIndex = i,
                     complete = known(complete) and complete or false, watchIndex = order[id] or 999,
                     objectives = {},
                 }
@@ -199,6 +242,30 @@ local function collect()
         table.sort(list, before)
     end
     return zones
+end
+
+-- Quête suivie sur la carte (super-suivi) et distance ------------------------------------------------
+
+local function superTracked()
+    local ST = _G.C_SuperTrack
+    local id = ST and ST.GetSuperTrackedQuestID and ST.GetSuperTrackedQuestID()
+    return known(id) and id or nil
+end
+
+-- Clic sur la pastille : cette quête suivie sur la carte ; déjà suivie : plus aucune.
+local function toggleSuperTrack(id)
+    local ST = _G.C_SuperTrack
+    if not (ST and ST.SetSuperTrackedQuestID) then return end
+    ST.SetSuperTrackedQuestID(superTracked() == id and 0 or id)
+end
+
+-- « 120 m » (le jeu compte en mètres sur Forever) ; vide quand il ne sait pas.
+local function distanceText(id)
+    local QL = _G.C_QuestLog
+    if not (QL and QL.GetDistanceSqToQuest) then return "" end
+    local ok, sq, onContinent = pcall(QL.GetDistanceSqToQuest, id)
+    if not ok or not known(sq) or not sq or sq <= 0 or (known(onContinent) and onContinent == false) then return "" end
+    return L.SQ_DISTANCE:format(math.floor(math.sqrt(sq) + 0.5))
 end
 
 -- Liens et menu -----------------------------------------------------------------------------------
@@ -277,7 +344,8 @@ end
 
 -- Notre liste -------------------------------------------------------------------------------------
 
-local holder, scroll, content, back, sticky
+local holder, scroll, content, back, sticky, head
+local allCollapsed = false -- « – » de la barre du haut : tout replié
 local zoneRows, questRows, lineRows = {}, {}, {} -- cadres réutilisés
 local sessionClosed = {}   -- zones repliées sans les garder d'une session à l'autre
 local autoCollapsed = false -- replié par le repli automatique (combat, donjon)
@@ -383,9 +451,36 @@ local function questRow(i)
     if row then return row end
     row = _G.CreateFrame("Button", nil, content)
     row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    row.badge = row:CreateTexture(nil, "ARTWORK")
+    -- Fond plus clair et anneau blanc autour de la pastille : la quête suivie sur la carte.
+    row.trackBg = row:CreateTexture(nil, "BACKGROUND", nil, -1)
+    row.trackBg:SetTexture(WHITE)
+    row.trackBg:SetPoint("TOPLEFT", -4, 2)
+    row.trackBg:SetPoint("BOTTOMRIGHT", 4, -2)
+    row.trackBg:SetVertexColor(1, 1, 1, 0.07)
+    row.trackBg:Hide()
+    row.ring = row:CreateTexture(nil, "ARTWORK", nil, 1)
+    row.ring:SetTexture(CUI.MEDIA .. "Cercle")
+    row.ring:SetSize(18, 18)
+    row.ring:SetPoint("TOPLEFT", -2, 2)
+    row.ring:SetVertexColor(C.texte[1], C.texte[2], C.texte[3], 1)
+    row.ring:Hide()
+    row.badge = row:CreateTexture(nil, "ARTWORK", nil, 2)
     row.badge:SetSize(14, 14)
     row.badge:SetPoint("TOPLEFT", 0, 0)
+    -- Clic sur la pastille : quête suivie sur la carte (réglage).
+    row.badgeButton = _G.CreateFrame("Button", nil, row)
+    row.badgeButton:SetSize(16, 16)
+    row.badgeButton:SetPoint("TOPLEFT", -1, 1)
+    row.badgeButton:SetScript("OnClick", function()
+        if row.questID and M.db.superSuivi then toggleSuperTrack(row.questID) end
+    end)
+    row.badgeButton:SetScript("OnEnter", function(self)
+        if M.db.superSuivi then CUI:ShowTooltip(self, L.SQ_SUPER_SUIVI_AIDE) end
+    end)
+    row.badgeButton:SetScript("OnLeave", function(self) CUI:HideTooltip(self) end)
+    row.dist = newText(row, 11)
+    row.dist:SetJustifyH("RIGHT")
+    row.dist:SetTextColor(0.54, 0.55, 0.58)
     row.title = newText(row, 13)
     row.title:SetPoint("TOPLEFT", INDENT, 0)
     row.title:SetWordWrap(true)
@@ -477,6 +572,31 @@ local function setQuestItem(row, q)
     return true
 end
 
+-- Ligne « N autres quêtes à rendre » (regroupement, réglage) : se déplie d'un clic.
+local foldRows = {}
+local foldOpen = {} -- zone -> true : dépliée (le temps de la session)
+
+local function foldRow(i)
+    local row = foldRows[i]
+    if row then return row end
+    row = _G.CreateFrame("Button", nil, content)
+    row.chevron = row:CreateTexture(nil, "OVERLAY")
+    row.chevron:SetTexture(CUI.MEDIA .. "Icones\\Chevron")
+    row.chevron:SetSize(9, 9)
+    row.chevron:SetPoint("LEFT", INDENT, 0)
+    row.chevron:SetVertexColor(LIGHT[1], LIGHT[2], LIGHT[3])
+    row.text = newText(row, 11)
+    row.text:SetPoint("LEFT", row.chevron, "RIGHT", 5, 0)
+    row.text:SetJustifyV("MIDDLE")
+    row.text:SetTextColor(LIGHT[1], LIGHT[2], LIGHT[3])
+    row:SetScript("OnClick", function(self)
+        foldOpen[self.key] = not foldOpen[self.key] or nil
+        requestRefresh()
+    end)
+    foldRows[i] = row
+    return row
+end
+
 -- Ligne d'objectif (tiret ou coche, texte).
 local function lineRow(i)
     local line = lineRows[i]
@@ -542,8 +662,82 @@ local function layout()
     _G.wipe(placedZones)
     _G.wipe(placedItems)
     local titleSize, lineSize = s.tailleTitres, s.tailleObjectifs
+    local fi = 0
+    local tracked = s.superSuivi and superTracked() or nil
+    local function drawQuest(q)
+        qi = qi + 1
+        local row = questRow(qi)
+        row.questID = q.id
+        row.badge:SetTexture(q.complete and "Interface\\GossipFrame\\ActiveQuestIcon"
+            or "Interface\\GossipFrame\\AvailableQuestIcon")
+        row.title:SetFont(CUI:GetFont(), titleSize, "")
+        -- Objet de quête à droite : le texte lui laisse la place.
+        local itemRoom = setQuestItem(row, q) and (ITEM + 4) or 0
+        -- Distance à droite du titre (avant l'objet de quête).
+        local distRoom = s.distance and DIST or 0
+        row.dist:SetFont(CUI:GetFont(), math.max(9, lineSize - 1), "")
+        row.dist:ClearAllPoints()
+        row.dist:SetPoint("TOPRIGHT", row, "TOPRIGHT", -itemRoom, -1)
+        row.dist:SetText(s.distance and distanceText(q.id) or "")
+        row.dist:SetShown(s.distance)
+        -- Quête suivie sur la carte : fond plus clair, anneau blanc.
+        local isTracked = tracked ~= nil and tracked == q.id
+        row.trackBg:SetShown(isTracked)
+        row.ring:SetShown(isTracked)
+        row.title:SetWidth(width - INDENT - itemRoom - distRoom)
+        local level = known(q.level) and q.level > 0 and ("[" .. q.level .. "] ") or ""
+        local tag = q.tag and (" |cff9a9da5(" .. q.tag .. ")|r") or ""
+        if q.tagIcon then
+            tag = " " .. inlineIcon(q.tagIcon, titleSize)
+            if q.tagIcon == "TagGroupe" and q.groupSize > 1 then tag = tag .. "|cff9a9da5" .. q.groupSize .. "|r" end
+        end
+        row.title:SetText(level .. (q.title or "") .. tag)
+        local c = levelColor(q.level)
+        row.title:SetTextColor(c[1], c[2], c[3])
+        local top = y
+        y = y + row.title:GetStringHeight() + 2
+        -- Objectifs (ou « À rendre »).
+        local lines = q.objectives
+        if q.complete then lines = { { text = L.SQ_A_RENDRE, done = false, turnIn = true } } end
+        for _, o in ipairs(lines) do
+            li = li + 1
+            local line = lineRow(li)
+            line.mark:SetFont(CUI:GetFont(), lineSize, "")
+            line.text:SetFont(CUI:GetFont(), lineSize, "")
+            line.mark:ClearAllPoints()
+            line.mark:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT, -y)
+            line.text:ClearAllPoints()
+            line.text:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT + lineSize, -y)
+            line.text:SetWidth(width - INDENT - lineSize - itemRoom)
+            local color
+            if o.turnIn then
+                line.mark:SetText("")
+                color = LIGHT
+            elseif o.done then
+                line.mark:SetText("|TInterface\\RaidFrame\\ReadyCheck-Ready:0|t")
+                color = DONE
+            else
+                line.mark:SetText("-")
+                line.mark:SetTextColor(GREY[1], GREY[2], GREY[3])
+                color = (o.have and o.need and o.need > 0) and progressColor(o.have / o.need) or LIGHT
+            end
+            line.text:SetText(countFirst(o.text))
+            line.text:SetTextColor(color[1], color[2], color[3])
+            line.mark:Show()
+            line.text:Show()
+            placedItems[#placedItems + 1] = { a = line.mark, b = line.text, top = y }
+            y = y + line.text:GetStringHeight() + 1
+        end
+        row:ClearAllPoints()
+        row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
+        row:SetSize(width, math.max(y - top, itemRoom > 0 and ITEM or 0))
+        y = math.max(y, top + (itemRoom > 0 and ITEM or 0))
+        row:Show()
+        placedItems[#placedItems + 1] = { a = row, top = top }
+        y = y + 6
+    end
     for _, zone in ipairs(zones) do
-        local open = not autoCollapsed and (zone.zone == nil or isOpen(zone))
+        local open = not autoCollapsed and not allCollapsed and (zone.zone == nil or isOpen(zone))
         if zone.zone then
             zi = zi + 1
             local row = zoneRow(zi, content)
@@ -557,62 +751,33 @@ local function layout()
             y = y + row:GetHeight() + 4
         end
         if open then
+            -- Quêtes à rendre au-delà du nombre réglé : sous une ligne repliable, en fin de zone.
+            local shownDone, hidden = 0, {}
             for _, q in ipairs(zone.quests) do
-                qi = qi + 1
-                local row = questRow(qi)
-                row.questID = q.id
-                row.badge:SetTexture(q.complete and "Interface\\GossipFrame\\ActiveQuestIcon"
-                    or "Interface\\GossipFrame\\AvailableQuestIcon")
-                row.title:SetFont(CUI:GetFont(), titleSize, "")
-                -- Objet de quête à droite : le texte lui laisse la place.
-                local itemRoom = setQuestItem(row, q) and (ITEM + 4) or 0
-                row.title:SetWidth(width - INDENT - itemRoom)
-                local level = known(q.level) and q.level > 0 and ("[" .. q.level .. "] ") or ""
-                local tag = q.tag and (" |cff9a9da5(" .. q.tag .. ")|r") or ""
-                row.title:SetText(level .. (q.title or "") .. tag)
-                local c = levelColor(q.level)
-                row.title:SetTextColor(c[1], c[2], c[3])
-                local top = y
-                y = y + row.title:GetStringHeight() + 2
-                -- Objectifs (ou « À rendre »).
-                local lines = q.objectives
-                if q.complete then lines = { { text = L.SQ_A_RENDRE, done = false, turnIn = true } } end
-                for _, o in ipairs(lines) do
-                    li = li + 1
-                    local line = lineRow(li)
-                    line.mark:SetFont(CUI:GetFont(), lineSize, "")
-                    line.text:SetFont(CUI:GetFont(), lineSize, "")
-                    line.mark:ClearAllPoints()
-                    line.mark:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT, -y)
-                    line.text:ClearAllPoints()
-                    line.text:SetPoint("TOPLEFT", content, "TOPLEFT", INDENT + lineSize, -y)
-                    line.text:SetWidth(width - INDENT - lineSize - itemRoom)
-                    local color
-                    if o.turnIn then
-                        line.mark:SetText("")
-                        color = LIGHT
-                    elseif o.done then
-                        line.mark:SetText("|TInterface\\RaidFrame\\ReadyCheck-Ready:0|t")
-                        color = DONE
-                    else
-                        line.mark:SetText("-")
-                        line.mark:SetTextColor(GREY[1], GREY[2], GREY[3])
-                        color = (o.have and o.need and o.need > 0) and progressColor(o.have / o.need) or LIGHT
-                    end
-                    line.text:SetText(countFirst(o.text))
-                    line.text:SetTextColor(color[1], color[2], color[3])
-                    line.mark:Show()
-                    line.text:Show()
-                    placedItems[#placedItems + 1] = { a = line.mark, b = line.text, top = y }
-                    y = y + line.text:GetStringHeight() + 1
+                if q.complete and s.regrouper > 0 and shownDone >= s.regrouper then
+                    hidden[#hidden + 1] = q
+                else
+                    if q.complete then shownDone = shownDone + 1 end
+                    drawQuest(q)
                 end
+            end
+            if #hidden > 0 then
+                fi = fi + 1
+                local key = zone.zone or ""
+                local row = foldRow(fi)
+                row.key = key
+                row:SetSize(width, math.max(14, lineSize + 4))
                 row:ClearAllPoints()
-                row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
-                row:SetSize(width, math.max(y - top, itemRoom > 0 and ITEM or 0))
-                y = math.max(y, top + (itemRoom > 0 and ITEM or 0))
+                row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
+                row.text:SetFont(CUI:GetFont(), lineSize, "")
+                row.text:SetText(L.SQ_AUTRES_A_RENDRE:format(#hidden))
+                row.chevron:SetRotation(foldOpen[key] and 0 or (math.pi / 2))
                 row:Show()
-                placedItems[#placedItems + 1] = { a = row, top = top }
-                y = y + 6
+                placedItems[#placedItems + 1] = { a = row, top = y }
+                y = y + row:GetHeight() + 4
+                if foldOpen[key] then
+                    for _, q in ipairs(hidden) do drawQuest(q) end
+                end
             end
         end
         y = y + 2
@@ -620,13 +785,36 @@ local function layout()
     hideFrom(zoneRows, zi + 1)
     hideFrom(questRows, qi + 1)
     hideFrom(lineRows, li + 1)
+    hideFrom(foldRows, fi + 1)
     contentHeight = math.max(1, y)
     content:SetHeight(contentHeight)
+
+    -- Barre du haut : « Quêtes · suivies / dans le journal » et « – » (réglage).
+    local headH = s.afficherNombre and HEAD or 0
+    head:SetShown(s.afficherNombre)
+    if s.afficherNombre then
+        local QL = _G.C_QuestLog
+        local watchedCount = QL.GetNumQuestWatches and QL.GetNumQuestWatches() or 0
+        local _, inLog = QL.GetNumQuestLogEntries()
+        local maxQuests = QL.GetMaxNumQuestsCanAccept and QL.GetMaxNumQuestsCanAccept() or 25
+        head.text:SetFont(CUI:GetFont(), math.max(9, s.tailleTitres), "")
+        -- « Quêtes · 19/40 » (journal sur le maximum) ; « · 17 suivies » seulement si toutes ne le sont pas.
+        inLog = known(inLog) and inLog or 0
+        local text = L.SQ_NOMBRE:format(inLog, known(maxQuests) and maxQuests or 25)
+        if known(watchedCount) and watchedCount < inLog then
+            text = text .. L.SQ_NOMBRE_SUIVIES:format(watchedCount)
+        end
+        head.text:SetText(text)
+        head.toggle:SetText(allCollapsed and "+" or "–")
+    end
+    scroll:SetPoint("TOPLEFT", PAD, -(PAD + headH))
+    sticky:SetPoint("TOPLEFT", holder, "TOPLEFT", PAD, -(PAD + headH))
+    sticky:SetPoint("TOPRIGHT", holder, "TOPRIGHT", -PAD, -(PAD + headH))
 
     -- Le cadre suit sa liste jusqu'à la hauteur maximale (il grandit vers le bas), puis défile.
     local maxH = s.defilement and s.hauteur or math.huge
     local visible = math.min(contentHeight, maxH)
-    holder:SetSize(s.largeur, visible + 2 * PAD)
+    holder:SetSize(s.largeur, visible + 2 * PAD + headH)
     if scroll:GetVerticalScroll() > maxScroll() then scroll:SetVerticalScroll(maxScroll()) end
     back:SetShown(s.fond and #zones > 0)
     back:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], s.opaciteFond / 100)
@@ -778,6 +966,33 @@ local function build()
         updateSticky()
     end)
 
+    -- Barre du haut : nombre de quêtes, « – » qui replie tout (ou « + » qui déplie).
+    head = _G.CreateFrame("Frame", nil, holder)
+    head:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, 0)
+    head:SetPoint("TOPRIGHT", holder, "TOPRIGHT", 0, 0)
+    head:SetHeight(HEAD + PAD - 4)
+    head.text = newText(head, 13)
+    head.text:SetPoint("LEFT", PAD + 2, -2)
+    head.text:SetJustifyV("MIDDLE")
+    head.text:SetTextColor(GREY[1], GREY[2], GREY[3])
+    head.line = head:CreateTexture(nil, "ARTWORK")
+    head.line:SetTexture(WHITE)
+    head.line:SetHeight(1)
+    head.line:SetPoint("BOTTOMLEFT", 1, 0)
+    head.line:SetPoint("BOTTOMRIGHT", -1, 0)
+    head.line:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], 0.6)
+    local toggle = _G.CreateFrame("Button", nil, head)
+    toggle:SetSize(20, 20)
+    toggle:SetPoint("RIGHT", -PAD + 2, -2)
+    head.toggle = toggle:CreateFontString(nil, "OVERLAY")
+    head.toggle:SetFont(CUI:GetFont(), 15, "")
+    head.toggle:SetPoint("CENTER")
+    head.toggle:SetTextColor(C.or_[1], C.or_[2], C.or_[3])
+    toggle:SetScript("OnClick", function()
+        allCollapsed = not allCollapsed
+        requestRefresh()
+    end)
+
     -- Titre de zone fixé en haut pendant le défilement (même fond que le cadre, par-dessus la liste).
     sticky = _G.CreateFrame("Button", nil, holder)
     sticky:SetPoint("TOPLEFT", holder, "TOPLEFT", PAD, -PAD)
@@ -830,6 +1045,14 @@ function M:OnEnable()
     end)
     self:On("PLAYER_REGEN_DISABLED", function() updateAutoCollapse(true) end)
     self:On("PLAYER_REGEN_ENABLED", function() updateAutoCollapse(false) end)
+    pcall(self.On, self, "SUPER_TRACKING_CHANGED", requestRefresh)
+    -- Distance : relue chaque seconde, sans redessiner la liste.
+    self:Every(1, function()
+        if not (holder and M.db.distance and holder:IsShown()) then return end
+        for _, row in ipairs(questRows) do
+            if row:IsShown() and row.questID then row.dist:SetText(distanceText(row.questID)) end
+        end
+    end)
     -- Le reste du suivi du jeu se met à jour souvent : habillage repassé régulièrement (léger).
     self:Every(0.5, function() if holder then skinGame() end end)
 end
