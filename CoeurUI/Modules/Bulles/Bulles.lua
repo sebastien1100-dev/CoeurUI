@@ -1,7 +1,7 @@
 -- Module « Bulles de discussion » (choix du joueur le 27/11/2026) : les bulles au-dessus des personnages
--- au style des infobulles de CœurUI : fond sombre presque opaque, liseré gris fin, coins à peine
--- arrondis, pas d'or ; la pointe du jeu (dessin sombre au bord doré) est remplacée par la nôtre, au même
--- style (Media/Pointe.tga, tools/generer_pointe.py). Réglages : taille du texte,
+-- au style des infobulles de CœurUI (style « Givre », planche « Bulles de discussion ») : fond ardoise,
+-- double liseré très discret, coins arrondis, pas d'or ; la pointe du jeu (dessin sombre au bord doré)
+-- est remplacée par la nôtre, au même liseré sombre (Media/Pointe.tga, tools/generer_pointe.py). Réglages : taille du texte,
 -- opacité du fond, couleur du texte selon le canal (sinon gris clair).
 -- Dans les donjons et les raids, le jeu verrouille les bulles (cadres interdits) : elles restent les
 -- siennes. Le jeu ne prévient pas quand une bulle apparaît : on les regarde juste après chaque message
@@ -29,6 +29,8 @@ local M = CUI:RegisterModule({
 local EVENTS = { "CHAT_MSG_SAY", "CHAT_MSG_YELL", "CHAT_MSG_MONSTER_SAY", "CHAT_MSG_MONSTER_YELL",
                  "CHAT_MSG_MONSTER_PARTY", "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER" }
 
+local RETRAIT = 4 -- notre cadre, en retrait de 4 points en haut et en bas de celui du jeu
+
 local function textOf(frame)
     if frame.String then return frame.String end
     for _, region in ipairs({ frame:GetRegions() }) do
@@ -46,19 +48,20 @@ local function skin(frame)
     for _, child in ipairs({ frame:GetChildren() }) do
         child:SetAlpha(0)
     end
-    frame.cuiBorder, frame.cuiFill = CUI:CreateBorderedRect(frame, 3, C.bordureDiscrete, C.fond, "BACKGROUND", -8)
-    -- Pointe : un triangle gris (le liseré) et, par-dessus, un triangle à la couleur du fond, un point plus
-    -- haut pour couvrir le liseré du bas de la bulle à cet endroit.
-    local edge = frame:CreateTexture(nil, "BACKGROUND", nil, -5)
+    -- Un peu moins haute que la bulle du jeu (son cadre laisse beaucoup de marge au-dessus et en dessous).
+    frame.cuiPanel = CUI:CreatePanel(frame, { shadow = false, inset = { 0, RETRAIT } })
+    -- Pointe : un triangle sombre (le liseré) et, par-dessus, un triangle à la couleur du fond, un point
+    -- plus haut pour couvrir le liseré du bas de la bulle à cet endroit.
+    local edge = frame:CreateTexture(nil, "BACKGROUND", nil, -4)
     edge:SetTexture(CUI.MEDIA .. "Pointe")
     edge:SetSize(16, 8)
-    edge:SetPoint("TOP", frame, "BOTTOM", 0, 0)
-    local c = C.bordureDiscrete
+    edge:SetPoint("TOP", frame, "BOTTOM", 0, RETRAIT)
+    local c = C.lisereSombre
     edge:SetVertexColor(c[1], c[2], c[3], 1)
-    local fill = frame:CreateTexture(nil, "BACKGROUND", nil, -4)
+    local fill = frame:CreateTexture(nil, "BACKGROUND", nil, -3)
     fill:SetTexture(CUI.MEDIA .. "Pointe")
     fill:SetSize(14, 7)
-    fill:SetPoint("TOP", frame, "BOTTOM", 0, 1)
+    fill:SetPoint("TOP", frame, "BOTTOM", 0, RETRAIT + 1)
     frame.cuiTail = fill
     frame.cuiSkinned = true
 end
@@ -67,8 +70,9 @@ end
 local function apply(frame)
     local s = M.db
     local a = s.opacite / 100
-    frame.cuiFill:SetColor({ C.fond[1], C.fond[2], C.fond[3], a })
-    frame.cuiTail:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], a)
+    frame.cuiPanel:SetOpacity(a) -- le fond suit le réglage, le liseré reste net
+    local f = C.panneau
+    frame.cuiTail:SetVertexColor(f[1], f[2], f[3], a)
     local text = textOf(frame)
     if text then
         text:SetFont(CUI:GetFont(), s.taille, "")

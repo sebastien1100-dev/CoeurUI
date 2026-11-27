@@ -8,7 +8,7 @@
 -- de thème n'aura qu'à appeler CUI:ApplyTheme() pour tout repeindre.
 --
 --   local p = CUI:CreatePanel(cadre, options)   -- fond, double liseré, ombre (options : radius, fill,
---                                                -- shadow = false, inset)
+--                                                -- shadow = false, inset : nombre ou { x, y })
 --   p.border:SetColor(couleur)                   -- liseré extérieur (cible, menace, affaiblissement...)
 --   p:SetShown(bool), p:SetFillColor(couleur)
 --   CUI:SetBarTexture(barre, clé)                -- texture de barre ; « striee » : couleur unie + stries
@@ -87,12 +87,18 @@ function Outline:SetShown(shown)
     for _, t in ipairs(self.parts) do t:SetShown(shown) end
 end
 
-local function createOutline(parent, radius, inset, sublevel)
+-- Retrait d'un cadre : un nombre (le même partout) ou { x, y } (côtés, haut et bas).
+local function insetXY(inset)
+    if type(inset) == "table" then return inset[1] or 0, inset[2] or 0 end
+    return inset or 0, inset or 0
+end
+
+local function createOutline(parent, radius, ix, iy, sublevel)
     local o = setmetatable({ parts = {} }, Outline)
     local r = math.max(2, math.min(4, radius))
     local file = CUI.MEDIA .. "Contour" .. r
-    for _, c in ipairs({ { "TOPLEFT", inset, -inset, 0, 1, 0, 1 }, { "TOPRIGHT", -inset, -inset, 1, 0, 0, 1 },
-                         { "BOTTOMLEFT", inset, inset, 0, 1, 1, 0 }, { "BOTTOMRIGHT", -inset, inset, 1, 0, 1, 0 } }) do
+    for _, c in ipairs({ { "TOPLEFT", ix, -iy, 0, 1, 0, 1 }, { "TOPRIGHT", -ix, -iy, 1, 0, 0, 1 },
+                         { "BOTTOMLEFT", ix, iy, 0, 1, 1, 0 }, { "BOTTOMRIGHT", -ix, iy, 1, 0, 1, 0 } }) do
         local t = parent:CreateTexture(nil, "BACKGROUND", nil, sublevel)
         t:SetTexture(file)
         t:SetTexCoord(c[4], c[5], c[6], c[7])
@@ -108,10 +114,10 @@ local function createOutline(parent, radius, inset, sublevel)
         if w then t:SetWidth(w) else t:SetHeight(h) end
         o.parts[#o.parts + 1] = t
     end
-    line("TOPLEFT", inset + r, -inset, "TOPRIGHT", -inset - r, -inset, nil, 1)
-    line("BOTTOMLEFT", inset + r, inset, "BOTTOMRIGHT", -inset - r, inset, nil, 1)
-    line("TOPLEFT", inset, -inset - r, "BOTTOMLEFT", inset, inset + r, 1, nil)
-    line("TOPRIGHT", -inset, -inset - r, "BOTTOMRIGHT", -inset, inset + r, 1, nil)
+    line("TOPLEFT", ix + r, -iy, "TOPRIGHT", -ix - r, -iy, nil, 1)
+    line("BOTTOMLEFT", ix + r, iy, "BOTTOMRIGHT", -ix - r, iy, nil, 1)
+    line("TOPLEFT", ix, -iy - r, "BOTTOMLEFT", ix, iy + r, 1, nil)
+    line("TOPRIGHT", -ix, -iy - r, "BOTTOMRIGHT", -ix, iy + r, 1, nil)
     return o
 end
 
@@ -143,9 +149,9 @@ function Panel:SetOpacity(a)
     local ring = lighten(f, theme.lisereClair)
     local translucent = a < 0.999
     if translucent and not self.edge then
-        local parent, radius, inset = self.parent, self.radius, self.inset
-        self.edge = createOutline(parent, radius, inset, -7)
-        self.edgeIn = createOutline(parent, math.max(2, radius - 1), inset + 1, -6)
+        local parent, radius, ix, iy = self.parent, self.radius, self.ix, self.iy
+        self.edge = createOutline(parent, radius, ix, iy, -7)
+        self.edgeIn = createOutline(parent, math.max(2, radius - 1), ix + 1, iy + 1, -6)
     end
     local shown = self.fill.parts[1]:IsShown()
     if self.edge then
@@ -193,13 +199,13 @@ function CUI:CreatePanel(parent, opts)
     opts = opts or {}
     local theme = self:GetTheme()
     local radius = opts.radius or theme.rayon
-    local inset = opts.inset or 0
-    local p = setmetatable({ customFill = opts.fill, parent = parent, radius = radius, inset = inset }, Panel)
+    local ix, iy = insetXY(opts.inset)
+    local p = setmetatable({ customFill = opts.fill, parent = parent, radius = radius, ix = ix, iy = iy }, Panel)
     if opts.shadow ~= false then
         local t = parent:CreateTexture(nil, "BACKGROUND", nil, -8)
         t:SetTexture(SHADOW)
-        t:SetPoint("TOPLEFT", -SHADOW_OUT + inset, SHADOW_OUT - inset)
-        t:SetPoint("BOTTOMRIGHT", SHADOW_OUT - inset, -SHADOW_OUT + inset)
+        t:SetPoint("TOPLEFT", -SHADOW_OUT + ix, SHADOW_OUT - iy)
+        t:SetPoint("BOTTOMRIGHT", SHADOW_OUT - ix, -SHADOW_OUT + iy)
         -- Neuf morceaux : coins gardés, bords et centre étirés (sinon l'ombre se déforme).
         if t.SetTextureSliceMargins then
             pcall(t.SetTextureSliceMargins, t, SHADOW_SLICE, SHADOW_SLICE, SHADOW_SLICE, SHADOW_SLICE)
@@ -209,9 +215,9 @@ function CUI:CreatePanel(parent, opts)
         end
         p.shadow = t
     end
-    p.border = self:CreateRoundRect(parent, radius, theme.lisereSombre, inset, "BACKGROUND", -7)
-    p.ring = self:CreateRoundRect(parent, math.max(1, radius - 1), theme.panneau, inset + 1, "BACKGROUND", -6)
-    p.fill = self:CreateRoundRect(parent, math.max(1, radius - 2), theme.panneau, inset + 2, "BACKGROUND", -5)
+    p.border = self:CreateRoundRect(parent, radius, theme.lisereSombre, { ix, iy }, "BACKGROUND", -7)
+    p.ring = self:CreateRoundRect(parent, math.max(1, radius - 1), theme.panneau, { ix + 1, iy + 1 }, "BACKGROUND", -6)
+    p.fill = self:CreateRoundRect(parent, math.max(1, radius - 2), theme.panneau, { ix + 2, iy + 2 }, "BACKGROUND", -5)
     p:Paint()
     panels[p] = true
     return p

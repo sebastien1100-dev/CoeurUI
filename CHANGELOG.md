@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.53.0 · 28/11/2026
+
+- Bulles de discussion au style « Givre » : le cadre des infobulles (fond ardoise, double liseré très discret,
+  coins arrondis) et une pointe au même liseré sombre. L'opacité réglée éclaircit le fond, le liseré reste net.
+- Bulles un peu moins hautes (le cadre du jeu laissait beaucoup de marge au-dessus et au-dessous du texte).
+- Un /reload suffit.
+
 ## 0.52.0 · 28/11/2026
 
 - Effets au style « Givre » : chaque amélioration et chaque affaiblissement dans une case du thème (fond sombre,

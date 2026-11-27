@@ -13,3 +13,11 @@
 8. En groupe, `/groupe salut` : bulle au même style.
 9. Dans un donjon : bulles du jeu, aucune erreur.
 10. Couper le module : /reload demandé ; après : bulles du jeu.
+
+## 0.53.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.53.0 ».
+2. Dire quelque chose (/dire) : bulle au fond ardoise, double liseré très discret, coins arrondis ; pointe dessous
+   au liseré sombre, sans trait à la jonction.
+3. Opacité 60 : fond plus léger, liseré net, pointe aussi légère que le fond.
+4. Crieur de Hurlevent, groupe : couleur du texte selon le canal (réglage) ; coupé : gris clair.
