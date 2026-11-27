@@ -25,3 +25,12 @@
 12. Le petit bouton du jeu pour replier les améliorations a disparu.
 13. Couper le module : demande un rechargement ; après : les effets du jeu reviennent comme avant.
 14. Langue anglaise : module « Auras », pages « Buffs » et « Debuffs ».
+
+## 0.52.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.52.0 ».
+2. Améliorations : chaque icône dans une case sombre au double liseré discret, coins arrondis, ombre douce
+   dessous ; temps sous l'icône (blanc sous 10 s), nombre en bas à droite.
+3. Affaiblissement (magie, malédiction, poison, maladie) : liseré extérieur de la couleur du type ; physique :
+   rouge cœur. En combat : la couleur suit toujours.
+4. Taille réglée plus grande ou plus petite : la case et l'ombre suivent ; clic droit pour annuler : comme avant.

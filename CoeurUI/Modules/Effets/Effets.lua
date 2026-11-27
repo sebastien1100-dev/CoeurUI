@@ -7,6 +7,8 @@
 --     quelle, même cachée) ;
 --   - améliorations et affaiblissements indépendants : chacun son cadre au cadenas, chacun ses
 --     réglages (sous-onglets).
+-- Style « Givre » (planche « Effets » de la direction artistique, avec ombre) : chaque effet dans une
+-- case du thème (fond sombre, double liseré discret, coins arrondis, ombre douce).
 -- Clic droit pour annuler, infobulle : ceux du jeu. Couper le module demande un /reload.
 local _, CUI = ...
 local C = CUI.Colors
@@ -70,8 +72,6 @@ local M = CUI:RegisterModule({
     },
 })
 
-local WHITE = "Interface\\Buttons\\WHITE8x8"
-local FOND = { 0.06, 0.07, 0.09, 1 }
 
 local GROUPS = {
     { key = "buffs", frame = "BuffFrame", label = "EF_BUFFS", default = { "TOPRIGHT", "TOPRIGHT", -230, -16 } },
@@ -99,8 +99,9 @@ local function hide(region)
     if region and region.SetAlpha then region:SetAlpha(0) end
 end
 
+-- Liseré extérieur de la case (couleur du type pour un affaiblissement ; valeurs passées telles quelles).
 local function setBorderColor(b, r, g, bl)
-    for _, line in ipairs(b.cuiLines) do line:SetVertexColor(r, g, bl, 1) end
+    b.cuiPanel.border:SetColor({ r, g, bl, 1 })
 end
 
 local function paintBorder(b)
@@ -115,7 +116,7 @@ local function paintBorder(b)
         setBorderColor(b, C.coeur[1], C.coeur[2], C.coeur[3])
         return
     end
-    setBorderColor(b, C.graphite[1], C.graphite[2], C.graphite[3])
+    setBorderColor(b, C.lisereSombre[1], C.lisereSombre[2], C.lisereSombre[3])
 end
 
 -- Temps : gris clair, blanc sous 10 s (« 8 s », « 8 sec »...) ; texte caché par le jeu : gris clair.
@@ -177,22 +178,14 @@ local function skinButton(b, key)
         end
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -1)
-        icon:SetPoint("BOTTOMRIGHT", b, "TOPRIGHT", -1, -b:GetWidth() + 1)
+        icon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", b, "TOPRIGHT", -2, -b:GetWidth() + 2)
         b.cuiIcon = icon
     end
     -- Décor du jeu invisible (contours, symbole du type, bordure d'enchantement).
     for _, k in ipairs({ "Border", "DebuffBorder", "TempEnchantBorder", "Symbol", "IconBorder" }) do hide(b[k]) end
-    -- Fond sombre et liseré de 1 point (4 traits) autour de l'icône.
-    b.cuiBack = b.cuiBack or b:CreateTexture(nil, "BACKGROUND", nil, -8)
-    b.cuiBack:SetTexture(WHITE)
-    b.cuiBack:SetVertexColor(FOND[1], FOND[2], FOND[3], FOND[4])
-    b.cuiLines = b.cuiLines or {}
-    for i = 1, 4 do
-        local t = b.cuiLines[i] or b:CreateTexture(nil, "OVERLAY", nil, 6)
-        t:SetTexture(WHITE)
-        b.cuiLines[i] = t
-    end
+    -- Case du thème autour de l'icône : fond sombre, double liseré discret, ombre douce.
+    b.cuiPanel = b.cuiPanel or CUI:CreatePanel(b, { radius = 3, fill = C.case })
     -- Le jeu recolore la bordure d'un affaiblissement selon son type : on recopie sa couleur.
     if b.DebuffBorder and b.DebuffBorder.SetVertexColor then
         _G.hooksecurefunc(b.DebuffBorder, "SetVertexColor", function(_, r, g, bl)
@@ -223,16 +216,9 @@ local function styleButton(b)
     b:SetSize(size, size)
     if b.cuiIcon then
         b.cuiIcon:ClearAllPoints()
-        b.cuiIcon:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -1)
-        b.cuiIcon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -1, 1)
+        b.cuiIcon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
+        b.cuiIcon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
     end
-    b.cuiBack:ClearAllPoints()
-    b.cuiBack:SetAllPoints(b)
-    local l = b.cuiLines
-    l[1]:ClearAllPoints(); l[1]:SetPoint("TOPLEFT"); l[1]:SetPoint("TOPRIGHT"); l[1]:SetHeight(1)
-    l[2]:ClearAllPoints(); l[2]:SetPoint("BOTTOMLEFT"); l[2]:SetPoint("BOTTOMRIGHT"); l[2]:SetHeight(1)
-    l[3]:ClearAllPoints(); l[3]:SetPoint("TOPLEFT"); l[3]:SetPoint("BOTTOMLEFT"); l[3]:SetWidth(1)
-    l[4]:ClearAllPoints(); l[4]:SetPoint("TOPRIGHT"); l[4]:SetPoint("BOTTOMRIGHT"); l[4]:SetWidth(1)
     paintBorder(b)
     local font = CUI:GetFont()
     local d = b.cuiDuration

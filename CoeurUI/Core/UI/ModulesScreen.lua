@@ -19,7 +19,7 @@ local NAV_H = 32                  -- hauteur d'une ligne de la colonne de gauche
 
 local window, side, sideScroll, main, body
 local homeTitle, homeIntro, pageCrumb, pageTitle, pageState, pageSwitch, pageLine, emptyText
-local footer, summary, closeButton, reloadButton, defaultsButton
+local footer, summary, reloadButton, defaultsButton
 local settingsItem, generalPanel, lookPanel, lockButton, lockLabel, versionText, reloadIcon
 local navItems, cards, panels = {}, {}, {}
 local paintLock, createLockButton -- plus bas (cadenas)
@@ -573,9 +573,6 @@ local function createWindow()
     emptyText = CUI:CreateText(body.child, "normal", "texteDiscret")
     emptyText:SetPoint("TOPLEFT", PAD, -4)
 
-    closeButton = CUI:CreateButton(footer, L.FERMER)
-    closeButton:SetPoint("RIGHT", -12, 0)
-    closeButton:SetScript("OnClick", function() window:Hide() end)
     reloadButton = CUI:CreateReloadButton(footer)
     reloadButton:Hide()
     defaultsButton = CUI:CreateButton(footer, L.VALEURS_DEFAUT)
@@ -605,26 +602,32 @@ local function plural(forms, n)
 end
 
 -- Pied : de droite à gauche, Fermer, Recharger (si besoin), Valeurs par défaut (page).
+-- Boutons du bas, de droite à gauche (plus de bouton « Fermer » : la croix du titre suffit).
 local function layoutFooter(waitReload, withDefaults, summaryText)
-    local anchor = closeButton
+    local anchor -- nil : contre le bord droit
+    local function place(b)
+        b:ClearAllPoints()
+        if anchor then
+            b:SetPoint("RIGHT", anchor, "LEFT", -8, 0)
+        else
+            b:SetPoint("RIGHT", footer, "RIGHT", -12, 0)
+        end
+        anchor = b
+    end
     -- Le bouton visible n'est pas protégé : on peut le montrer ou le cacher même en combat.
     -- Le bouton protégé qui le recouvre suit tout seul, hors combat.
     reloadButton:SetShown(waitReload)
-    if waitReload then
-        reloadButton:ClearAllPoints()
-        reloadButton:SetPoint("RIGHT", anchor, "LEFT", -8, 0)
-        anchor = reloadButton
-    end
+    if waitReload then place(reloadButton) end
     defaultsButton:SetShown(withDefaults)
-    if withDefaults then
-        defaultsButton:ClearAllPoints()
-        defaultsButton:SetPoint("RIGHT", anchor, "LEFT", -8, 0)
-        anchor = defaultsButton
-    end
+    if withDefaults then place(defaultsButton) end
     summary:SetText(summaryText or "")
     summary:ClearAllPoints()
     summary:SetPoint("LEFT", PAD, 0)
-    summary:SetPoint("RIGHT", anchor, "LEFT", -12, 0)
+    if anchor then
+        summary:SetPoint("RIGHT", anchor, "LEFT", -12, 0)
+    else
+        summary:SetPoint("RIGHT", footer, "RIGHT", -12, 0)
+    end
 end
 
 function CUI:RefreshModulesScreen()

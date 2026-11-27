@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.52.0 · 28/11/2026
+
+- Effets au style « Givre » : chaque amélioration et chaque affaiblissement dans une case du thème (fond sombre,
+  double liseré discret, coins arrondis) avec une ombre douce. Les affaiblissements gardent le liseré de la
+  couleur de leur type.
+- Un /reload suffit.
+
+## 0.51.1 · 28/11/2026
+
+- Fenêtre de CœurUI : le bouton « Fermer » en bas est retiré (la croix en haut à droite et Échap ferment la
+  fenêtre) ; « Valeurs par défaut » prend sa place.
+- Un /reload suffit.
+
 ## 0.51.0 · 28/11/2026
 
 - Minicarte au style « Givre » : la carte est posée dans le panneau du thème (double liseré très discret, coins
