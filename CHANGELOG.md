@@ -2,6 +2,13 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.30.0 · 27/11/2026
+
+- Sacs : vente de la camelote. Chez un marchand, bouton « Vendre » avec le prix sur la section Camelote (en vrac :
+  au-dessus de la grille) ; le total vendu s'écrit dans la discussion.
+- Réglage « Vendre la camelote » : bouton chez le marchand, toute seule en ouvrant un marchand, ou jamais.
+- Un /reload suffit.
+
 ## 0.29.0 · 27/11/2026
 
 - Nouveau module « Sacs et banque » (coupé d'office), première étape : tous les sacs dans une seule fenêtre sobre,

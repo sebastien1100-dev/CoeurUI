@@ -34,3 +34,17 @@
 15. En combat : ouvrir les sacs et utiliser une potion marchent ; aucune erreur.
 16. La banque (chez le banquier) : encore celle du jeu à cette étape, ses sacs s'ouvrent normalement.
 17. Langue anglaise : « Bags », « EQUIPMENT », « 12g 34s 5c ».
+
+## 0.30.0 · étape 2 : la camelote
+
+1. /reload. `/cui version` : « 0.30.0 ». Réglages du module : section Camelote, menu « Vendre la camelote »
+   (Bouton chez le marchand par défaut).
+2. Avec des objets gris dans les sacs, ouvrir un marchand : bouton « Vendre · x pa y pc » à droite du titre
+   CAMELOTE ; survol : infobulle. Sans marchand : pas de bouton.
+3. Clic : les objets gris partent un par un ; dans la discussion « Camelote vendue : ... » ; l'argent monte
+   d'autant ; le bouton disparaît. On peut les racheter dans l'onglet Rachat du marchand.
+4. Fermer le marchand pendant la vente : elle s'arrête, aucune erreur.
+5. En vrac (bouton liste) : le bouton est sur sa propre ligne au-dessus de la grille.
+6. Réglage « Toute seule en ouvrant un marchand » : la camelote se vend dès l'ouverture, total dans la discussion.
+7. Réglage « Jamais » : aucun bouton, rien n'est vendu.
+8. Un objet gris sans valeur : il n'est pas vendu et ne compte pas.

@@ -51,6 +51,20 @@ function CUI:ItemInstant(linkOrID)
     return itemID, classID, subclassID, equipLoc
 end
 
+-- Prix de vente d'un objet chez un marchand (une unité, en pièces de cuivre) ; nil si inconnu.
+function CUI:ItemSellPrice(linkOrID)
+    local CI = item()
+    if not (CI and CI.GetItemInfo) or linkOrID == nil then return nil end
+    local ok, price = pcall(function() return select(11, CI.GetItemInfo(linkOrID)) end)
+    return ok and price or nil
+end
+
+-- Utiliser une case d'un sac (chez un marchand : la vendre).
+function CUI:BagUse(bag, slot)
+    local CC = container()
+    if CC and CC.UseContainerItem then CC.UseContainerItem(bag, slot) end
+end
+
 -- Niveau d'objet (celui affiché par le jeu).
 function CUI:ItemLevel(link)
     local CI = item()

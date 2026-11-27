@@ -10,7 +10,8 @@
 --   - recherche par nom (le reste s'assombrit) ; en bas : sacs équipés, places libres, argent ;
 --   - déplacée en glissant sa barre de titre (ou au cadenas).
 -- Les cases sont les boutons d'objet du jeu (ContainerFrameItemButtonTemplate) : clics, glisser,
--- infobulle et utilisation restent ceux du jeu. Étapes suivantes : camelote, banque.
+-- infobulle et utilisation restent ceux du jeu. Camelote : vendue chez le marchand (bouton ou toute
+-- seule). Étape suivante : banque.
 -- Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -30,6 +31,7 @@ local M = CUI:RegisterModule({
         categories = true, aPart = true, parRangee = 10, taille = 34, espacement = 4,
         ilvl = true, qualite = true, nouveaux = true,
         emplacements = true, -- emplacements de sac en bas (bouton de la barre de titre)
+        vente = "bouton",    -- camelote : « bouton » chez le marchand, « auto » (toute seule), « jamais »
     },
     settings = {
         { type = "section", text = "SAC_RANGEMENT" },
@@ -44,6 +46,12 @@ local M = CUI:RegisterModule({
         { type = "toggle", key = "ilvl", label = "SAC_ILVL" },
         { type = "toggle", key = "qualite", label = "SAC_QUALITE" },
         { type = "toggle", key = "nouveaux", label = "SAC_NOUVEAUX" },
+        { type = "section", text = "SAC_CAT_CAMELOTE" },
+        { type = "dropdown", key = "vente", label = "SAC_VENTE", options = {
+            { value = "bouton", text = "SAC_VENTE_BOUTON" },
+            { value = "auto", text = "SAC_VENTE_AUTO" },
+            { value = "jamais", text = "SAC_VENTE_JAMAIS" },
+        } },
     },
 })
 
@@ -78,7 +86,8 @@ end
 
 -- Fenêtre -------------------------------------------------------------------------------------
 
-local win, search, freeText, moneyText
+local win, search, freeText, moneyText, sellButton
+local merchantOpen, selling = false, false -- marchand ouvert ; vente de la camelote en cours
 local holders = {}   -- sac -> cadre porteur (son ID = le sac, demandé par les boutons du jeu)
 local buttons = {}   -- sac -> case -> bouton
 local titles = {}    -- textes de section réutilisés
@@ -285,6 +294,22 @@ local function titleFS(i)
     return fs
 end
 
+-- Camelote vendable des sacs : liste des cases et prix total (en cuivre).
+local function junkList()
+    local list, total = {}, 0
+    for _, bag in ipairs(playerBags()) do
+        for slot = 1, CUI:BagSlots(bag) do
+            local info = CUI:BagItem(bag, slot)
+            if info and info.quality == 0 and not info.hasNoValue and not info.isLocked then
+                local price = (CUI:ItemSellPrice(info.itemID or info.hyperlink) or 0) * (info.stackCount or 1)
+                list[#list + 1] = { bag = bag, slot = slot, itemID = info.itemID, price = price }
+                total = total + price
+            end
+        end
+    end
+    return list, total
+end
+
 -- Range toute la fenêtre (cases, sections, taille).
 local function layout()
     if not win then return end
@@ -361,6 +386,23 @@ local function layout()
             all[#all + 1] = { bag = nb.bag, slot = slot, info = CUI:BagItem(nb.bag, slot) }
         end
     end
+    -- Bouton « Vendre » : chez un marchand, s'il y a de la camelote à vendre.
+    local showSell = false
+    if sellButton then
+        sellButton:Hide()
+        if merchantOpen and not selling and s.vente ~= "jamais" then
+            local list, total = junkList()
+            showSell = #list > 0
+            if showSell then
+                sellButton:SetLabel(total > 0 and L.SAC_VENDRE_PRIX:format(moneyString(total)) or L.SAC_VENDRE)
+            end
+        end
+    end
+    local function placeSell()
+        sellButton:ClearAllPoints()
+        sellButton:SetPoint("TOPRIGHT", win, "TOPRIGHT", -PAD, -(y - 3))
+        sellButton:Show()
+    end
     if s.categories then
         local groups = {}
         for _, e in ipairs(all) do
@@ -369,9 +411,18 @@ local function layout()
             table.insert(groups[cat], e)
         end
         for _, cat in ipairs(CATEGORIES) do
-            if groups[cat] and #groups[cat] > 0 then section(L[CATEGORY_TITLES[cat]], groups[cat]) end
+            if groups[cat] and #groups[cat] > 0 then
+                if cat == "camelote" and showSell then placeSell() end
+                section(L[CATEGORY_TITLES[cat]], groups[cat])
+            end
         end
     else
+        -- En vrac : le bouton a sa propre ligne, au-dessus de la grille.
+        if showSell then
+            y = y + 3
+            placeSell()
+            y = y + 22
+        end
         section(nil, all)
     end
 
@@ -427,6 +478,35 @@ local function requestRefresh()
         pending = false
         refresh()
     end)
+end
+
+-- Vente de la camelote : une case toutes les 0,15 s (le serveur refuse les ventes trop rapides),
+-- arrêtée si le marchand se ferme ; le total vendu est écrit dans la discussion.
+local function sellJunk()
+    if selling or not merchantOpen then return end
+    local list = junkList()
+    if #list == 0 then return end
+    selling = true
+    requestRefresh()
+    local i, sold = 0, 0
+    local function step()
+        i = i + 1
+        local e = list[i]
+        if not e or not merchantOpen then
+            selling = false
+            if sold > 0 then CUI:Print(L.SAC_CAMELOTE_VENDUE:format(moneyString(sold))) end
+            requestRefresh()
+            return
+        end
+        -- La case n'a pas changé entre-temps (objet déplacé, vendu à la main...).
+        local info = CUI:BagItem(e.bag, e.slot)
+        if info and info.itemID == e.itemID and not info.isLocked then
+            CUI:BagUse(e.bag, e.slot)
+            sold = sold + e.price
+        end
+        M:After(0.15, step)
+    end
+    step()
 end
 
 -- Bouton d'un sac équipé : son icône ; clic : le prendre, ou poser celui qu'on tient.
@@ -604,6 +684,13 @@ local function build()
             search:ClearFocus()
         end
     end)
+    -- Bouton « Vendre » de la camelote (placé par layout, chez un marchand seulement).
+    sellButton = CUI:CreateButton(win, "", false, true)
+    sellButton:SetHeight(18)
+    sellButton:Hide()
+    sellButton:SetScript("OnClick", function() sellJunk() end)
+    sellButton:HookScript("OnEnter", function(self) CUI:ShowTooltip(self, L.SAC_VENDRE_NOTE) end)
+    sellButton:HookScript("OnLeave", function(self) CUI:HideTooltip(self) end)
     win:SetSize(400, 300)
     CUI:RegisterMover({ key = "sacs", frame = win, label = "SAC_TITRE", point = "BOTTOMRIGHT",
                         default = { "BOTTOMRIGHT", "BOTTOMRIGHT", -60, 110 } })
@@ -695,6 +782,15 @@ function M:OnEnable()
                              "INVENTORY_SEARCH_UPDATE" }) do
         pcall(self.On, self, event, requestRefresh)
     end
+    self:On("MERCHANT_SHOW", function()
+        merchantOpen = true
+        if M.db.vente == "auto" then sellJunk() end
+        requestRefresh()
+    end)
+    self:On("MERCHANT_CLOSED", function()
+        merchantOpen = false
+        requestRefresh()
+    end)
 end
 
 -- Coupé : tout reste en place jusqu'au /reload (needsReload).
