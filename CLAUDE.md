@@ -41,10 +41,11 @@ pour les mises à jour. Réponses au joueur en français.
   stries en diagonale. Tout passe par le noyau (`Core/UI/Style.lua` : `CUI:CreatePanel`, `CUI:SetBarTexture`,
   thème « givre » de `CUI.Themes`) : jamais de couleur ou de bordure de style écrite en dur dans un module, pour
   qu'un système de thèmes puisse venir. Textures : `python tools/generer_textures.py`.
-- **Infobulles et menus** (direction « sobre » validée le 26/11/2026, pour tout le projet) : toutes les infobulles
-  (CœurUI et jeu) et tous les menus ont le même cadre : fond sombre `#14161A` presque opaque, liseré gris fin
-  `#3A3E47`, coins à peine arrondis, pas d'or ; titre blanc (ou couleur du jeu : qualité, attitude), texte gris
-  clair `#C4C6CC`. Maquette de référence : « CœurUI · Maquette Infobulles et menus ».
+- **Infobulles et menus** (direction « sobre » validée le 26/11/2026, passée au style « Givre » le 28/11/2026,
+  fond « Ardoise ») : toutes les infobulles (CœurUI et jeu) et tous les menus ont le même cadre
+  (`CUI:CreateTipPanel`) : fond ardoise `#1A1E26` presque opaque, double liseré du style, coins de 4 points,
+  ombre douce, pas d'or ; titre blanc (ou couleur du jeu : qualité, attitude), texte gris clair `#C4C6CC`.
+  Maquette de référence : « CœurUI · Direction artistique », planche « Infobulles et menus ».
 
 ## Structure du dépôt
 

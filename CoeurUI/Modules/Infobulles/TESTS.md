@@ -50,3 +50,14 @@ fait). Le module ne dépend de rien chez EllesmereUI.
    et descend. Remettre le cadre en bas à droite : elles s'ouvrent là et montent.
 3. Survol d'un sort sur une barre : l'infobulle reste à côté du bouton (pas déplacée).
 4. `/reload` : place gardée.
+
+## 0.46.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.46.0 ».
+2. Survol d'un objet, d'un PNJ, d'un sort, d'un effet : infobulle sur fond ardoise (teinte des fenêtres de CœurUI),
+   double liseré très discret, coins arrondis, ombre douce dessous. Titre à la couleur de la qualité ou de l'attitude.
+3. Comparaison d'objets (Maj) et lien d'objet cliqué dans la discussion : même cadre.
+4. Clic droit sur un joueur, sur son portrait, menu du suivi des quêtes : même cadre ; ligne survolée légèrement plus
+   claire ; coches blanches ; sous-menus pareils.
+5. Infobulles et menus déroulants de CœurUI (fenêtre des réglages) : même cadre ; ligne survolée et choix en cours
+   aux teintes du thème.

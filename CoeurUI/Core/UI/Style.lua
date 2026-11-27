@@ -14,6 +14,7 @@
 --   CUI:SetBarTexture(barre, clé)                -- texture de barre ; « striee » : couleur unie + stries
 --                                                -- répétées (leur taille ne dépend pas de la barre)
 --   p:SetShadowShown(bool)                       -- ombre ou non (bouton seul / sur un panneau)
+--   CUI:CreateTipPanel(cadre)                    -- cadre d'une infobulle ou d'un menu
 --   CUI:CreateStripes(parent, texture)           -- stries sur une texture placée à la main
 --   CUI:GetTheme(), CUI:ApplyTheme()
 local _, CUI = ...
@@ -133,6 +134,12 @@ function CUI:CreatePanel(parent, opts)
     p:Paint()
     panels[p] = true
     return p
+end
+
+-- Cadre de toutes les infobulles et de tous les menus (CœurUI et jeu) : fond du thème presque opaque.
+function CUI:CreateTipPanel(parent)
+    local f = self:GetTheme().panneau
+    return self:CreatePanel(parent, { fill = { f[1], f[2], f[3], 0.97 } })
 end
 
 -- Barres ---------------------------------------------------------------------------------------

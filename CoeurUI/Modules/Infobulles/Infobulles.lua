@@ -1,6 +1,7 @@
--- Module « Infobulles et menus » (maquette validée, direction « sobre ») : les infobulles et les
--- menus déroulants du jeu prennent le cadre de CœurUI : fond sombre, liseré gris fin, coins à peine
--- arrondis, pas d'or. Les couleurs du jeu (qualité d'un objet, attitude d'une unité) restent sur le
+-- Module « Infobulles et menus » (maquettes validées : direction « sobre », puis style « Givre »,
+-- planche « Infobulles et menus », fond ardoise) : les infobulles et les menus du jeu prennent le
+-- cadre de CœurUI (CUI:CreatePanel) : fond ardoise presque opaque, double liseré très discret, ombre
+-- douce, coins de 4 points, pas d'or. Les couleurs du jeu (qualité d'un objet, attitude d'une unité) restent sur le
 -- nom ; pas de barre de vie sous l'infobulle ; les textes prennent la police de CœurUI.
 --
 -- Infobulles : le cadre du jeu (NineSlice) est rendu invisible et le nôtre est posé dessous. Toute
@@ -28,16 +29,14 @@ local M = CUI:RegisterModule({
     },
 })
 
-local FOND = { C.fond[1], C.fond[2], C.fond[3], 0.96 }
-local LISERE = C.bordureDiscrete
 
 local function forbidden(f)
     return f.IsForbidden and f:IsForbidden()
 end
 
--- Fond et liseré CœurUI, sous tout le contenu du cadre.
+-- Cadre CœurUI (style du thème), sous tout le contenu du cadre.
 local function addBox(frame)
-    CUI:CreateBorderedRect(frame, 3, LISERE, FOND, "BACKGROUND", -8)
+    CUI:CreateTipPanel(frame)
 end
 
 -- Rend un cadre du jeu invisible pour de bon (le jeu ne peut plus le faire réapparaître).
@@ -103,7 +102,7 @@ local function skinMenuTexture(tex)
         tex:SetVertexColor(C.texte[1], C.texte[2], C.texte[3], 1)
     elseif a:find("highlight") or a:find("hover") then
         tex:SetDesaturated(true)                         -- ligne survolée : un peu plus claire
-        tex:SetVertexColor(1, 1, 1, 0.12)
+        tex:SetVertexColor(1, 1, 1, 0.06)
     else
         tex:SetDesaturated(true)                         -- cases, flèches, traits : gris
         tex:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3], 1)
@@ -125,15 +124,31 @@ local function skinHighlight(button)
     local hl = button.GetHighlightTexture and button:GetHighlightTexture()
     if hl then
         hl:SetDesaturated(true)
-        hl:SetVertexColor(1, 1, 1, 0.12)
+        hl:SetVertexColor(1, 1, 1, 0.06)
     end
 end
 
-local function walk(frame, depth)
+local hookedButtons = setmetatable({}, { __mode = "k" })
+local walk
+
+-- Une ligne de menu survolée : le jeu remet ses couleurs à l'instant ; on repasse juste derrière
+-- (crochet seulement ; refusé par le jeu sur certains cadres : pcall).
+local function hookButton(button)
+    if hookedButtons[button] then return end
+    hookedButtons[button] = true
+    local function again(b)
+        if M.enabled then CUI:SafeCall(CUI:Tr("IM_NOM"), walk, b, 0) end
+    end
+    pcall(button.HookScript, button, "OnEnter", again)
+    pcall(button.HookScript, button, "OnLeave", again)
+end
+
+walk = function(frame, depth)
     if depth > 6 or forbidden(frame) then return end
     hidePieces(frame)
     if frame.GetObjectType and frame:GetObjectType() == "Button" then
         skinHighlight(frame)
+        hookButton(frame)
     end
     for _, region in ipairs({ frame:GetRegions() }) do
         if region.GetObjectType and region:GetObjectType() == "Texture" then
@@ -145,10 +160,22 @@ local function walk(frame, depth)
     end
 end
 
-local function skinMenu(menu)
+local skinMenu
+local function skinLater(menu)
+    if not M.enabled then return end
+    CUI:SafeCall(CUI:Tr("IM_NOM"), skinMenu, menu)
+    -- Et à l'image suivante : le jeu finit de remplir le menu après l'avoir montré.
+    _G.C_Timer.After(0, function()
+        if M.enabled and menu:IsShown() then CUI:SafeCall(CUI:Tr("IM_NOM"), skinMenu, menu) end
+    end)
+end
+
+skinMenu = function(menu)
     if not menu or forbidden(menu) then return end
     local back = skinnedMenus[menu]
     if not back then
+        -- Menu réutilisé par le jeu : habillé dès qu'il se montre (sans attendre notre passage).
+        pcall(menu.HookScript, menu, "OnShow", skinLater)
         if menu.NineSlice then vanish(menu.NineSlice) end
         -- Le jeu surveille ses menus (CreateTexture refusé dessus et sur ce qu'on y accroche) :
         -- notre fond est un cadre à part, posé sur l'écran juste sous le menu, à sa taille.
@@ -201,6 +228,38 @@ local function openMenus()
         end
     end
     return list
+end
+
+local function skinOpenMenus()
+    for _, menu in ipairs(openMenus()) do
+        CUI:SafeCall(CUI:Tr("IM_NOM"), skinMenu, menu)
+    end
+end
+
+-- Ouverture d'un menu par le gestionnaire du jeu (menu, menu contextuel, sous-menu) : habillé tout de
+-- suite, juste après le jeu (crochets seulement, sur ses fonctions « Open... »).
+local managerHooked = false
+local function hookManager()
+    if managerHooked then return end
+    local manager = _G.Menu and _G.Menu.GetManager and _G.Menu.GetManager()
+    if type(manager) ~= "table" then return end
+    managerHooked = true
+    -- Sur ce client, le gestionnaire est un relais : ses fonctions sont dans la table de sa métatable
+    -- (OpenMenu, OpenContextMenu), pas sur lui.
+    local function hookIn(owner)
+        local done = false
+        for name, fn in pairs(owner) do
+            if type(name) == "string" and type(fn) == "function" and name:find("^Open") then
+                done = pcall(_G.hooksecurefunc, owner, name, function()
+                    if M.enabled then skinOpenMenus() end
+                end) or done
+            end
+        end
+        return done
+    end
+    if hookIn(manager) then return end
+    local mt = getmetatable(manager)
+    if type(mt) == "table" and type(mt.__index) == "table" then hookIn(mt.__index) end
 end
 
 -- Identifiants -----------------------------------------------------------------------------------
@@ -314,6 +373,7 @@ local function setupAnchor()
 end
 
 local hooked = false
+local menuDriver -- habille les menus ouverts à chaque image
 
 function M:OnEnable()
     for _, name in ipairs(KNOWN_TIPS) do
@@ -332,12 +392,16 @@ function M:OnEnable()
             end)
         end
     end
-    -- Menus : on regarde souvent, mais seulement si un menu est ouvert (sinon rien à faire).
-    self:Every(0.05, function()
-        for _, menu in ipairs(openMenus()) do
-            CUI:SafeCall(CUI:Tr("IM_NOM"), skinMenu, menu)
-        end
-    end)
+    -- Menus : habillés à leur ouverture (crochets), puis à chaque image tant qu'un menu est ouvert
+    -- (le jeu finit de les remplir après coup, ouvre ses sous-menus et repeint ses lignes au survol
+    -- sans passer par le gestionnaire). Aucun menu ouvert : une seule question au jeu par image.
+    hookManager()
+    if not menuDriver then
+        menuDriver = _G.CreateFrame("Frame")
+        menuDriver:SetScript("OnUpdate", function()
+            if M.enabled then CUI:SafeCall(CUI:Tr("IM_NOM"), skinOpenMenus) end
+        end)
+    end
 end
 
 -- Coupé : l'habillage reste jusqu'au /reload (needsReload).

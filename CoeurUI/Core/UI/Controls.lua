@@ -319,8 +319,8 @@ local function createMenu()
     menu:SetClampedToScreen(true)
     menu:EnableMouse(true)
     menu:Hide()
-    -- Direction « sobre » des menus (CLAUDE.md) : liseré gris fin, pas d'or.
-    CUI:CreateBorderedRect(menu, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
+    -- Style « Givre » des menus (CLAUDE.md) : le cadre des infobulles, pas d'or.
+    CUI:CreateTipPanel(menu)
     menu.items = {}
 end
 
@@ -345,10 +345,10 @@ local function menuItem(i)
     item.text:SetWordWrap(false)
     local function paint()
         if item.hover then
-            item.bg:SetColor(C.graphiteClair)
+            item.bg:SetColor(C.ligne)
             item.bg:SetShown(true)
         elseif item.selected then
-            item.bg:SetColor(C.graphite)
+            item.bg:SetColor(C.carte)
             item.bg:SetShown(true)
         else
             item.bg:SetShown(false)

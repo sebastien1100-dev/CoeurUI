@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.46.0 · 28/11/2026
+
+- Infobulles et menus au style « Givre » : fond ardoise presque opaque (la teinte des fenêtres), double liseré très
+  discret, coins de 4 points et ombre douce, à la place du fond noir au liseré gris. Toutes les infobulles du jeu et
+  ses menus (clic droit...) avec le module « Infobulles et menus », et celles de CœurUI dans tous les cas.
+- Menus : on voyait une fraction de seconde le menu du jeu (à l'ouverture, au survol d'une ligne, en ouvrant un
+  sous-menu) avant qu'il prenne le style de CœurUI ; il est habillé tout de suite.
+- Menus : la ligne survolée s'éclaire plus doucement. Menus déroulants de CœurUI : ligne survolée et choix en cours
+  aux teintes du thème.
+- Un /reload suffit.
+
 ## 0.45.0 · 28/11/2026
 
 - Barres d'actions au style « Givre » : chaque barre est posée sur un panneau ardoise avec une ombre douce, les
