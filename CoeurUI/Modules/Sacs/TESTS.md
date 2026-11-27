@@ -48,3 +48,23 @@
 6. Réglage « Toute seule en ouvrant un marchand » : la camelote se vend dès l'ouverture, total dans la discussion.
 7. Réglage « Jamais » : aucun bouton, rien n'est vendu.
 8. Un objet gris sans valeur : il n'est pas vendu et ne compte pas.
+
+## 0.31.0 · étape 3 : la banque
+
+1. /reload. `/cui version` : « 0.31.0 ». Réglages du module : section Banque, « Banque au style de CœurUI » (actif).
+2. Parler au banquier : la fenêtre « Banque » s'ouvre à gauche des sacs (les sacs s'ouvrent aussi) ; plus rien de
+   la banque du jeu à l'écran, aucune zone invisible qui capte la souris.
+3. Mêmes sections que les sacs (ou en vrac) ; cases au même style ; 48 cases de la page principale.
+4. Clic droit sur un objet des sacs : il va dans la banque ; clic droit dans la banque : il revient dans les sacs.
+   Glisser entre les deux fenêtres marche aussi. Survol : infobulle.
+5. Recherche : taper « potion » dans l'une : les deux fenêtres filtrent ; Échap dans le champ : tout revient.
+6. En bas : 8 emplacements à cadenas ; le tiroir de la banque les cache ou les montre sans toucher à ceux des
+   sacs. Survol du premier cadenas : « Acheter un emplacement · 10 pa » ; clic : il se débloque ; poser un sac
+   dessus : ses cases s'ajoutent à la banque ; « x places libres » suit. Tiroir coupé : bouton « Acheter un
+   emplacement · 10 pa » à droite (grisé sans assez d'argent).
+7. Croix de la banque, ou Échap : la banque se ferme, on quitte le banquier ; les sacs restent ouverts.
+   S'éloigner du banquier : la fenêtre se ferme toute seule.
+8. Glisser la barre de titre de la banque : elle bouge ; /reload : elle est restée. Cadenas : cadre « Banque ».
+9. Les boutons liste et tiroir de chaque fenêtre ne changent qu'elle : banque en vrac, sacs par catégories, et
+   l'inverse. Le réglage « Banque par catégories » du panneau suit le bouton liste de la banque.
+10. Couper « Banque au style de CœurUI » puis reparler au banquier : la banque du jeu revient, normale.

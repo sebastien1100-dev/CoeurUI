@@ -96,3 +96,63 @@ function CUI:HideGameTooltip(owner)
     local tip = _G.GameTooltip
     if tip:IsOwned(owner) then tip:Hide() end
 end
+
+-- Banque (WoW Forever : une page principale, le sac n° 6, et des emplacements de sac à débloquer,
+-- achetés comme les « onglets » de C_Bank). Type de banque : 0 (celle du personnage).
+local BANK_CHARACTER = 0
+
+local function bank() return _G.C_Bank end
+
+-- Sac de la page principale de la banque.
+function CUI:BankMainContainer()
+    local B = _G.Enum and _G.Enum.BagIndex
+    return B and B.CharacterBankTab_1 or 6
+end
+
+-- Nombre d'emplacements de sac de la banque (sans la page principale) et nombre déjà débloqués.
+function CUI:BankBagSlots()
+    local CB = bank()
+    if not (CB and CB.FetchMaxNumBankTabs) then return 0, 0 end
+    local max = CB.FetchMaxNumBankTabs(BANK_CHARACTER) or 1
+    local bought = CB.FetchNumPurchasedBankTabs and CB.FetchNumPurchasedBankTabs(BANK_CHARACTER) or 1
+    return math.max(0, max - 1), math.max(0, bought - 1)
+end
+
+-- Sac (numéro de C_Container) du i-ème emplacement de sac de la banque : ceux qui suivent la page
+-- principale (relevé sur Forever : page 6, sacs 7, 8, 9...).
+function CUI:BankBagContainer(i)
+    return self:BankMainContainer() + i
+end
+
+-- Emplacement d'équipement du i-ème sac de banque (pour son icône, le prendre ou en poser un).
+function CUI:BankBagInventorySlot(i)
+    return self:BagInventorySlot(self:BankBagContainer(i))
+end
+
+-- Prix du prochain emplacement à acheter (cuivre), nil s'il n'y en a plus.
+function CUI:BankNextSlotCost()
+    local CB = bank()
+    if not (CB and CB.FetchNextPurchasableBankTabData) then return nil end
+    if CB.HasMaxBankTabs and CB.HasMaxBankTabs(BANK_CHARACTER) then return nil end
+    local data = CB.FetchNextPurchasableBankTabData(BANK_CHARACTER)
+    return data and data.tabCost or nil
+end
+
+-- Bouton « Acheter » de la banque du jeu (l'achat est protégé : on le fait cliquer par un bouton
+-- protégé, voir CUI:AttachSecureClick).
+function CUI:BankPurchaseButton()
+    local panel = _G.BankPanel
+    if not panel then return nil end
+    local prompt = panel.PurchasePrompt
+    return panel.PurchaseButton or (prompt and prompt.TabCostFrame and prompt.TabCostFrame.PurchaseButton)
+end
+
+-- Fermer la banque (comme quitter le banquier).
+function CUI:BankClose()
+    local CB = bank()
+    if CB and CB.CloseBankFrame then
+        CB.CloseBankFrame()
+    elseif _G.BankFrame and _G.HideUIPanel then
+        _G.HideUIPanel(_G.BankFrame)
+    end
+end

@@ -100,6 +100,16 @@ def categories(d):
         ligne(d, (10, y + 1.75), (20.5, y + 1.75))
 
 
+def cadenas(d):
+    """Cadenas : corps arrondi, anse en arc au-dessus."""
+    rect_arrondi(d, 5, 11, 14, 9.5, 2)
+    arc = [(12 + 4.5 * math.cos(math.radians(a)), 11 - 0.5 + 4.5 * math.sin(math.radians(a)) - 0)
+           for a in [180 + 180 * i / 40 for i in range(41)]]
+    ligne(d, (7.5, 11), (7.5, 10.5))
+    ligne(d, (16.5, 11), (16.5, 10.5))
+    tampon(d, [p(*q) for q in arc])
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -240,7 +250,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Cadenas": cadenas, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

@@ -2,6 +2,21 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.31.0 · 27/11/2026
+
+- Sacs et banque : la banque, dans le même style et le même rangement que les sacs, s'ouvre à gauche des sacs
+  chez le banquier. Les sacs s'ouvrent avec elle.
+- En bas de la banque : ses emplacements de sac débloqués (glisser un sac dessus) et « Acheter un emplacement »
+  avec son prix.
+- Recherche commune : taper dans l'une filtre les deux fenêtres. Le rangement (catégories ou vrac) et les
+  emplacements affichés se règlent à part pour chaque fenêtre ; réglage « Banque par catégories » (section Banque).
+- Fermer la banque (croix ou Échap) quitte le banquier ; les sacs restent ouverts. Elle se déplace en glissant sa
+  barre de titre, ou au cadenas.
+- Réglage « Banque au style de CœurUI » (section Banque) : coupé, on retrouve la banque du jeu.
+- Le bouton tiroir de la banque affiche ses propres emplacements (il montrait ou cachait ceux des sacs) ; les
+  emplacements encore verrouillés portent un cadenas, cliquer le premier l'achète (prix dans l'infobulle).
+- Redémarrer le jeu (nouvelle icône).
+
 ## 0.30.0 · 27/11/2026
 
 - Sacs : vente de la camelote. Chez un marchand, bouton « Vendre » avec le prix sur la section Camelote (en vrac :

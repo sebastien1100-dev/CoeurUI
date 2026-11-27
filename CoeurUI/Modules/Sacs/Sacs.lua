@@ -1,17 +1,22 @@
 -- Module « Sacs et banque » (maquette validée le 27/11/2026, « CœurUI · Maquette Sacs et banque »).
--- Étape 1 : les sacs. Une seule fenêtre sobre (fond sombre, liseré gris fin, pas d'or) pour tous les
--- sacs, à la place de ceux du jeu, placée au cadenas :
+-- Deux fenêtres sobres (fond sombre, liseré gris fin, pas d'or), au même rangement :
+--   - « Sacs » : tous les sacs du joueur, à la place de ceux du jeu ;
+--   - « Banque » : chez le banquier, à gauche des sacs, à la place de la banque du jeu (réglage).
+-- Dans chacune :
 --   - par catégories (Équipement, Consommables, Composants d'artisanat, Quêtes, Divers, Camelote,
 --     Places libres) ou en vrac (une grille, dans l'ordre des sacs) ;
 --   - sacs de composants et carquois à part, en bas, avec leur nom et leurs places libres ;
 --   - cases comme les barres d'actions : icône rognée, liseré gris fin, liseré de la qualité à partir
 --     de « Peu commun », niveau d'objet en bas à gauche, nombre en bas à droite, pastille rouge cœur sur
 --     un nouvel objet (jusqu'au survol) ;
---   - recherche par nom (le reste s'assombrit) ; en bas : sacs équipés, places libres, argent ;
+--   - recherche par nom, commune aux deux fenêtres (le reste s'assombrit) ;
+--   - en bas : emplacements de sac, places libres ; argent (sacs) ou achat d'un emplacement (banque) ;
 --   - déplacée en glissant sa barre de titre (ou au cadenas).
 -- Les cases sont les boutons d'objet du jeu (ContainerFrameItemButtonTemplate) : clics, glisser,
 -- infobulle et utilisation restent ceux du jeu. Camelote : vendue chez le marchand (bouton ou toute
--- seule). Étape suivante : banque.
+-- seule).
+-- La banque du jeu reste ouverte (le jeu en a besoin pour ranger un objet d'un clic droit) mais
+-- invisible, posée hors de l'écran.
 -- Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -31,7 +36,10 @@ local M = CUI:RegisterModule({
         categories = true, aPart = true, parRangee = 10, taille = 34, espacement = 4,
         ilvl = true, qualite = true, nouveaux = true,
         emplacements = true, -- emplacements de sac en bas (bouton de la barre de titre)
+        emplacementsBanque = true, -- même chose, dans la banque
+        categoriesBanque = true,   -- banque par catégories (indépendant des sacs)
         vente = "bouton",    -- camelote : « bouton » chez le marchand, « auto » (toute seule), « jamais »
+        banque = true,       -- banque au style de CœurUI (sinon : celle du jeu)
     },
     settings = {
         { type = "section", text = "SAC_RANGEMENT" },
@@ -52,14 +60,29 @@ local M = CUI:RegisterModule({
             { value = "auto", text = "SAC_VENTE_AUTO" },
             { value = "jamais", text = "SAC_VENTE_JAMAIS" },
         } },
+        { type = "section", text = "SAC_BANQUE_SECTION" },
+        { type = "toggle", key = "banque", label = "SAC_BANQUE_STYLE", description = "SAC_BANQUE_NOTE" },
+        { type = "toggle", key = "categoriesBanque", label = "SAC_BANQUE_CATEGORIES",
+          enabledIf = function(read) return read("banque") end },
     },
 })
 
 -- Sacs du joueur : 0 (sac à dos) à 4, plus le sac de composants du jeu s'il existe.
+local function lastPlayerBag()
+    return _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4
+end
+
 local function playerBags()
-    local last = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4
     local list = {}
-    for bag = 0, last do list[#list + 1] = bag end
+    for bag = 0, lastPlayerBag() do list[#list + 1] = bag end
+    return list
+end
+
+-- Sacs de la banque : la page principale, puis les sacs posés dans les emplacements débloqués.
+local function bankBags()
+    local list = { CUI:BankMainContainer() }
+    local _, bought = CUI:BankBagSlots()
+    for i = 1, bought do list[#list + 1] = CUI:BankBagContainer(i) end
     return list
 end
 
@@ -84,16 +107,27 @@ local function categoryOf(info)
     return CLASS_CATEGORY[classID] or "divers"
 end
 
--- Fenêtre -------------------------------------------------------------------------------------
+-- Fenêtres -------------------------------------------------------------------------------------
 
-local win, search, freeText, moneyText, sellButton
-local merchantOpen, selling = false, false -- marchand ouvert ; vente de la camelote en cours
-local holders = {}   -- sac -> cadre porteur (son ID = le sac, demandé par les boutons du jeu)
-local buttons = {}   -- sac -> case -> bouton
-local titles = {}    -- textes de section réutilisés
-local separator
-local bagSlots = {}  -- boutons des sacs équipés (bas de la fenêtre)
-local placed = {}    -- boutons affichés (pour la recherche)
+-- Une « vue » par fenêtre : ses cadres, ses cases et ses sacs.
+local bags = { key = "sacs", frameName = "CoeurUISacs", title = "SAC_TITRE", list = playerBags,
+               slotsKey = "emplacements", catKey = "categories" }
+local bankView = { key = "banque", frameName = "CoeurUIBanque", title = "SAC_BANQUE", list = bankBags, isBank = true,
+                   slotsKey = "emplacementsBanque", catKey = "categoriesBanque" }
+local views = { bags, bankView }
+for _, v in ipairs(views) do
+    v.holders = {}     -- sac -> cadre porteur (son ID = le sac, demandé par les boutons du jeu)
+    v.buttons = {}     -- sac -> case -> bouton
+    v.titles = {}      -- textes de section réutilisés
+    v.rightTitles = {}
+    v.bagSlots = {}    -- boutons des emplacements de sac (bas de la fenêtre)
+    v.placed = {}      -- boutons affichés (pour la recherche)
+end
+
+local searchText = ""                       -- recherche commune aux deux fenêtres
+local merchantOpen, selling = false, false  -- marchand ouvert ; vente de la camelote en cours
+local bankOpen = false                      -- banquier ouvert
+local toggles = {}                          -- boutons de la barre de titre (à repeindre)
 
 local function texture(parent, layer, sub, color)
     local t = parent:CreateTexture(nil, layer, nil, sub)
@@ -127,20 +161,20 @@ local function moneyString(copper)
     local parts = {}
     if g > 0 then parts[#parts + 1] = OR .. L.SAC_PO:format(_G.BreakUpLargeNumbers and _G.BreakUpLargeNumbers(g) or g) .. "|r" end
     if g > 0 or s > 0 then parts[#parts + 1] = ARGENT .. L.SAC_PA:format(s) .. "|r" end
-    parts[#parts + 1] = CUIVRE .. L.SAC_PC:format(c) .. "|r"
+    if c > 0 or #parts == 0 then parts[#parts + 1] = CUIVRE .. L.SAC_PC:format(c) .. "|r" end
     return table.concat(parts, "  ")
 end
 
-local function holderFor(bag)
-    local h = holders[bag]
+local function holderFor(v, bag)
+    local h = v.holders[bag]
     if h then return h end
-    h = _G.CreateFrame("Frame", nil, win)
+    h = _G.CreateFrame("Frame", nil, v.frame)
     h:SetID(bag)
     h:SetAllPoints()
     -- Les boutons du jeu demandent leur sac à leur parent.
     h.GetBagID = function(self) return self:GetID() end
-    holders[bag] = h
-    buttons[bag] = {}
+    v.holders[bag] = h
+    v.buttons[bag] = {}
     return h
 end
 
@@ -195,11 +229,11 @@ local function skinButton(b)
 end
 
 local nextButton = 0
-local function buttonFor(bag, slot)
-    local list = buttons[bag]
+local function buttonFor(v, bag, slot)
+    local list = v.buttons[bag]
     local b = list and list[slot]
     if b then return b end
-    local h = holderFor(bag)
+    local h = holderFor(v, bag)
     nextButton = nextButton + 1
     local ok, created = pcall(_G.CreateFrame, "ItemButton", "CoeurUISacsCase" .. nextButton, h,
         "ContainerFrameItemButtonTemplate")
@@ -213,7 +247,7 @@ local function buttonFor(bag, slot)
     b.bagID = bag
     b.cuiBag, b.cuiSlot = bag, slot
     skinButton(b)
-    buttons[bag][slot] = b
+    v.buttons[bag][slot] = b
     return b
 end
 
@@ -272,26 +306,37 @@ local function updateButton(b, info)
     b.cuiEmpty = info == nil
 end
 
--- Recherche : ce qui ne correspond pas s'assombrit.
-local function applySearch()
-    local text = search and search:GetText() or ""
-    text = text:lower()
-    for _, b in ipairs(placed) do
+-- Recherche : ce qui ne correspond pas s'assombrit, dans les deux fenêtres.
+local function applySearch(v)
+    local text = searchText:lower()
+    for _, b in ipairs(v.placed) do
         local match = text == "" or (b.cuiName and b.cuiName:lower():find(text, 1, true) ~= nil)
         b:SetAlpha(match and 1 or 0.25)
     end
 end
 
-local function titleFS(i)
-    local fs = titles[i]
+local function titleFS(v, i)
+    local fs = v.titles[i]
     if not fs then
-        fs = win:CreateFontString(nil, "OVERLAY")
+        fs = v.frame:CreateFontString(nil, "OVERLAY")
         fs:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
-        titles[i] = fs
+        v.titles[i] = fs
     end
     fs:SetFont(CUI:GetFont(), 10, "")
     fs:Show()
     return fs
+end
+
+local function rightFS(v, i)
+    local r = v.rightTitles[i]
+    if not r then
+        r = v.frame:CreateFontString(nil, "OVERLAY")
+        r:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
+        v.rightTitles[i] = r
+    end
+    r:SetFont(CUI:GetFont(), 10, "")
+    r:Show()
+    return r
 end
 
 -- Camelote vendable des sacs : liste des cases et prix total (en cuivre).
@@ -310,24 +355,141 @@ local function junkList()
     return list, total
 end
 
--- Range toute la fenêtre (cases, sections, taille).
-local function layout()
+-- Bouton d'un emplacement de sac : son icône ; clic : le prendre, ou poser celui qu'on tient.
+-- Banque : un emplacement verrouillé porte un cadenas ; cliquer le premier l'achète (par le bouton
+-- « Acheter » du jeu : l'achat est protégé).
+local function createBagSlot(parent, isBank)
+    local b = _G.CreateFrame("Button", nil, parent)
+    b:SetSize(20, 20)
+    b:RegisterForClicks("LeftButtonUp")
+    b:RegisterForDrag("LeftButton")
+    texture(b, "BACKGROUND", -8, C.fond):SetAllPoints()
+    lines(b, C.graphite)
+    b.icon = b:CreateTexture(nil, "ARTWORK")
+    b.icon:SetPoint("TOPLEFT", 1, -1)
+    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    b.lock = b:CreateTexture(nil, "OVERLAY")
+    b.lock:SetPoint("CENTER")
+    b.lock:SetSize(14, 14)
+    b.lock:SetTexture(CUI.MEDIA .. "Icones\\Cadenas")
+    b.lock:Hide()
+    local function paintLock(self, over)
+        local c = (over and self.cost) and C.texte or C.texteDiscret
+        self.lock:SetVertexColor(c[1], c[2], c[3], 1)
+    end
+    b.paintLock = paintLock
+    function b:SetVisualState(hover)
+        if self.locked then paintLock(self, hover) end
+    end
+    local function put(self)
+        if self.locked then return end
+        if not self.inv then return end
+        if _G.CursorHasItem() then
+            _G.PutItemInBag(self.inv)
+        else
+            _G.PickupBagFromSlot(self.inv)
+        end
+    end
+    b:SetScript("OnClick", put)
+    b:SetScript("OnReceiveDrag", put)
+    b:SetScript("OnDragStart", function(self) if self.inv then _G.PickupBagFromSlot(self.inv) end end)
+    b:SetScript("OnEnter", function(self)
+        if self.locked then
+            paintLock(self, true)
+            CUI:ShowTooltip(self, self.cost and L.SAC_ACHETER:format(moneyString(self.cost)) or L.SAC_VERROUILLE)
+        elseif self.inv then
+            CUI:ShowGameTooltip(self, function(tip)
+                if not tip:SetInventoryItem("player", self.inv) then tip:SetText(L.SAC_EMPLACEMENT_VIDE) end
+            end)
+        end
+    end)
+    b:SetScript("OnLeave", function(self)
+        if self.locked then paintLock(self, false) end
+        CUI:HideGameTooltip(self)
+        CUI:HideTooltip(self)
+    end)
+    if isBank then
+        CUI:AttachSecureClick(b, function() return CUI:BankPurchaseButton() end, function()
+            return L.SAC_ACHETER:format(moneyString(b.cost or 0)), L.SAC_ACHETER_NOTE
+        end, function() return b.locked and b.cost ~= nil and CUI:BankPurchaseButton() ~= nil end)
+    end
+    return b
+end
+
+-- Bas de la fenêtre : emplacements de sac, places libres, argent ou achat d'un emplacement.
+local function layoutFooter(v, freeCount)
+    local s = M.db
+    local shown = 0
+    local count, bought
+    if v.isBank then
+        count, bought = CUI:BankBagSlots()
+    else
+        count = lastPlayerBag()
+    end
+    for i = 1, count do
+        if not v.bagSlots[i] then v.bagSlots[i] = createBagSlot(v.frame, v.isBank) end
+    end
+    local cost = v.isBank and CUI:BankNextSlotCost() or nil
+    local showSlots = s[v.slotsKey]
+    for i, slotButton in ipairs(v.bagSlots) do
+        local inv, locked = nil, false
+        if v.isBank then
+            -- Débloqués : leur sac ; les autres : cadenas (le premier s'achète d'un clic).
+            locked = i > bought
+            if not locked then inv = CUI:BankBagInventorySlot(i) end
+        else
+            inv = CUI:BagInventorySlot(i)
+        end
+        slotButton.inv, slotButton.locked = inv, locked
+        slotButton.cost = (locked and i == bought + 1) and cost or nil
+        local visible = showSlots and i <= count and (inv ~= nil or locked)
+        slotButton:SetShown(visible)
+        if visible then
+            shown = shown + 1
+            slotButton:ClearAllPoints()
+            slotButton:SetPoint("BOTTOMLEFT", v.frame, "BOTTOMLEFT", PAD + (shown - 1) * 23, 7)
+            local tex = inv and _G.GetInventoryItemTexture("player", inv)
+            slotButton.icon:SetTexture(tex)
+            slotButton.icon:SetShown(tex ~= nil)
+            slotButton.lock:SetShown(locked)
+            slotButton.paintLock(slotButton, false)
+        end
+    end
+    v.freeText:SetText(L.SAC_PLACES_LIBRES:format(freeCount))
+    v.freeText:ClearAllPoints()
+    v.freeText:SetPoint("BOTTOMLEFT", v.frame, "BOTTOMLEFT", PAD + (shown > 0 and shown * 23 + 6 or 0), 12)
+    if v.moneyText then v.moneyText:SetText(moneyString(_G.GetMoney())) end
+    -- Bouton « Acheter » : quand les emplacements sont cachés (sinon on clique le premier cadenas).
+    if v.buyButton then
+        if showSlots then cost = nil end
+        v.buyButton:SetShown(cost ~= nil)
+        if cost then
+            v.buyButton:SetLabel(L.SAC_ACHETER:format(moneyString(cost)))
+            v.buyButton:SetEnabled(_G.GetMoney() >= cost)
+        end
+    end
+end
+
+-- Range toute une fenêtre (cases, sections, taille).
+local function layout(v)
+    local win = v.frame
     if not win then return end
     local s = M.db
     local size, gap, per = s.taille, s.espacement, s.parRangee
     local innerW = per * (size + gap) - gap
     local width = innerW + 2 * PAD
-    for _, list in pairs(buttons) do
+    for _, list in pairs(v.buttons) do
         for _, b in pairs(list) do b:Hide() end
     end
-    for _, fs in pairs(titles) do fs:Hide() end
-    for _, fs in pairs(win.rightTitles or {}) do fs:Hide() end
-    _G.wipe(placed)
+    for _, fs in pairs(v.titles) do fs:Hide() end
+    for _, fs in pairs(v.rightTitles) do fs:Hide() end
+    _G.wipe(v.placed)
 
     -- Sacs ordinaires et sacs à part.
     local normal, special = {}, {}
     local freeCount = 0
-    for _, bag in ipairs(playerBags()) do
+    for _, bag in ipairs(v.list()) do
         local slots = CUI:BagSlots(bag)
         if slots > 0 then
             local free, family = CUI:BagFree(bag)
@@ -345,35 +507,27 @@ local function layout()
     local function section(title, entries, right)
         if title then
             titleIndex = titleIndex + 1
-            local fs = titleFS(titleIndex)
+            local fs = titleFS(v, titleIndex)
             fs:SetText(title)
             fs:ClearAllPoints()
             fs:SetPoint("TOPLEFT", win, "TOPLEFT", PAD, -y)
             if right then
-                win.rightTitles = win.rightTitles or {}
-                local r = win.rightTitles[titleIndex]
-                if not r then
-                    r = win:CreateFontString(nil, "OVERLAY")
-                    r:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
-                    win.rightTitles[titleIndex] = r
-                end
-                r:SetFont(CUI:GetFont(), 10, "")
+                local r = rightFS(v, titleIndex)
                 r:SetText(right)
                 r:ClearAllPoints()
                 r:SetPoint("TOPRIGHT", win, "TOPRIGHT", -PAD, -y)
-                r:Show()
             end
             y = y + 16
         end
         for i, e in ipairs(entries) do
-            local b = buttonFor(e.bag, e.slot)
+            local b = buttonFor(v, e.bag, e.slot)
             local col, row = (i - 1) % per, math.floor((i - 1) / per)
             b:SetSize(size, size)
             b:ClearAllPoints()
             b:SetPoint("TOPLEFT", win, "TOPLEFT", PAD + col * (size + gap), -(y + row * (size + gap)))
             updateButton(b, e.info)
             b:Show()
-            placed[#placed + 1] = b
+            v.placed[#v.placed + 1] = b
         end
         local rows = math.ceil(#entries / per)
         y = y + rows * (size + gap) - gap + 10
@@ -386,7 +540,8 @@ local function layout()
             all[#all + 1] = { bag = nb.bag, slot = slot, info = CUI:BagItem(nb.bag, slot) }
         end
     end
-    -- Bouton « Vendre » : chez un marchand, s'il y a de la camelote à vendre.
+    -- Bouton « Vendre » (sacs) : chez un marchand, s'il y a de la camelote à vendre.
+    local sellButton = v.sellButton
     local showSell = false
     if sellButton then
         sellButton:Hide()
@@ -403,7 +558,7 @@ local function layout()
         sellButton:SetPoint("TOPRIGHT", win, "TOPRIGHT", -PAD, -(y - 3))
         sellButton:Show()
     end
-    if s.categories then
+    if s[v.catKey] then
         local groups = {}
         for _, e in ipairs(all) do
             local cat = categoryOf(e.info)
@@ -428,10 +583,10 @@ local function layout()
 
     -- Sacs à part : leur nom et leurs places libres.
     if #special > 0 then
-        separator:ClearAllPoints()
-        separator:SetPoint("TOPLEFT", win, "TOPLEFT", PAD, -(y - 4))
-        separator:SetWidth(innerW)
-        separator:Show()
+        v.separator:ClearAllPoints()
+        v.separator:SetPoint("TOPLEFT", win, "TOPLEFT", PAD, -(y - 4))
+        v.separator:SetWidth(innerW)
+        v.separator:Show()
         y = y + 4
         for _, sb in ipairs(special) do
             local entries = {}
@@ -442,31 +597,19 @@ local function layout()
             section(name:upper(), entries, L.SAC_LIBRES_SUR:format(sb.free, sb.slots))
         end
     else
-        separator:Hide()
+        v.separator:Hide()
     end
 
-    -- Bas : sacs équipés, places libres, argent.
-    local height = y + FOOTER
-    win:SetSize(width, height)
-    freeText:SetText(L.SAC_PLACES_LIBRES:format(freeCount))
-    moneyText:SetText(moneyString(_G.GetMoney()))
-    -- Emplacements de sac : affichés ou cachés (bouton « tiroir » de la barre de titre).
-    freeText:ClearAllPoints()
-    freeText:SetPoint("BOTTOMLEFT", win, "BOTTOMLEFT", PAD + (s.emplacements and win.slotsWidth or 0), 12)
-    for i, slotButton in ipairs(bagSlots) do
-        slotButton:SetShown(s.emplacements)
-        local inv = CUI:BagInventorySlot(i)
-        slotButton.inv = inv
-        local tex = inv and _G.GetInventoryItemTexture("player", inv)
-        slotButton.icon:SetTexture(tex)
-        slotButton.icon:SetShown(tex ~= nil)
-    end
-    applySearch()
+    win:SetSize(width, y + FOOTER)
+    layoutFooter(v, freeCount)
+    applySearch(v)
 end
 
--- Fenêtre ouverte : remise en page ; fermée : elle le sera à la prochaine ouverture.
+-- Fenêtres ouvertes : remise en page ; fermées : elles le seront à la prochaine ouverture.
 local function refresh()
-    if win and win:IsShown() then CUI:SafeCall(CUI:Tr("SAC_NOM"), layout) end
+    for _, v in ipairs(views) do
+        if v.frame and v.frame:IsShown() then CUI:SafeCall(CUI:Tr("SAC_NOM"), layout, v) end
+    end
 end
 
 -- Plusieurs évènements à la suite : une seule remise en page, à l'image suivante.
@@ -509,57 +652,29 @@ local function sellJunk()
     step()
 end
 
--- Bouton d'un sac équipé : son icône ; clic : le prendre, ou poser celui qu'on tient.
-local function createBagSlot(i)
-    local b = _G.CreateFrame("Button", nil, win)
-    b:SetSize(20, 20)
-    b:RegisterForClicks("LeftButtonUp")
-    b:RegisterForDrag("LeftButton")
-    texture(b, "BACKGROUND", -8, C.fond):SetAllPoints()
-    lines(b, C.graphite)
-    b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetPoint("TOPLEFT", 1, -1)
-    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
-    b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-    local function put(self)
-        if not self.inv then return end
-        if _G.CursorHasItem() then
-            _G.PutItemInBag(self.inv)
-        else
-            _G.PickupBagFromSlot(self.inv)
-        end
-    end
-    b:SetScript("OnClick", put)
-    b:SetScript("OnReceiveDrag", put)
-    b:SetScript("OnDragStart", function(self) if self.inv then _G.PickupBagFromSlot(self.inv) end end)
-    b:SetScript("OnEnter", function(self)
-        if self.inv then
-            CUI:ShowGameTooltip(self, function(tip)
-                if not tip:SetInventoryItem("player", self.inv) then tip:SetText(L.SAC_EMPLACEMENT_VIDE) end
-            end)
-        end
-    end)
-    b:SetScript("OnLeave", function(self) CUI:HideGameTooltip(self) end)
-    return b
+local function paintToggles()
+    for _, t in ipairs(toggles) do t.paint(false) end
 end
 
-local function build()
-    if win then return end
-    win = _G.CreateFrame("Frame", "CoeurUISacs", _G.UIParent)
+-- Une fenêtre : titre, boutons, recherche, bas. onClose : fermer (Échap, croix).
+local function buildView(v)
+    if v.frame then return end
+    local win = _G.CreateFrame("Frame", v.frameName, _G.UIParent)
+    v.frame = win
     win:SetFrameStrata("MEDIUM")
     win:SetToplevel(true)
     win:SetClampedToScreen(true)
     win:EnableMouse(true)
     win:Hide()
     CUI:CreateBorderedRect(win, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
-    -- Échap ferme la fenêtre, comme les sacs du jeu.
-    table.insert(_G.UISpecialFrames, "CoeurUISacs")
+    -- Échap ferme la fenêtre, comme les sacs et la banque du jeu.
+    table.insert(_G.UISpecialFrames, v.frameName)
 
     local title = win:CreateFontString(nil, "OVERLAY")
     title:SetFont(CUI:GetFont(), 13, "")
     title:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
     title:SetPoint("TOPLEFT", PAD, -10)
-    title:SetText(L.SAC_TITRE)
+    title:SetText(L[v.title])
     local close = _G.CreateFrame("Button", nil, win)
     close:SetSize(22, 22)
     close:SetPoint("TOPRIGHT", -6, -6)
@@ -592,20 +707,22 @@ local function build()
         paint(false)
         btn:SetScript("OnClick", function()
             M.db[key] = not M.db[key]
+            paintToggles()
             paint(true)
             tip()
-            CUI:SafeCall(CUI:Tr("SAC_NOM"), layout)
+            refresh()
         end)
         btn:SetScript("OnEnter", function() paint(true); tip() end)
         btn:SetScript("OnLeave", function() paint(false); CUI:HideTooltip(btn) end)
         btn.paint = paint
+        toggles[#toggles + 1] = btn
         return btn
     end
     -- « Tiroir » : emplacements de sac en bas ; « Catégories » : rangement par catégories ou en vrac.
-    local slotsToggle = titleToggle(close, "Tiroir", "emplacements", "SAC_EMPLACEMENTS_CACHER",
+    -- Chaque fenêtre a ses propres réglages.
+    local slotsToggle = titleToggle(close, "Tiroir", v.slotsKey, "SAC_EMPLACEMENTS_CACHER",
         "SAC_EMPLACEMENTS_AFFICHER")
-    local catToggle = titleToggle(slotsToggle, "Categories", "categories", "SAC_VRAC", "SAC_PAR_CATEGORIES")
-    win.cuiCatToggle = catToggle
+    local catToggle = titleToggle(slotsToggle, "Categories", v.catKey, "SAC_VRAC", "SAC_PAR_CATEGORIES")
     -- Barre de titre : on glisse la fenêtre pour la déplacer (place gardée comme celle du cadenas).
     win:SetMovable(true)
     local drag = _G.CreateFrame("Frame", nil, win)
@@ -618,20 +735,21 @@ local function build()
     drag:SetScript("OnDragStop", function()
         win:StopMovingOrSizing()
         win:SetUserPlaced(false)
-        CUI:SaveMoverPosition("sacs")
+        CUI:SaveMoverPosition(v.key)
     end)
     local headerLine = texture(win, "ARTWORK", 0, C.graphite)
     headerLine:SetPoint("TOPLEFT", 1, -HEADER)
     headerLine:SetPoint("TOPRIGHT", -1, -HEADER)
     headerLine:SetHeight(1)
 
-    -- Recherche.
+    -- Recherche (commune : taper dans l'une filtre les deux).
     local box = _G.CreateFrame("Frame", nil, win)
     box:SetPoint("TOPLEFT", PAD, -(HEADER + 8))
     box:SetPoint("TOPRIGHT", -PAD, -(HEADER + 8))
     box:SetHeight(SEARCH)
     CUI:CreateBorderedRect(box, 3, C.bordureDiscrete, { 0.063, 0.071, 0.094, 1 })
-    search = _G.CreateFrame("EditBox", "CoeurUISacsRecherche", box)
+    local search = _G.CreateFrame("EditBox", v.frameName .. "Recherche", box)
+    v.search = search
     search:SetPoint("TOPLEFT", 8, 0)
     search:SetPoint("BOTTOMRIGHT", -8, 0)
     search:SetAutoFocus(false)
@@ -643,8 +761,16 @@ local function build()
     search.hint:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
     search.hint:SetText(L.SAC_RECHERCHER)
     search:SetScript("OnTextChanged", function(self)
-        self.hint:SetShown(self:GetText() == "")
-        applySearch()
+        local text = self:GetText()
+        self.hint:SetShown(text == "")
+        if text == searchText then return end
+        searchText = text
+        for _, other in ipairs(views) do
+            if other.search and other.search ~= self and other.search:GetText() ~= text then
+                other.search:SetText(text)
+            end
+            applySearch(other)
+        end
     end)
     search:SetScript("OnEscapePressed", function(self)
         self:SetText("")
@@ -652,48 +778,63 @@ local function build()
     end)
     search:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 
-    separator = texture(win, "ARTWORK", 0, C.graphite)
-    separator:SetHeight(1)
-    separator:Hide()
+    v.separator = texture(win, "ARTWORK", 0, C.graphite)
+    v.separator:SetHeight(1)
+    v.separator:Hide()
 
     -- Bas de la fenêtre.
     local footerLine = texture(win, "ARTWORK", 0, C.graphite)
     footerLine:SetPoint("BOTTOMLEFT", 1, FOOTER)
     footerLine:SetPoint("BOTTOMRIGHT", -1, FOOTER)
     footerLine:SetHeight(1)
-    local last = (_G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4)
-    for i = 1, last do
-        local b = createBagSlot(i)
-        b:SetPoint("BOTTOMLEFT", win, "BOTTOMLEFT", PAD + (i - 1) * 23, 7)
-        bagSlots[i] = b
-    end
-    freeText = win:CreateFontString(nil, "OVERLAY")
-    freeText:SetFont(CUI:GetFont(), 11, "")
-    freeText:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
-    freeText:SetPoint("BOTTOMLEFT", win, "BOTTOMLEFT", PAD + last * 23 + 6, 12)
-    win.slotsWidth = last * 23 + 6
-    moneyText = win:CreateFontString(nil, "OVERLAY")
-    moneyText:SetFont(CUI:GetFont(), 11, "")
-    moneyText:SetPoint("BOTTOMRIGHT", win, "BOTTOMRIGHT", -PAD, 12)
+    v.freeText = win:CreateFontString(nil, "OVERLAY")
+    v.freeText:SetFont(CUI:GetFont(), 11, "")
+    v.freeText:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
 
     -- À chaque ouverture : tout est relu (les sacs ont pu changer fenêtre fermée).
-    win:SetScript("OnShow", function() CUI:SafeCall(CUI:Tr("SAC_NOM"), layout) end)
-    win:SetScript("OnHide", function()
-        if search then
-            search:SetText("")
-            search:ClearFocus()
-        end
-    end)
-    -- Bouton « Vendre » de la camelote (placé par layout, chez un marchand seulement).
-    sellButton = CUI:CreateButton(win, "", false, true)
-    sellButton:SetHeight(18)
-    sellButton:Hide()
-    sellButton:SetScript("OnClick", function() sellJunk() end)
-    sellButton:HookScript("OnEnter", function(self) CUI:ShowTooltip(self, L.SAC_VENDRE_NOTE) end)
-    sellButton:HookScript("OnLeave", function(self) CUI:HideTooltip(self) end)
+    win:SetScript("OnShow", function() CUI:SafeCall(CUI:Tr("SAC_NOM"), layout, v) end)
     win:SetSize(400, 300)
+end
+
+local function build()
+    -- Sacs : argent en bas, bouton « Vendre » chez le marchand.
+    buildView(bags)
+    local win = bags.frame
+    bags.moneyText = win:CreateFontString(nil, "OVERLAY")
+    bags.moneyText:SetFont(CUI:GetFont(), 11, "")
+    bags.moneyText:SetPoint("BOTTOMRIGHT", win, "BOTTOMRIGHT", -PAD, 12)
+    bags.sellButton = CUI:CreateButton(win, "", false, true)
+    bags.sellButton:SetHeight(18)
+    bags.sellButton:Hide()
+    bags.sellButton:SetScript("OnClick", function() sellJunk() end)
+    bags.sellButton:HookScript("OnEnter", function(self) CUI:ShowTooltip(self, L.SAC_VENDRE_NOTE) end)
+    bags.sellButton:HookScript("OnLeave", function(self) CUI:HideTooltip(self) end)
+    win:SetScript("OnHide", function()
+        -- La recherche est remise à zéro quand plus aucune fenêtre n'est ouverte.
+        if not (bankView.frame and bankView.frame:IsShown()) then bags.search:SetText("") end
+        bags.search:ClearFocus()
+    end)
     CUI:RegisterMover({ key = "sacs", frame = win, label = "SAC_TITRE", point = "BOTTOMRIGHT",
                         default = { "BOTTOMRIGHT", "BOTTOMRIGHT", -60, 110 } })
+
+    -- Banque : achat de l'emplacement suivant en bas ; la fermer quitte le banquier.
+    buildView(bankView)
+    local bw = bankView.frame
+    bankView.buyButton = CUI:CreateButton(bw, "", false, true)
+    bankView.buyButton:SetHeight(20)
+    bankView.buyButton:SetPoint("BOTTOMRIGHT", bw, "BOTTOMRIGHT", -PAD, 7)
+    bankView.buyButton:Hide()
+    -- L'achat est protégé : un bouton protégé posé dessus clique le bouton « Acheter » du jeu.
+    CUI:AttachSecureClick(bankView.buyButton, function() return CUI:BankPurchaseButton() end, function()
+        return bankView.buyButton.label:GetText(), L.SAC_ACHETER_NOTE
+    end, function() return CUI:BankPurchaseButton() ~= nil end)
+    bw:SetScript("OnHide", function()
+        if not (bags.frame and bags.frame:IsShown()) then bankView.search:SetText("") end
+        bankView.search:ClearFocus()
+        if bankOpen then CUI:BankClose() end
+    end)
+    CUI:RegisterMover({ key = "banque", frame = bw, label = "SAC_BANQUE", point = "BOTTOMRIGHT",
+                        default = { "BOTTOMRIGHT", "BOTTOMRIGHT", -476, 110 } })
 end
 
 -- Ouvrir et fermer : à la place des sacs du jeu ---------------------------------------------
@@ -707,6 +848,7 @@ local function want(what)
     M:After(0, function()
         local w = intent
         intent = nil
+        local win = bags.frame
         if not win or not w then return end
         if w == "toggle" then
             win:SetShown(not win:IsShown())
@@ -718,12 +860,10 @@ local function want(what)
     end)
 end
 
--- Cadres de sacs du jeu : cachés dès qu'ils s'ouvrent (ceux du joueur seulement ; la banque reste
--- celle du jeu pour cette étape).
+-- Cadres de sacs du jeu : cachés dès qu'ils s'ouvrent (ceux du joueur seulement).
 local function isPlayerBagFrame(frame)
     local id = frame.GetID and frame:GetID()
-    local last = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4
-    return type(id) == "number" and id >= 0 and id <= last
+    return type(id) == "number" and id >= 0 and id <= lastPlayerBag()
 end
 
 local hookedFrames = {}
@@ -756,9 +896,8 @@ local function hookToggles()
             end)
         end
     end
-    local last = _G.NUM_TOTAL_EQUIPPED_BAG_SLOTS or _G.NUM_BAG_SLOTS or 4
     local function forPlayerBag(state)
-        return function(id) return (type(id) == "number" and id >= 0 and id <= last) and state or nil end
+        return function(id) return (type(id) == "number" and id >= 0 and id <= lastPlayerBag()) and state or nil end
     end
     hook("ToggleAllBags", "toggle")
     hook("ToggleBackpack", "toggle")
@@ -771,6 +910,51 @@ local function hookToggles()
     hook("CloseBag", forPlayerBag("close"))
 end
 
+-- Banque du jeu : gardée ouverte (le jeu s'en sert pour ranger d'un clic droit) mais invisible,
+-- posée hors de l'écran à chaque fois que le jeu la place.
+local function useOurBank()
+    return M.enabled and M.db.banque
+end
+
+local bankHooked = false
+local function stashGameBank()
+    local f = _G.BankFrame
+    if bankHooked or not f then return end
+    bankHooked = true
+    local moving = false
+    local function stash(self)
+        if moving then return end
+        moving = true
+        if useOurBank() then
+            self:SetAlpha(0)
+            self:SetClampedToScreen(false)
+            self:ClearAllPoints()
+            self:SetPoint("TOPRIGHT", _G.UIParent, "TOPLEFT", -5000, 5000)
+        else
+            self:SetAlpha(1)
+        end
+        moving = false
+    end
+    f:HookScript("OnShow", stash)
+    _G.hooksecurefunc(f, "SetPoint", stash)
+end
+
+local function onBankOpened()
+    if bankOpen then return end
+    bankOpen = true
+    stashGameBank()
+    if useOurBank() and bankView.frame then
+        bankView.frame:Show()
+        bags.frame:Show()
+    end
+end
+
+local function onBankClosed()
+    if not bankOpen then return end
+    bankOpen = false
+    if bankView.frame then bankView.frame:Hide() end
+end
+
 -- Marche / arrêt -------------------------------------------------------------------------------
 
 function M:OnEnable()
@@ -779,7 +963,8 @@ function M:OnEnable()
     hookToggles()
     for _, event in ipairs({ "BAG_UPDATE_DELAYED", "ITEM_LOCK_CHANGED", "BAG_UPDATE_COOLDOWN",
                              "BAG_NEW_ITEMS_UPDATED", "PLAYER_MONEY", "PLAYER_EQUIPMENT_CHANGED",
-                             "INVENTORY_SEARCH_UPDATE" }) do
+                             "INVENTORY_SEARCH_UPDATE", "PLAYERBANKSLOTS_CHANGED", "PLAYERBANKBAGSLOTS_CHANGED",
+                             "BANK_TABS_CHANGED", "BANK_TAB_SETTINGS_UPDATED" }) do
         pcall(self.On, self, event, requestRefresh)
     end
     self:On("MERCHANT_SHOW", function()
@@ -791,6 +976,19 @@ function M:OnEnable()
         merchantOpen = false
         requestRefresh()
     end)
+    -- Banquier : selon la version du jeu, l'un ou l'autre de ces évènements (ou les deux).
+    pcall(self.On, self, "BANKFRAME_OPENED", onBankOpened)
+    pcall(self.On, self, "BANKFRAME_CLOSED", onBankClosed)
+    local banker = _G.Enum and _G.Enum.PlayerInteractionType and _G.Enum.PlayerInteractionType.Banker
+    if banker then
+        pcall(self.On, self, "PLAYER_INTERACTION_MANAGER_FRAME_SHOW", function(_, kind)
+            if kind == banker then onBankOpened() end
+        end)
+        pcall(self.On, self, "PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(_, kind)
+            if kind == banker then onBankClosed() end
+        end)
+    end
+    stashGameBank()
 end
 
 -- Coupé : tout reste en place jusqu'au /reload (needsReload).
@@ -798,7 +996,7 @@ function M:OnDisable()
 end
 
 function M:OnSettingChanged()
-    if win and win.cuiCatToggle then win.cuiCatToggle.paint(false) end
+    paintToggles()
     refresh()
 end
 

@@ -11,6 +11,10 @@
 --   local b = CUI:CreateReloadButton(parent)  -- bouton texte « Recharger l'interface »
 --   CUI:AttachReload(bouton)                  -- tout autre bouton (une icône...) : il doit avoir
 --                                             -- :SetVisualState(survol, appuyé)
+--   CUI:AttachSecureClick(bouton, cible, infobulle, quand)
+--                                             -- même chose pour cliquer un bouton protégé du jeu
+--                                             -- (cible) ; infobulle() rend titre, texte ; quand()
+--                                             -- dit si le bouton protégé doit être posé.
 local _, CUI = ...
 local L = CUI.L
 
@@ -19,8 +23,10 @@ local bindings = {} -- { visual = bouton visible, secure = bouton protégé, pla
 local function createSecure(bind)
     local secure = _G.CreateFrame("Button", "CoeurUIBoutonReload" .. bind.index, _G.UIParent,
         "SecureActionButtonTemplate")
-    secure:SetAttribute("type", "macro")
-    secure:SetAttribute("macrotext", "/reload")
+    for k, v in pairs(bind.attrs) do
+        if type(v) == "function" then v = v() end -- cible trouvée au dernier moment
+        secure:SetAttribute(k, v)
+    end
     -- Haut et bas : le jeu ne déclenche qu'une fois, selon le réglage « action à l'appui ».
     secure:RegisterForClicks("AnyUp", "AnyDown")
     secure:SetFrameStrata("FULLSCREEN_DIALOG")
@@ -30,7 +36,7 @@ local function createSecure(bind)
     local visual = bind.visual
     secure:HookScript("OnEnter", function(self)
         visual:SetVisualState(true, false)
-        CUI:ShowTooltip(self, L.INFOBULLE_BOUTON_RELOAD_TITRE, L.INFOBULLE_BOUTON_RELOAD)
+        CUI:ShowTooltip(self, bind.tooltip())
     end)
     secure:HookScript("OnLeave", function(self)
         visual:SetVisualState(false, false)
@@ -45,7 +51,7 @@ end
 local function sync(bind)
     if _G.InCombatLockdown() then return end
     local visual, secure = bind.visual, bind.secure
-    local wanted = visual:IsVisible() and visual:IsEnabled()
+    local wanted = visual:IsVisible() and visual:IsEnabled() and (not bind.when or bind.when())
     if not wanted then
         if secure and secure:IsShown() then
             secure:Hide()
@@ -75,13 +81,31 @@ local function sync(bind)
     end
 end
 
--- Rend un bouton visible capable de recharger l'interface.
-function CUI:AttachReload(visual)
-    local bind = { visual = visual, placed = {}, index = #bindings + 1 }
+local function attach(visual, attrs, tooltip, when)
+    local bind = { visual = visual, placed = {}, index = #bindings + 1, attrs = attrs, tooltip = tooltip,
+                   when = when }
     bindings[#bindings + 1] = bind
-    if self:InCombat() then
+    if CUI:InCombat() then
         visual:Disable()
     end
+    -- Suit le bouton visible tant qu'il est à l'écran (fenêtre déplacée, mise en page changée).
+    local function follow() sync(bind) end
+    visual:SetScript("OnUpdate", follow)
+    visual:HookScript("OnShow", follow)
+    visual:HookScript("OnHide", follow)
+    return visual
+end
+
+-- Rend un bouton visible capable de cliquer un bouton protégé du jeu (target) : acheter un
+-- emplacement de banque... Hors combat seulement (en combat, le bouton visible est désactivé).
+function CUI:AttachSecureClick(visual, target, tooltip, when)
+    return attach(visual, { type = "click", clickbutton = target }, tooltip, when)
+end
+
+-- Rend un bouton visible capable de recharger l'interface.
+function CUI:AttachReload(visual)
+    local function tooltip() return L.INFOBULLE_BOUTON_RELOAD_TITRE, L.INFOBULLE_BOUTON_RELOAD end
+    attach(visual, { type = "macro", macrotext = "/reload" }, tooltip)
 
     -- Survol quand le bouton protégé n'est pas posé dessus (en combat) : on explique pourquoi.
     self:AttachTooltip(visual, function()
@@ -90,12 +114,6 @@ function CUI:AttachReload(visual)
         end
         return L.INFOBULLE_BOUTON_RELOAD_TITRE, L.INFOBULLE_BOUTON_RELOAD
     end)
-
-    -- Suit le bouton visible tant qu'il est à l'écran (fenêtre déplacée, mise en page changée).
-    local function follow() sync(bind) end
-    visual:SetScript("OnUpdate", follow)
-    visual:HookScript("OnShow", follow)
-    visual:HookScript("OnHide", follow)
     return visual
 end
 
