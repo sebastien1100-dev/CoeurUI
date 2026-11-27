@@ -13,6 +13,8 @@
 --   p:SetShown(bool), p:SetFillColor(couleur)
 --   CUI:SetBarTexture(barre, clé)                -- texture de barre ; « striee » : couleur unie + stries
 --                                                -- répétées (leur taille ne dépend pas de la barre)
+--   p:SetShadowShown(bool)                       -- ombre ou non (bouton seul / sur un panneau)
+--   CUI:CreateStripes(parent, texture)           -- stries sur une texture placée à la main
 --   CUI:GetTheme(), CUI:ApplyTheme()
 local _, CUI = ...
 local C = CUI.Colors
@@ -75,7 +77,15 @@ function Panel:SetShown(shown)
     self.border:SetShown(shown)
     self.ring:SetShown(shown)
     self.fill:SetShown(shown)
-    if self.shadow then self.shadow:SetShown(shown and CUI:GetTheme().ombre > 0) end
+    if self.shadow then self.shadow:SetShown(shown and not self.noShadow and CUI:GetTheme().ombre > 0) end
+end
+
+-- Ombre montrée ou non (un bouton posé seul a la sienne, un bouton posé sur un panneau non).
+function Panel:SetShadowShown(shown)
+    self.noShadow = not shown
+    if self.shadow then
+        self.shadow:SetShown(shown and CUI:GetTheme().ombre > 0 and self.fill.parts[1]:IsShown())
+    end
 end
 
 function Panel:SetFillColor(color)
@@ -93,7 +103,7 @@ function Panel:Paint()
     self.ring:SetColor(lighten(fill, theme.lisereClair))
     if self.shadow then
         self.shadow:SetVertexColor(0, 0, 0, theme.ombre)
-        self.shadow:SetShown(theme.ombre > 0 and self.fill.parts[1]:IsShown())
+        self.shadow:SetShown(theme.ombre > 0 and not self.noShadow and self.fill.parts[1]:IsShown())
     end
 end
 
@@ -156,6 +166,19 @@ function CUI:SetBarTexture(bar, key)
     end
 end
 
+-- Stries posées sur une texture déjà placée (segment de barre fait à la main) : à montrer et cacher
+-- avec elle.
+function CUI:CreateStripes(parent, anchor, sublevel)
+    local t = parent:CreateTexture(nil, "ARTWORK", nil, sublevel or 7)
+    t:SetTexture(STRIPES, "REPEAT", "REPEAT")
+    t:SetHorizTile(true)
+    t:SetVertTile(true)
+    t:SetAllPoints(anchor)
+    t:SetVertexColor(1, 1, 1, self:GetTheme().stries)
+    bars[t] = true
+    return t
+end
+
 -- Couleur des survols et boutons (« Général ») : l'or de CœurUI ou la couleur de la classe du joueur.
 -- Posée au chargement (une partie des couleurs est retenue en dessinant : un /reload l'applique).
 -- L'or de la marque (« Cœur » du titre) ne change pas.
@@ -180,6 +203,7 @@ function CUI:ApplyTheme()
     copyColors(theme)
     for p in pairs(panels) do p:Paint() end
     for bar in pairs(bars) do
-        if bar.cuiStripes then bar.cuiStripes:SetVertexColor(1, 1, 1, theme.stries) end
+        local t = bar.cuiStripes or (bar.GetObjectType and bar:GetObjectType() == "Texture" and bar)
+        if t then t:SetVertexColor(1, 1, 1, theme.stries) end
     end
 end

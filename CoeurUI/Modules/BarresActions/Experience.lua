@@ -241,14 +241,14 @@ local function paintText(bar)
     bar.text:SetShown(mode == "toujours" or (mode == "survol" and bar.hover))
 end
 
--- Barre : fond sombre, liseré gris fin (4 traits), segments posés de gauche à droite, texte
+-- Barre : fond de case, liseré sombre (4 traits), segments striés, segments posés de gauche à droite, texte
 -- au-dessus. Un bouton : survol (texte, infobulle) et clic.
 local function createBar(name, segments)
     local bar = _G.CreateFrame("Button", name, _G.UIParent)
     bar:SetSize(100, 8)
     bar:RegisterForClicks("LeftButtonUp")
-    texture(bar, "BACKGROUND", -8, C.fond):SetAllPoints()
-    local b = C.bordureDiscrete
+    texture(bar, "BACKGROUND", -8, C.case):SetAllPoints()
+    local b = C.lisereSombre
     local top, bottom = texture(bar, "OVERLAY", 6, b), texture(bar, "OVERLAY", 6, b)
     local left, right = texture(bar, "OVERLAY", 6, b), texture(bar, "OVERLAY", 6, b)
     top:SetPoint("TOPLEFT"); top:SetPoint("TOPRIGHT"); top:SetHeight(1)
@@ -258,6 +258,7 @@ local function createBar(name, segments)
     bar.segs = {}
     for i, color in ipairs(segments) do
         bar.segs[i] = texture(bar, "ARTWORK", i, color)
+        bar.segs[i].stripes = CUI:CreateStripes(bar, bar.segs[i]) -- style « Givre »
     end
     bar.text = bar:CreateFontString(nil, "OVERLAY")
     bar.text:SetPoint("BOTTOMLEFT", bar, "TOPLEFT", 0, 3)
@@ -284,6 +285,7 @@ local function setSegment(bar, i, from, to, color)
     local inner = bar:GetWidth() - 2
     if to <= from or inner <= 0 then
         seg:Hide()
+        seg.stripes:Hide()
         return
     end
     if color then seg:SetVertexColor(color[1], color[2], color[3], 1) end
@@ -292,6 +294,7 @@ local function setSegment(bar, i, from, to, color)
     seg:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", 1 + from * inner, 1)
     seg:SetWidth(math.max(1, (to - from) * inner))
     seg:Show()
+    seg.stripes:Show()
 end
 
 -- Lit le jeu et met tout à jour (barres, textes, « +1 niveau »).

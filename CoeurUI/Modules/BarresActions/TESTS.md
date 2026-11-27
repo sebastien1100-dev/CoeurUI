@@ -147,3 +147,18 @@ barres du jeu). Le module ne dépend de rien chez EllesmereUI. Ne pas ouvrir le 
 9. Cadenas : deux cadres, « Expérience » et « Réputation », à placer séparément ; `/reload` : ils sont restés.
 10. Couper « Afficher l'expérience » et « Afficher la réputation » : les barres du jeu reviennent.
 11. Langue anglaise : page « Experience and reputation ».
+
+## 0.45.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.45.0 ».
+2. Chaque barre (1 à 4, familier, postures, micro-menu, sacs) est posée sur un panneau ardoise avec une ombre douce ;
+   les boutons sont des cases sombres au double liseré discret, sans ombre.
+3. Survol d'un bouton : liseré doré (ou couleur de la classe si choisie dans « Général ») ; clic maintenu : plus
+   clair ; souris partie : le liseré disparaît. Même chose sur le micro-menu et « Quitter le véhicule ».
+4. Réglage « Barre posée sur un panneau » coupé sur une barre : son panneau disparaît, chaque bouton a sa petite
+   ombre. Remis : le panneau revient, les ombres des boutons partent. Les autres barres ne changent pas.
+5. Hors de portée : icône voilée de rouge cœur. Ressource manquante : bleutée. Recharge : voile qui tourne.
+6. Barres d'expérience et de réputation : fines stries en diagonale sur la partie remplie (repos et quêtes compris).
+7. Barres qui se touchent (placées au cadenas avant cette version) : les replacer si les panneaux se chevauchent.
+8. Barre des postures : la posture active a un liseré doré (ou couleur de la classe) même sans survol ; changer de
+   posture ou de forme : le liseré passe sur la nouvelle. Le panneau a la taille des postures connues.

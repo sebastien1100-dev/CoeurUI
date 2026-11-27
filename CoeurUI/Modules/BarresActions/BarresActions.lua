@@ -1,5 +1,6 @@
--- Module « Barres d'actions » (maquette validée) : barres 1 à 8 en carrés sobres (icône rognée,
--- liseré gris fin, coins à peine arrondis, pas d'or), à la place des barres du jeu.
+-- Module « Barres d'actions » (maquette validée) : barres 1 à 8 à la place des barres du jeu, au
+-- style « Givre » (planche « Barres d'actions ») : boutons en cases du thème, barre posée sur un
+-- panneau ou boutons seuls ombrés (réglage), survol de la couleur des boutons.
 -- Étape 1 : barres 1 à 8. Étape 2 : familier, postures, bouton d'action en plus, quitter le
 -- véhicule (boutons du jeu réutilisés : le jeu les tient à jour). Étape 3 : micro-menu (icônes CœurUI
 -- au trait posées sur les boutons du jeu) et sacs. Barres d'expérience et de réputation : Experience.lua.
@@ -35,19 +36,19 @@ local BARS = {
 
 local POSITIONS = {
     b1 = { "BOTTOM", "BOTTOM", 0, 16 },
-    b2 = { "BOTTOM", "BOTTOM", 0, 59 },
+    b2 = { "BOTTOM", "BOTTOM", 0, 68 },
     b3 = { "RIGHT", "RIGHT", -16, 0 },
-    b4 = { "RIGHT", "RIGHT", -53, 0 },
+    b4 = { "RIGHT", "RIGHT", -62, 0 },
     b5 = { "CENTER", "CENTER", 0, 120 },
     b6 = { "CENTER", "CENTER", 0, 80 },
     b7 = { "CENTER", "CENTER", 0, 40 },
     b8 = { "CENTER", "CENTER", 0, 0 },
-    fam = { "BOTTOM", "BOTTOM", 170, 102 },
-    post = { "BOTTOM", "BOTTOM", -200, 102 },
+    fam = { "BOTTOM", "BOTTOM", 170, 124 },
+    post = { "BOTTOM", "BOTTOM", -200, 124 },
     extra = { "BOTTOM", "BOTTOM", 0, 230 },
     vehicule = { "BOTTOM", "BOTTOM", 290, 16 },
     micro = { "BOTTOMRIGHT", "BOTTOMRIGHT", -16, 16 },
-    sacs = { "BOTTOMRIGHT", "BOTTOMRIGHT", -16, 50 },
+    sacs = { "BOTTOMRIGHT", "BOTTOMRIGHT", -16, 54 },
 }
 
 -- Familier et postures : boutons du jeu réutilisés (le jeu montre ceux qui servent : familier
@@ -71,6 +72,7 @@ local function barDefaults(shown, vertical)
         afficher = shown, nombre = 12, parLigne = 12, orientation = vertical and "vertical" or "horizontal",
         taille = vertical and 34 or 40, espacement = 3, visibilite = "toujours", opacite = 100,
         raccourci = true, macro = false, charges = true, recharge = true,
+        panneau = true, -- style « Givre » : la barre posée sur un panneau (sinon boutons seuls, ombrés)
     }
 end
 
@@ -129,6 +131,7 @@ local QUAND = {
 local function sensItem() return { type = "dropdown", key = "orientation", label = "BA_SENS", options = SENS } end
 local function tailleItem() return { type = "slider", key = "taille", label = "BA_TAILLE", min = 20, max = 64, step = 2, format = "%d" } end
 local function espacementItem() return { type = "slider", key = "espacement", label = "BA_ESPACEMENT", min = 0, max = 12, step = 1, format = "%d" } end
+local function panneauItem() return { type = "toggle", key = "panneau", label = "BA_PANNEAU" } end
 local function quandItem() return { type = "dropdown", key = "visibilite", label = "BA_QUAND", options = QUAND } end
 local function opaciteItem()
     return { type = "slider", key = "opacite", label = "BA_OPACITE", min = 0, max = 100, step = 5, format = "%d %%",
@@ -143,6 +146,7 @@ local PAGE_BARRES = {
     barItem({ type = "slider", key = "nombre", label = "BA_NOMBRE", min = 1, max = 12, step = 1, format = "%d" }),
     barItem({ type = "slider", key = "parLigne", label = "BA_PAR_LIGNE", min = 1, max = 12, step = 1, format = "%d" }),
     barItem(sensItem()), barItem(tailleItem()), barItem(espacementItem()),
+    barItem(panneauItem()),
     { type = "column" },
     { type = "section", text = "BA_VISIBILITE" },
     barItem(quandItem()), barItem(opaciteItem()),
@@ -165,7 +169,7 @@ local function pageGroupe(key, compte)
         page[#page + 1] = { type = "slider", key = "parLigne", label = "BA_PAR_LIGNE", min = 1, max = 10, step = 1, format = "%d" }
     end
     for _, item in ipairs({
-        sensItem(), tailleItem(), espacementItem(),
+        sensItem(), tailleItem(), espacementItem(), panneauItem(),
         { type = "column" },
         { type = "section", text = "BA_VISIBILITE" },
         quandItem(), opaciteItem(),
@@ -193,7 +197,7 @@ local function pageFixe(key, simple)
     if not simple then
         page[#page + 1] = { type = "slider", key = "parLigne", label = "BA_PAR_LIGNE", min = 1, max = 12, step = 1, format = "%d" }
     end
-    for _, item in ipairs({ sensItem(), tailleItem(), espacementItem(),
+    for _, item in ipairs({ sensItem(), tailleItem(), espacementItem(), panneauItem(),
                             { type = "column" }, { type = "section", text = "BA_VISIBILITE" },
                             quandItem(), opaciteItem() }) do
         page[#page + 1] = item
@@ -220,7 +224,7 @@ M = CUI:RegisterModule({
     },
 })
 
-local FOND = { 0.063, 0.071, 0.094, 1 } -- #101218, derrière l'icône
+local PAD = 4 -- marge du panneau autour des boutons
 
 local built = false
 local bars = {}          -- clé -> cadre de barre
@@ -297,14 +301,15 @@ local function setRangeVeil(b, out)
         if not out or not b.icon then return end
         veil = b:CreateTexture(nil, "ARTWORK", nil, 7)
         veil:SetTexture("Interface\\Buttons\\WHITE8x8")
-        veil:SetVertexColor(0.85, 0.2, 0.2, 0.4)
+        veil:SetVertexColor(C.coeur[1], C.coeur[2], C.coeur[3], 0.45)
         veil:SetAllPoints(b.icon)
         b.cuiRangeVeil = veil
     end
     veil:SetShown(out)
 end
 
--- Liseré de 1 point sur les quatre bords, au-dessus de tout ; :SetColor() pour le survol.
+-- Liseré de 1 point sur les quatre bords, au-dessus de tout : survol et appui (couleur des boutons
+-- choisie dans « Général »). Caché au repos : le liseré du style est celui de la case dessous.
 local function outline(b)
     local o = { lines = {} }
     for _, side in ipairs({ { "TOPLEFT", "TOPRIGHT", nil, 1 }, { "BOTTOMLEFT", "BOTTOMRIGHT", nil, 1 },
@@ -317,10 +322,19 @@ local function outline(b)
         o.lines[#o.lines + 1] = t
     end
     function o:SetColor(c)
-        for _, t in ipairs(self.lines) do t:SetVertexColor(c[1], c[2], c[3], 1) end
+        for _, t in ipairs(self.lines) do
+            if c then t:SetVertexColor(c[1], c[2], c[3], 1) end
+            t:SetShown(c ~= nil)
+        end
     end
-    o:SetColor(C.bordureDiscrete)
+    o:SetColor(nil)
     return o
+end
+
+-- Liseré du bouton : appuyé (plus clair), survolé ou posture active (couleur des boutons), sinon rien.
+local function paintBorder(b)
+    local c = b.cuiDown and C.orClair or ((b.cuiOver or b.cuiActive) and C.or_) or nil
+    b.cuiBorder:SetColor(c)
 end
 
 local function skin(b)
@@ -349,13 +363,10 @@ local function skin(b)
         local anim = b[key]
         if anim and anim.SetAlpha then anim:SetAlpha(0) end
     end
-    -- Notre habit : liseré gris fin, fond sombre.
-    -- Fond sombre dessous ; liseré au-dessus de l'image (toujours visible, même si le jeu agrandit
-    -- l'image jusqu'aux bords du bouton).
-    local back = b:CreateTexture(nil, "BACKGROUND", nil, -8)
-    back:SetTexture("Interface\\Buttons\\WHITE8x8")
-    back:SetVertexColor(FOND[1], FOND[2], FOND[3], FOND[4])
-    back:SetAllPoints()
+    -- Notre habit (style « Givre ») : une case du thème (fond, double liseré discret, ombre quand le
+    -- bouton est posé seul) ; liseré de survol au-dessus de l'image (toujours visible, même si le jeu
+    -- agrandit l'image jusqu'aux bords du bouton).
+    b.cuiPanel = CUI:CreatePanel(b, { radius = 3, fill = C.case })
     b.cuiBorder = outline(b)
     -- Survol, appui, coché : voiles légers sur l'icône.
     local hl = b:GetHighlightTexture()
@@ -395,8 +406,19 @@ local function skin(b)
         b.Name:SetPoint("BOTTOMLEFT", 2, 3)
         b.Name:SetPoint("BOTTOMRIGHT", -2, 3)
     end
-    b:HookScript("OnEnter", function(self) self.cuiBorder:SetColor(C.texteSecondaire) end)
-    b:HookScript("OnLeave", function(self) self.cuiBorder:SetColor(C.bordureDiscrete) end)
+    b:HookScript("OnEnter", function(self) self.cuiOver = true paintBorder(self) end)
+    b:HookScript("OnLeave", function(self) self.cuiOver = false self.cuiDown = false paintBorder(self) end)
+    b:HookScript("OnMouseDown", function(self) self.cuiDown = true paintBorder(self) end)
+    b:HookScript("OnMouseUp", function(self) self.cuiDown = false paintBorder(self) end)
+    -- Posture ou forme active : liseré permanent (le jeu coche son bouton).
+    if ours[b] and ours[b].key == "post" and b.SetChecked then
+        _G.hooksecurefunc(b, "SetChecked", function(self, checked)
+            self.cuiActive = checked and true or false
+            paintBorder(self)
+        end)
+        b.cuiActive = b:GetChecked() and true or false
+        paintBorder(b)
+    end
     -- Le jeu remet son texte de raccourci et ses couleurs : on repasse derrière (crochets seulement).
     if b.UpdateHotkeys then
         _G.hooksecurefunc(b, "UpdateHotkeys", function(self) refreshTexts(self) end)
@@ -476,7 +498,19 @@ end
 -- Range des boutons dans un cadre selon des réglages (nombre, rangées, sens, taille, espacement).
 -- Hors combat. Ceux en trop vont dans le cadre invisible. keepParent : les boutons restent dans leur
 -- cadre du jeu (seulement placés sur le nôtre).
+-- Style « Givre » : la barre sur un panneau (boutons sans ombre), ou les boutons seuls, chacun son
+-- ombre (réglage « panneau »).
+local function applyPanel(bar, buttons, s)
+    if not bar.cuiPanel then bar.cuiPanel = CUI:CreatePanel(bar, { inset = -PAD }) end
+    bar.cuiPanel:SetShown(s.panneau and true or false)
+    for _, b in pairs(buttons) do
+        local p = b.cuiPanel or (b.cuiTile and b.cuiTile.panel)
+        if p then p:SetShadowShown(not s.panneau) end
+    end
+end
+
 local function placeButtons(bar, buttons, s, max, keepParent)
+    applyPanel(bar, buttons, s)
     layingOut = true
     local n = math.max(1, math.min(max, s.nombre))
     local per = math.max(1, math.min(n, s.parLigne))
@@ -523,6 +557,7 @@ end
 
 local function groupCondition(g, s)
     if not s.afficher or s.visibilite == "cachee" then return "hide" end
+    if g.key == "post" and not hasStances() then return "hide" end
     local base = "[petbattle][overridebar][vehicleui] hide; "
     if s.visibilite == "combat" then
         return base .. (g.pet and "[pet,combat]" or "[combat]") .. " show; hide"
@@ -546,7 +581,13 @@ local function layoutGroup(g)
     local frame = bars[g.key]
     if not frame or _G.InCombatLockdown() then return end
     local s = settingsOf(g.key)
-    placeButtons(frame, frame.buttons, s, g.count)
+    local max = g.count
+    if g.key == "post" then
+        -- Seulement les postures connues : sinon le panneau garde la place des boutons absents.
+        local forms = _G.GetNumShapeshiftForms and _G.GetNumShapeshiftForms() or 0
+        max = math.max(1, math.min(g.count, forms))
+    end
+    placeButtons(frame, frame.buttons, s, max)
     _G.RegisterStateDriver(frame, "visibility", groupCondition(g, s))
 end
 
@@ -654,7 +695,7 @@ local function createVehicle()
     local holder = _G.CreateFrame("Frame", "CoeurUIBarre_vehicule", _G.UIParent)
     holder:SetSize(32, 32)
     holder:SetFrameStrata("LOW")
-    holder.border, holder.fill = CUI:CreateBorderedRect(holder, 3, C.bordureDiscrete, FOND)
+    holder.panel = CUI:CreatePanel(holder, { radius = 3, fill = C.case })
     holder.icon = holder:CreateTexture(nil, "ARTWORK")
     holder.icon:SetTexture(CUI.MEDIA .. "Icones\\Sortie")
     holder.icon:SetPoint("CENTER")
@@ -664,8 +705,7 @@ local function createVehicle()
     local b = _G.MainMenuBarVehicleLeaveButton
     local function sync()
         local shown = b ~= nil and b:IsShown()
-        holder.border:SetShown(shown)
-        holder.fill:SetShown(shown)
+        holder.panel:SetShown(shown)
         holder.icon:SetShown(shown)
     end
     if b then
@@ -690,11 +730,11 @@ local function createVehicle()
         b:HookScript("OnHide", sync)
         b:HookScript("OnEnter", function()
             holder.icon:SetVertexColor(C.texte[1], C.texte[2], C.texte[3], 1)
-            holder.border:SetColor(C.texteSecondaire)
+            holder.panel.border:SetColor(C.or_)
         end)
         b:HookScript("OnLeave", function()
             holder.icon:SetVertexColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3], 1)
-            holder.border:SetColor(C.bordureDiscrete)
+            holder.panel.border:SetColor(C.lisereSombre)
         end)
     end
     sync()
@@ -784,7 +824,8 @@ local function dressMicro(b, frame, iconName)
     local tile = _G.CreateFrame("Frame", nil, frame)
     tile:SetAllPoints(b)
     tile:SetFrameLevel(frame:GetFrameLevel() + 1)
-    tile.border, tile.fill = CUI:CreateBorderedRect(tile, 3, C.bordureDiscrete, FOND)
+    tile.panel = CUI:CreatePanel(tile, { radius = 3, fill = C.case })
+    tile.border = tile.panel.border
     tile.icon = tile:CreateTexture(nil, "ARTWORK")
     tile.icon:SetTexture(CUI.MEDIA .. "Icones\\" .. iconName)
     tile.icon:SetPoint("CENTER")
@@ -833,7 +874,7 @@ local function paintMicro()
         if tile and tile:IsShown() then
             local color = not b:IsEnabled() and GRIS_SOMBRE or (b.cuiHover and C.texte or C.texteSecondaire)
             tile.icon:SetVertexColor(color[1], color[2], color[3], 1)
-            tile.border:SetColor(b.cuiHover and C.texteSecondaire or C.bordureDiscrete)
+            tile.border:SetColor(b.cuiHover and C.or_ or C.lisereSombre)
             local flash = (b.FlashBorder and b.FlashBorder:IsShown()) or (b.Flash and b.Flash:IsShown())
             tile.ring:SetShown(flash and true or false)
             tile.dot:SetShown(flash and true or false)
@@ -1021,7 +1062,10 @@ function M:OnEnable()
     CUI:AfterCombat(updateCountdownCVar)
     if M.xp then CUI:SafeCall(CUI:Tr("BA_XP"), M.xp.Enable) end -- Experience.lua
     self:Every(0.1, updateAlpha)
-    self:On("UPDATE_SHAPESHIFT_FORMS", function() CUI:AfterCombat(updateStanceMover) end)
+    self:On("UPDATE_SHAPESHIFT_FORMS", function()
+        CUI:AfterCombat(updateStanceMover)
+        CUI:AfterCombat(function() if built then layoutGroup(GROUPS[2]) end end)
+    end)
     self:Every(0.5, paintMicro)
 end
 

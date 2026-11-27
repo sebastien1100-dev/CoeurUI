@@ -2,6 +2,21 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.45.0 · 28/11/2026
+
+- Barres d'actions au style « Givre » : chaque barre est posée sur un panneau ardoise avec une ombre douce, les
+  boutons sont des cases du thème au double liseré discret. Nouveau réglage par barre « Barre posée sur un
+  panneau » : coupé, les boutons sont posés seuls, chacun avec sa petite ombre.
+- Survol d'un bouton : liseré de la couleur des boutons (or ou couleur de la classe, réglage de « Général »),
+  plus clair au clic. Même style pour le micro-menu, les sacs, le familier, les postures et « Quitter le véhicule ».
+- Hors de portée : voile rouge cœur.
+- Barres d'expérience et de réputation : fines stries en diagonale, fond et liseré du thème.
+- Barre des postures : la posture ou forme active a un liseré permanent de la couleur des boutons.
+- Barre des postures : son panneau a la taille des postures connues (il gardait la place de 10 boutons).
+- Places par défaut des barres un peu écartées pour laisser la place aux panneaux (les barres déjà placées au
+  cadenas ne bougent pas).
+- Un /reload suffit.
+
 ## 0.44.1 · 28/11/2026
 
 - Barres d'incantation : un sort sans nom traduit s'affichait « Opening - No Text » (ouvrir un coffre, un sac de
