@@ -2,6 +2,18 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.38.0 · 27/11/2026
+
+- Suivi des quêtes : réglage « Trier par zone, la mienne en premier » (actif d'office). Les quêtes suivies sont
+  rangées zone par zone, dans l'ordre du journal, celles de la zone où tu te trouves en haut ; l'ordre suit quand
+  tu changes de zone ou de quêtes (hors combat).
+- Suivi des quêtes : il défile à la molette quand il y a plus de quêtes que sa hauteur (réglage « Faire défiler à
+  la molette », actif d'office ; pas en combat). Avant, les quêtes en trop étaient cachées.
+  Pendant le défilement, le titre de la section (« Quêtes »...) reste fixé en haut ; clic dessus : la replier.
+  Le fond garde alors toute la hauteur du suivi et ne bouge pas : seule la liste glisse dedans.
+- Suivi des quêtes : changer sa hauteur l'allonge vers le bas ; il grandissait vers le haut.
+- Un /reload suffit.
+
 ## 0.37.0 · 27/11/2026
 
 - Cadres d'unité : cadres de boss (page « Boss »). Jusqu'à 5 boss en colonne à droite de l'écran, au style de la

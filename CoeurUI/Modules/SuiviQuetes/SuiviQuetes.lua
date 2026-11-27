@@ -6,7 +6,10 @@
 --   - fond sombre léger derrière le contenu (opacité réglable) ;
 --   - repli automatique en combat (juste avant : après, le jeu l'interdit) et en donjon ou raid ;
 --   - « Lien Wowhead » dans le menu du clic droit d'une quête : une petite fenêtre avec l'adresse
---     prête à copier (un addon ne peut ni ouvrir une page web ni écrire dans le presse-papiers).
+--     prête à copier (un addon ne peut ni ouvrir une page web ni écrire dans le presse-papiers) ;
+--   - tri par zone (réglage) : les quêtes suivies rangées zone par zone, la zone où l'on se trouve en
+--     premier. Le suivi du jeu les montre dans l'ordre où elles sont suivies : on les retire et on les
+--     remet dans le bon ordre, hors combat, quand la zone ou la liste change.
 -- Le suivi se place avec le cadenas. Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -21,15 +24,19 @@ local M = CUI:RegisterModule({
     defaults = {
         largeur = 280, hauteur = 500, tailleTitres = 13, tailleObjectifs = 12,
         replierCombat = false, replierDonjon = true, fond = true, opaciteFond = 55,
+        triZone = true, defilement = true,
     },
     settings = {
         { type = "section", text = "SQ_PLACE" },
         { type = "slider", key = "largeur", label = "SQ_LARGEUR", min = 200, max = 420, step = 10, format = "%d" },
         { type = "slider", key = "hauteur", label = "SQ_HAUTEUR", min = 200, max = 900, step = 20, format = "%d",
           description = "SQ_HAUTEUR_NOTE" },
+        { type = "toggle", key = "defilement", label = "SQ_DEFILEMENT", description = "SQ_DEFILEMENT_NOTE" },
         { type = "section", text = "SQ_TEXTES" },
         { type = "slider", key = "tailleTitres", label = "SQ_TAILLE_TITRES", min = 10, max = 18, step = 1, format = "%d pt" },
         { type = "slider", key = "tailleObjectifs", label = "SQ_TAILLE_OBJECTIFS", min = 9, max = 16, step = 1, format = "%d pt" },
+        { type = "section", text = "SQ_TRI" },
+        { type = "toggle", key = "triZone", label = "SQ_TRI_ZONE", description = "SQ_TRI_ZONE_NOTE" },
         { type = "column" },
         { type = "section", text = "SQ_REPLI" },
         { type = "toggle", key = "replierCombat", label = "SQ_REPLI_COMBAT" },
@@ -57,16 +64,66 @@ end
 
 -- Place et taille -------------------------------------------------------------------------------
 
+-- Défilement (réglage) : le suivi du jeu reçoit une très grande hauteur (il montre alors toutes ses
+-- quêtes) ; notre cadre, de la hauteur voulue, n'en laisse voir qu'une fenêtre, que la molette fait
+-- glisser. Le suivi contient des boutons protégés : il ne bouge pas en combat.
+local TALL = 4000
+local scrollOffset = 0
+-- Place vide en haut du suivi du jeu (son titre « Tous les objectifs », rendu invisible) : sautée en
+-- défilement, pour que la liste commence au bord haut du cadre.
+local headSkip = 0
+-- Fenêtre visible de la liste (rognée) : sous le titre fixé quand il est là, pour que la liste ne passe
+-- pas derrière lui (le titre garde ainsi le même fond léger que le reste du suivi).
+local viewport
+local function setViewportInset(inset)
+    if not viewport or _G.InCombatLockdown() or viewport.inset == inset then return end
+    viewport.inset = inset
+    viewport:ClearAllPoints()
+    viewport:SetPoint("TOPLEFT", holder, "TOPLEFT", -200, -inset)
+    viewport:SetPoint("BOTTOMRIGHT", holder, "BOTTOMRIGHT", 200, 0)
+end
+
+-- Bas du contenu le plus bas que le jeu a dessiné (tous les niveaux de cadres, montrés seulement).
+local function lowestBottom(frame, depth)
+    local low = math.huge
+    if depth > 12 then return low end
+    for _, child in ipairs({ frame:GetChildren() }) do
+        if child:IsShown() and not (child.IsForbidden and child:IsForbidden()) then
+            local bottom = child:GetBottom()
+            if bottom and child:GetHeight() > 1 then low = math.min(low, bottom) end
+            low = math.min(low, lowestBottom(child, depth + 1))
+        end
+    end
+    return low
+end
+
+-- Défilement le plus grand possible : hauteur du contenu moins la fenêtre visible.
+local function maxScroll()
+    local t = _G.ObjectiveTrackerFrame
+    local top = t and t:GetTop()
+    if not top then return 0 end
+    local low = lowestBottom(t, 0)
+    if low == math.huge then return 0 end
+    return math.max(0, top - low + 10 - headSkip - M.db.hauteur)
+end
+
 -- Le suivi contient des boutons d'objets de quête protégés : placé hors combat seulement.
 local function place()
     local t = tracker()
     if not t or not holder or _G.InCombatLockdown() then return end
     placing = true
     holder:SetSize(M.db.largeur, M.db.hauteur)
+    local scroll = M.db.defilement
+    if not scroll then scrollOffset = 0 end
+    viewport:SetClipsChildren(scroll)
+    if scroll and t:GetParent() ~= viewport then t:SetParent(viewport) end
+    -- Le jeu garde son suivi dans l'écran : en défilant, son haut sort par le haut de l'écran (caché par
+    -- notre cadre), il ne doit pas être retenu.
+    if t.SetClampedToScreen then t:SetClampedToScreen(not scroll) end
     t:ClearAllPoints()
-    t:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, 0)
+    t:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, scroll and (scrollOffset + headSkip) or 0)
     t:SetWidth(M.db.largeur)
-    t:SetHeight(M.db.hauteur)
+    t:SetHeight(scroll and TALL or M.db.hauteur)
     placing = false
 end
 
@@ -164,6 +221,7 @@ end
 -- Contour du contenu visible (unités de l'écran), pour le fond : quêtes et leurs icônes comprises.
 local bounds
 local mainHeader -- « Tous les objectifs » : invisible, hors du contour
+local sectionHeaders = {} -- en-têtes de section vus à l'habillage (Quêtes, Campagne...)
 
 local function extend(frame)
     local l, b, w, h = frame:GetRect()
@@ -189,6 +247,7 @@ local function skinFrame(frame, depth)
         hide(rawget(header, "Background"))
         local text = rawget(header, "Text")
         if text and text.SetTextColor then text:SetTextColor(GREY[1], GREY[2], GREY[3]) end
+        sectionHeaders[#sectionHeaders + 1] = header
     end
     -- Bloc de quête : titre dans la couleur de sa difficulté.
     local title = rawget(frame, "HeaderText")
@@ -226,11 +285,82 @@ local function updateBack()
         return
     end
     local k = _G.UIParent:GetEffectiveScale() / back:GetEffectiveScale()
+    local top, bottom = bounds.top + PAD, bounds.bottom - PAD
+    -- Défilement : le fond ne dépasse pas la fenêtre visible du suivi.
+    if M.db.defilement and holder then
+        local hb, ht = holder:GetBottom(), holder:GetTop()
+        if hb and ht and maxScroll() > 0 then
+            -- Plus de quêtes que la hauteur : le fond prend toute la hauteur du cadre, et ne bouge plus
+            -- pendant le défilement (seule la liste glisse dedans).
+            top, bottom = ht + PAD, hb - PAD
+        elseif hb and ht then
+            top, bottom = math.min(top, ht + PAD), math.max(bottom, hb - PAD)
+        end
+    end
     back:ClearAllPoints()
-    back:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", (bounds.left - PAD) * k, (bounds.bottom - PAD) * k)
-    back:SetPoint("TOPRIGHT", _G.UIParent, "BOTTOMLEFT", (bounds.right + PAD) * k, (bounds.top + PAD) * k)
+    back:SetPoint("BOTTOMLEFT", _G.UIParent, "BOTTOMLEFT", (bounds.left - PAD) * k, bottom * k)
+    back:SetPoint("TOPRIGHT", _G.UIParent, "BOTTOMLEFT", (bounds.right + PAD) * k, top * k)
     back.fill:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], M.db.opaciteFond / 100)
     back:Show()
+end
+
+-- Titre de section fixé en haut pendant le défilement : une copie du titre de la section dont le
+-- haut est passé au-dessus de la fenêtre (le vrai titre défile avec la liste). Clic : replier la section,
+-- comme le bouton du jeu (hors combat).
+local sticky
+local function updateSticky()
+    if not sticky then return end
+    local top = holder and holder:GetTop()
+    if not (M.db.defilement and scrollOffset > 0 and top) then
+        sticky:Hide()
+        setViewportInset(0)
+        return
+    end
+    local current, currentTop
+    for _, header in ipairs(sectionHeaders) do
+        local htop = header:GetTop()
+        if htop and htop > top - 1 and (not currentTop or htop < currentTop) then
+            current, currentTop = header, htop
+        end
+    end
+    local text = current and rawget(current, "Text")
+    if not (text and text.GetText) then
+        sticky:Hide()
+        setViewportInset(0)
+        return
+    end
+    sticky.header = current
+    -- Au-dessus de toute la liste : même strate que le suivi, niveau bien plus haut que ses lignes
+    -- (chaque bloc, ligne et barre monte d'un niveau).
+    local t = tracker()
+    if t then
+        sticky:SetFrameStrata(t:GetFrameStrata())
+        sticky:SetFrameLevel(math.min(9000, t:GetFrameLevel() + 500))
+    end
+    local file, size, flags = text:GetFont()
+    if file then sticky.text:SetFont(file, size, flags or "") end
+    -- Au même endroit que le vrai titre (même écart au bord gauche et au haut de son en-tête) : rien ne
+    -- bouge quand la copie prend le relais.
+    local hl, htop = holder:GetLeft(), current:GetTop()
+    local tl, ttop = text:GetLeft(), text:GetTop()
+    if hl and htop and tl and ttop then
+        sticky.text:ClearAllPoints()
+        sticky.text:SetPoint("TOPLEFT", sticky, "TOPLEFT", tl - hl, ttop - htop)
+    end
+    local button = rawget(current, "MinimizeButton")
+    local bx, by
+    if button and button.GetCenter then bx, by = button:GetCenter() end
+    if hl and htop and bx and by then
+        sticky.minus:ClearAllPoints()
+        sticky.minus:SetPoint("CENTER", sticky, "TOPLEFT", bx - hl, by - htop)
+    end
+    sticky.text:SetText(text:GetText())
+    sticky.text:SetTextColor(GREY[1], GREY[2], GREY[3])
+    local height = math.max(20, math.floor(current:GetHeight() + 0.5))
+    sticky:SetHeight(height)
+    sticky.fill:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], 0) -- pas de fond à lui : celui du suivi
+    setViewportInset(height)
+    sticky:Show()
 end
 
 local function skinAll()
@@ -246,8 +376,31 @@ local function skinAll()
         if header.EnableMouse and header:IsMouseEnabled() then header:EnableMouse(false) end
     end
     bounds = nil
+    _G.wipe(sectionHeaders)
     skinFrame(t, 0)
+    -- Place vide au-dessus du premier titre de section : mesurée, puis sautée (défilement).
+    if M.db.defilement and not _G.InCombatLockdown() then
+        local top, first = t:GetTop(), nil
+        for _, header in ipairs(sectionHeaders) do
+            local h = header:GetTop()
+            if h and (not first or h > first) then first = h end
+        end
+        local skip = (top and first) and math.max(0, math.floor(top - first + 0.5)) or 0
+        if math.abs(skip - headSkip) > 1 then
+            headSkip = skip
+            place()
+        end
+    end
+    -- Moins de quêtes qu'avant : on ne reste pas défilé dans le vide.
+    if scrollOffset > 0 and not _G.InCombatLockdown() then
+        local maxOffset = maxScroll()
+        if scrollOffset > maxOffset then
+            scrollOffset = maxOffset
+            place()
+        end
+    end
     updateBack()
+    updateSticky()
 end
 
 -- Repli automatique -----------------------------------------------------------------------------
@@ -335,6 +488,36 @@ local function build()
     built = true
     holder = _G.CreateFrame("Frame", "CoeurUISuiviQuetes", _G.UIParent)
     holder:SetSize(M.db.largeur, M.db.hauteur)
+    viewport = _G.CreateFrame("Frame", nil, holder)
+    setViewportInset(0)
+    -- Titre de section fixé en haut pendant le défilement.
+    sticky = _G.CreateFrame("Button", nil, holder)
+    sticky:SetPoint("TOPLEFT", holder, "TOPLEFT", 0, 0)
+    sticky:SetPoint("TOPRIGHT", holder, "TOPRIGHT", 0, 0)
+    sticky.fill = sticky:CreateTexture(nil, "BACKGROUND")
+    sticky.fill:SetTexture(WHITE)
+    sticky.fill:SetAllPoints()
+    sticky.text = sticky:CreateFontString(nil, "OVERLAY")
+    sticky.text:SetPoint("LEFT", 10, 0)
+    sticky.text:SetFont(CUI:GetFont(), M.db.tailleTitres, "")
+    sticky.minus = sticky:CreateFontString(nil, "OVERLAY")
+    sticky.minus:SetPoint("RIGHT", -10, 0)
+    sticky.minus:SetFont(CUI:GetFont(), 14, "")
+    sticky.minus:SetText("–")
+    sticky.minus:SetTextColor(C.or_[1], C.or_[2], C.or_[3])
+    sticky:SetScript("OnClick", function(self)
+        local button = self.header and rawget(self.header, "MinimizeButton")
+        if button and button.Click and not _G.InCombatLockdown() then button:Click() end
+    end)
+    sticky:Hide()
+    -- Molette sur le suivi : il défile (réglage ; pas en combat, il contient des boutons protégés).
+    holder:EnableMouseWheel(true)
+    holder:SetScript("OnMouseWheel", function(_, delta)
+        if not M.db.defilement or _G.InCombatLockdown() then return end
+        scrollOffset = math.min(maxScroll(), math.max(0, scrollOffset - delta * 40))
+        place()
+        skinAll()
+    end)
     back = _G.CreateFrame("Frame", nil, _G.UIParent)
     back:SetFrameStrata("BACKGROUND")
     back.fill = back:CreateTexture(nil, "BACKGROUND")
@@ -348,11 +531,90 @@ local function build()
     if t.Update then
         _G.hooksecurefunc(t, "Update", function() if M.enabled then CUI:SafeCall(CUI:Tr("SQ_NOM"), skinAll) end end)
     end
-    CUI:RegisterMover({ key = "suivi_quetes", frame = holder, label = "SQ_NOM",
+    -- Gardé par son coin haut droit : changer la hauteur allonge le suivi vers le bas, pas vers le haut.
+    CUI:RegisterMover({ key = "suivi_quetes", frame = holder, label = "SQ_NOM", point = "TOPRIGHT",
                         default = { "TOPRIGHT", "TOPRIGHT", -30, -290 } })
+    -- Place déjà gardée autrement (par son centre...) : convertie vers ce coin, sans bouger.
+    CUI:SetMoverPoint("suivi_quetes", "TOPRIGHT")
     place()
     applyFonts()
     hookMenu()
+end
+
+-- Tri par zone ---------------------------------------------------------------------------------
+
+-- Zone de chaque quête du journal (le titre de zone au-dessus d'elle) et son rang dans le journal.
+local function questZones()
+    local QL = _G.C_QuestLog
+    local zones, ranks, zoneRank = {}, {}, {}
+    if not (QL and QL.GetNumQuestLogEntries and QL.GetInfo) then return zones, ranks, zoneRank end
+    local header, headerIndex = nil, 0
+    for i = 1, QL.GetNumQuestLogEntries() do
+        local info = QL.GetInfo(i)
+        if info then
+            if info.isHeader then
+                header = info.title
+                headerIndex = headerIndex + 1
+                if header and zoneRank[header] == nil then zoneRank[header] = headerIndex end
+            elseif info.questID and not issecret(info.questID) then
+                zones[info.questID] = header
+                ranks[info.questID] = i
+            end
+        end
+    end
+    return zones, ranks, zoneRank
+end
+
+local sorting = false -- nous réordonnons : la liste change, on ne relance pas le tri
+
+-- Les quêtes suivies, la zone actuelle d'abord, puis zone par zone dans l'ordre du journal.
+local function sortByZone()
+    if not M.db.triZone or sorting or _G.InCombatLockdown() then return end
+    local QL = _G.C_QuestLog
+    if not (QL and QL.GetNumQuestWatches and QL.GetQuestIDForQuestWatchIndex and QL.AddQuestWatch
+            and QL.RemoveQuestWatch) then return end
+    local watched = {}
+    for i = 1, QL.GetNumQuestWatches() do
+        local id = QL.GetQuestIDForQuestWatchIndex(i)
+        if id and not issecret(id) then watched[#watched + 1] = id end
+    end
+    if #watched < 2 then return end
+    local zones, ranks, zoneRank = questZones()
+    local here = _G.GetRealZoneText and _G.GetRealZoneText() or _G.GetZoneText()
+    local function key(id)
+        local zone = zones[id]
+        local current = (zone ~= nil and zone == here) and 0 or 1
+        return current, zone and zoneRank[zone] or 999, ranks[id] or 9999
+    end
+    local sorted = {}
+    for i, id in ipairs(watched) do sorted[i] = id end
+    table.sort(sorted, function(a, b)
+        local a1, a2, a3 = key(a)
+        local b1, b2, b3 = key(b)
+        if a1 ~= b1 then return a1 < b1 end
+        if a2 ~= b2 then return a2 < b2 end
+        return a3 < b3
+    end)
+    -- Déjà dans l'ordre : rien à faire.
+    local same = true
+    for i = 1, #watched do
+        if watched[i] ~= sorted[i] then same = false break end
+    end
+    if same then return end
+    sorting = true
+    for _, id in ipairs(sorted) do QL.RemoveQuestWatch(id) end
+    for _, id in ipairs(sorted) do QL.AddQuestWatch(id) end
+    sorting = false
+end
+
+local sortPending = false
+local function requestSort()
+    if sortPending or sorting then return end
+    sortPending = true
+    M:After(0.5, function()
+        sortPending = false
+        CUI:AfterCombat(function() CUI:SafeCall(CUI:Tr("SQ_NOM"), sortByZone) end)
+    end)
 end
 
 -- Marche / arrêt -------------------------------------------------------------------------------
@@ -370,8 +632,18 @@ function M:OnEnable()
             setCollapsed(false)
         end
     end)
-    self:On("PLAYER_ENTERING_WORLD", function() self:After(1, updateInstanceCollapse) end)
-    self:On("ZONE_CHANGED_NEW_AREA", function() self:After(1, updateInstanceCollapse) end)
+    self:On("PLAYER_ENTERING_WORLD", function()
+        self:After(1, updateInstanceCollapse)
+        requestSort()
+    end)
+    self:On("ZONE_CHANGED_NEW_AREA", function()
+        self:After(1, updateInstanceCollapse)
+        requestSort()
+    end)
+    -- Quête suivie ajoutée ou retirée (par le jeu ou par le joueur), quête acceptée : on retrie.
+    for _, event in ipairs({ "QUEST_WATCH_LIST_CHANGED", "QUEST_ACCEPTED", "QUEST_LOG_UPDATE" }) do
+        pcall(self.On, self, event, requestSort)
+    end
 end
 
 -- Coupé : l'habillage reste jusqu'au /reload (needsReload).
@@ -385,6 +657,8 @@ function M:OnSettingChanged(key)
         applyFonts()
     elseif key == "replierDonjon" then
         CUI:AfterCombat(updateInstanceCollapse)
+    elseif key == "triZone" then
+        requestSort()
     end
     skinAll()
 end

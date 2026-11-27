@@ -161,10 +161,8 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
-- Suivi des quêtes : option « trier par zone, la zone où l'on se trouve en premier » (demandé le 27/11/2026).
-  Faisable en réordonnant les quêtes suivies (zone de chaque quête = son titre de zone dans le journal ; zone
-  actuelle du jeu), hors combat, à chaque changement de zone. Des titres de zone dans le suivi demanderaient
-  de remplacer le suivi du jeu par le nôtre : plus lourd, à décider avec la maquette.
+- Suivi des quêtes : titres de zone dans le suivi (le tri par zone est fait en 0.38.0). Demanderait de remplacer
+  le suivi du jeu par le nôtre : plus lourd, à décider avec une maquette.
 - Plus de polices et de textures de barre (demandé le 27/11/2026) : aujourd'hui, seulement les quatre polices du
   jeu (Friz Quadrata, Arial Narrow, Morpheus, Skurri) et une texture lisse (`Media/BarreLisse.tga`). En ajouter
   dans `CoeurUI/Media/` et dans la liste du noyau (`Core/UI/Media.lua`) ; polices seulement sous licence libre
