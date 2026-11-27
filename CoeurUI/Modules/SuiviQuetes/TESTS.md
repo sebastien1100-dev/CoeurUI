@@ -31,17 +31,16 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
 13. Objectifs : 0/8 en rouge, 4/8 en jaune, 7/8 presque vert, 8/8 vert ; barre « 62 % » : jaune-vert. Une quête
     terminée : « À rendre » en vert. Une ligne sans nombre d'une quête en cours : gris clair.
 
-## 0.38.0 · tri par zone
+## 0.38.0 · défilement
 
-1. /reload. `/cui version` : « 0.38.0 ». Réglages : section « Ordre », « Trier par zone, la mienne en premier »
-   (actif).
-2. Suivre des quêtes de deux ou trois zones : celles de la zone où tu es en haut, puis les autres zone par zone
-   (même ordre que dans le journal).
-3. Changer de zone : l'ordre change (une demi-seconde après) ; celles de la nouvelle zone passent en haut.
-4. Accepter une quête, ou en suivre une de plus : elle prend sa place dans sa zone.
-5. En combat : rien ne bouge ; à la fin du combat, l'ordre se remet si besoin. Aucune erreur.
-6. Couper le réglage : l'ordre ne change plus de lui-même.
-
-7. Défilement : suivre beaucoup de quêtes (plus que la hauteur) : molette sur le suivi : il défile, le fond reste
+1. Défilement : suivre beaucoup de quêtes (plus que la hauteur) : molette sur le suivi : il défile, le fond reste
    dans le cadre ; tout en bas, il s'arrête. En combat : la molette ne fait rien, aucune erreur.
-8. Couper « Faire défiler à la molette » : le suivi revient en haut, les quêtes en trop sont cachées comme avant.
+2. Couper « Faire défiler à la molette » : le suivi revient en haut, les quêtes en trop sont cachées comme avant.
+
+## 0.39.0 · avancée en début de ligne
+
+1. /reload. `/cui version` : « 0.39.0 ». Réglages, Textes : « Avancée en début de ligne » (actif).
+2. Objectifs à compter : « 0/12 Glande à venin d'Aile-fière », « 3/8 Récupérateur gueule-de-dragon » (sans
+   « personnages tués ») ; couleur selon l'avancée inchangée ; les autres lignes (« Parler à... ») ne changent pas.
+3. Tuer un monstre de quête : le nombre monte, toujours en début de ligne.
+4. Couper le réglage : à la prochaine mise à jour du suivi, « Glande à venin d'Aile-fière : 0/12 ».

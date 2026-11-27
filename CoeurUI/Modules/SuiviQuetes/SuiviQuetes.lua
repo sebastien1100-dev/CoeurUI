@@ -7,9 +7,7 @@
 --   - repli automatique en combat (juste avant : après, le jeu l'interdit) et en donjon ou raid ;
 --   - « Lien Wowhead » dans le menu du clic droit d'une quête : une petite fenêtre avec l'adresse
 --     prête à copier (un addon ne peut ni ouvrir une page web ni écrire dans le presse-papiers) ;
---   - tri par zone (réglage) : les quêtes suivies rangées zone par zone, la zone où l'on se trouve en
---     premier. Le suivi du jeu les montre dans l'ordre où elles sont suivies : on les retire et on les
---     remet dans le bon ordre, hors combat, quand la zone ou la liste change.
+--   - défilement à la molette (titre de section fixé en haut) ; avancée des objectifs en début de ligne.
 -- Le suivi se place avec le cadenas. Couper le module demande un /reload.
 local _, CUI = ...
 local L = CUI.L
@@ -24,7 +22,7 @@ local M = CUI:RegisterModule({
     defaults = {
         largeur = 280, hauteur = 500, tailleTitres = 13, tailleObjectifs = 12,
         replierCombat = false, replierDonjon = true, fond = true, opaciteFond = 55,
-        triZone = true, defilement = true,
+        defilement = true, avanceeDebut = true,
     },
     settings = {
         { type = "section", text = "SQ_PLACE" },
@@ -35,8 +33,7 @@ local M = CUI:RegisterModule({
         { type = "section", text = "SQ_TEXTES" },
         { type = "slider", key = "tailleTitres", label = "SQ_TAILLE_TITRES", min = 10, max = 18, step = 1, format = "%d pt" },
         { type = "slider", key = "tailleObjectifs", label = "SQ_TAILLE_OBJECTIFS", min = 9, max = 16, step = 1, format = "%d pt" },
-        { type = "section", text = "SQ_TRI" },
-        { type = "toggle", key = "triZone", label = "SQ_TRI_ZONE", description = "SQ_TRI_ZONE_NOTE" },
+        { type = "toggle", key = "avanceeDebut", label = "SQ_AVANCEE_DEBUT", description = "SQ_AVANCEE_DEBUT_NOTE" },
         { type = "column" },
         { type = "section", text = "SQ_REPLI" },
         { type = "toggle", key = "replierCombat", label = "SQ_REPLI_COMBAT" },
@@ -218,6 +215,22 @@ local function objectiveColor(frame, text, done)
     return LIGHT
 end
 
+-- Avancée en début de ligne (réglage) : « Glande à venin : 0/12 » devient « 0/12 Glande à venin » ;
+-- « Malandrin : 0/10 personnages tués » devient « 0/10 Malandrin ». Le
+-- jeu réécrit ses lignes à chaque mise à jour : on repasse après lui (le texte déjà tourné, sans « : »,
+-- n'est plus touché).
+local function countFirst(text)
+    if not M.db.avanceeDebut then return end
+    local s = text:GetText()
+    if type(s) ~= "string" or issecret(s) then return end
+    local name, count, rest = s:match("^(.-)%s*:%s*(%d+%s*/%s*%d+)%s*(.-)$")
+    if not name or name == "" then return end
+    -- Précision après le nombre : « personnages tués » ne dit rien de plus que le nombre et le nom
+    -- (retirée) ; une autre reste, entre parenthèses.
+    if rest ~= "" and rest:lower() == L.SQ_SUFFIXE_TUES:lower() then rest = "" end
+    text:SetText(count .. " " .. name .. (rest ~= "" and (" (" .. rest .. ")") or ""))
+end
+
 -- Contour du contenu visible (unités de l'écran), pour le fond : quêtes et leurs icônes comprises.
 local bounds
 local mainHeader -- « Tous les objectifs » : invisible, hors du contour
@@ -260,6 +273,7 @@ local function skinFrame(frame, depth)
     if text and text.SetTextColor and rawget(frame, "Dash") ~= nil then
         local icon = rawget(frame, "Icon")
         local done = icon and icon.IsShown and icon:IsShown()
+        countFirst(text)
         local c = objectiveColor(frame, text, done)
         text:SetTextColor(c[1], c[2], c[3])
         local dash = rawget(frame, "Dash")
@@ -541,82 +555,6 @@ local function build()
     hookMenu()
 end
 
--- Tri par zone ---------------------------------------------------------------------------------
-
--- Zone de chaque quête du journal (le titre de zone au-dessus d'elle) et son rang dans le journal.
-local function questZones()
-    local QL = _G.C_QuestLog
-    local zones, ranks, zoneRank = {}, {}, {}
-    if not (QL and QL.GetNumQuestLogEntries and QL.GetInfo) then return zones, ranks, zoneRank end
-    local header, headerIndex = nil, 0
-    for i = 1, QL.GetNumQuestLogEntries() do
-        local info = QL.GetInfo(i)
-        if info then
-            if info.isHeader then
-                header = info.title
-                headerIndex = headerIndex + 1
-                if header and zoneRank[header] == nil then zoneRank[header] = headerIndex end
-            elseif info.questID and not issecret(info.questID) then
-                zones[info.questID] = header
-                ranks[info.questID] = i
-            end
-        end
-    end
-    return zones, ranks, zoneRank
-end
-
-local sorting = false -- nous réordonnons : la liste change, on ne relance pas le tri
-
--- Les quêtes suivies, la zone actuelle d'abord, puis zone par zone dans l'ordre du journal.
-local function sortByZone()
-    if not M.db.triZone or sorting or _G.InCombatLockdown() then return end
-    local QL = _G.C_QuestLog
-    if not (QL and QL.GetNumQuestWatches and QL.GetQuestIDForQuestWatchIndex and QL.AddQuestWatch
-            and QL.RemoveQuestWatch) then return end
-    local watched = {}
-    for i = 1, QL.GetNumQuestWatches() do
-        local id = QL.GetQuestIDForQuestWatchIndex(i)
-        if id and not issecret(id) then watched[#watched + 1] = id end
-    end
-    if #watched < 2 then return end
-    local zones, ranks, zoneRank = questZones()
-    local here = _G.GetRealZoneText and _G.GetRealZoneText() or _G.GetZoneText()
-    local function key(id)
-        local zone = zones[id]
-        local current = (zone ~= nil and zone == here) and 0 or 1
-        return current, zone and zoneRank[zone] or 999, ranks[id] or 9999
-    end
-    local sorted = {}
-    for i, id in ipairs(watched) do sorted[i] = id end
-    table.sort(sorted, function(a, b)
-        local a1, a2, a3 = key(a)
-        local b1, b2, b3 = key(b)
-        if a1 ~= b1 then return a1 < b1 end
-        if a2 ~= b2 then return a2 < b2 end
-        return a3 < b3
-    end)
-    -- Déjà dans l'ordre : rien à faire.
-    local same = true
-    for i = 1, #watched do
-        if watched[i] ~= sorted[i] then same = false break end
-    end
-    if same then return end
-    sorting = true
-    for _, id in ipairs(sorted) do QL.RemoveQuestWatch(id) end
-    for _, id in ipairs(sorted) do QL.AddQuestWatch(id) end
-    sorting = false
-end
-
-local sortPending = false
-local function requestSort()
-    if sortPending or sorting then return end
-    sortPending = true
-    M:After(0.5, function()
-        sortPending = false
-        CUI:AfterCombat(function() CUI:SafeCall(CUI:Tr("SQ_NOM"), sortByZone) end)
-    end)
-end
-
 -- Marche / arrêt -------------------------------------------------------------------------------
 
 function M:OnEnable()
@@ -632,18 +570,8 @@ function M:OnEnable()
             setCollapsed(false)
         end
     end)
-    self:On("PLAYER_ENTERING_WORLD", function()
-        self:After(1, updateInstanceCollapse)
-        requestSort()
-    end)
-    self:On("ZONE_CHANGED_NEW_AREA", function()
-        self:After(1, updateInstanceCollapse)
-        requestSort()
-    end)
-    -- Quête suivie ajoutée ou retirée (par le jeu ou par le joueur), quête acceptée : on retrie.
-    for _, event in ipairs({ "QUEST_WATCH_LIST_CHANGED", "QUEST_ACCEPTED", "QUEST_LOG_UPDATE" }) do
-        pcall(self.On, self, event, requestSort)
-    end
+    self:On("PLAYER_ENTERING_WORLD", function() self:After(1, updateInstanceCollapse) end)
+    self:On("ZONE_CHANGED_NEW_AREA", function() self:After(1, updateInstanceCollapse) end)
 end
 
 -- Coupé : l'habillage reste jusqu'au /reload (needsReload).
@@ -657,8 +585,6 @@ function M:OnSettingChanged(key)
         applyFonts()
     elseif key == "replierDonjon" then
         CUI:AfterCombat(updateInstanceCollapse)
-    elseif key == "triZone" then
-        requestSort()
     end
     skinAll()
 end

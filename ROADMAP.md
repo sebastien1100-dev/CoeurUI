@@ -161,8 +161,14 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
-- Suivi des quêtes : titres de zone dans le suivi (le tri par zone est fait en 0.38.0). Demanderait de remplacer
-  le suivi du jeu par le nôtre : plus lourd, à décider avec une maquette.
+- Fenêtre des jets de butin en groupe (demandé le 27/11/2026) : pour chaque objet tiré au sort, qui a choisi
+  Besoin, Cupidité, Désenchanter ou Passer, et le résultat de chacun ; le gagnant en évidence. Au style de
+  CœurUI, placée au cadenas, avec l'historique des derniers objets. (Lié à « jets de butin en groupe » de la
+  liste des fenêtres du jeu, item 18.)
+- Suivi des quêtes : quêtes rangées par zone, la zone où l'on se trouve en premier, avec titres de zone (demandé
+  le 27/11/2026). Essayé en 0.38.0 en réordonnant les quêtes suivies : impossible, le jeu impose son ordre (ni
+  le retrait-remise, ni son tri par proximité ne le changent). Demande de remplacer le suivi du jeu par le nôtre :
+  gros chantier, à décider avec une maquette.
 - Plus de polices et de textures de barre (demandé le 27/11/2026) : aujourd'hui, seulement les quatre polices du
   jeu (Friz Quadrata, Arial Narrow, Morpheus, Skurri) et une texture lisse (`Media/BarreLisse.tga`). En ajouter
   dans `CoeurUI/Media/` et dans la liste du noyau (`Core/UI/Media.lua`) ; polices seulement sous licence libre

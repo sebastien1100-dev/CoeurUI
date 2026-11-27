@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.39.0 · 27/11/2026
+
+- Suivi des quêtes : l'avancée des objectifs en début de ligne (« 0/12 Glande à venin d'Aile-fière »), réglage
+  « Avancée en début de ligne » (actif d'office). « personnages tués » est retiré (« 3/8 Récupérateur
+  gueule-de-dragon ») ; une autre précision reste entre parenthèses.
+- Suivi des quêtes : le réglage « Trier par zone » est retiré : il ne faisait rien, le jeu impose lui-même
+  l'ordre des quêtes suivies.
+- Un /reload suffit.
+
 ## 0.38.0 · 27/11/2026
 
 - Suivi des quêtes : réglage « Trier par zone, la mienne en premier » (actif d'office). Les quêtes suivies sont
