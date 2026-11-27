@@ -151,6 +151,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        - calendrier ;
        - menu du jeu (Échap) et fenêtres de confirmation du jeu ;
        - la boutique du jeu est exclue (cadre interdit aux addons).
+   19. Notre propre suivi des quêtes (demandé le 27/11/2026) : le suivi du jeu impose son ordre et ne sait pas
+       défiler. Quêtes rangées par zone (titres repliables, la zone actuelle en premier), avec toutes les options
+       du module « Suivi des quêtes » ; le suivi du jeu garde le reste (campagne, objectifs bonus, scénarios...).
+       Étapes : 1) quêtes et objectifs ; 2) boutons d'objets de quête (protégés) ; 3) finitions. Maquette validée
+       le 28/11/2026 (« CœurUI · Maquette Suivi des quêtes (le nôtre) »). Étape 1 validée (0.40.0).
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

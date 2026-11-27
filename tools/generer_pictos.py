@@ -139,6 +139,11 @@ def trier(d):
     ligne(d, (14, 15.5), (17.5, 19), (21, 15.5))
 
 
+def chevron(d):
+    """Chevron vers le bas (déplié) ; tourné d'un quart de tour dans le jeu pour « replié »."""
+    ligne(d, (6, 9), (12, 15), (18, 9))
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -279,7 +284,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

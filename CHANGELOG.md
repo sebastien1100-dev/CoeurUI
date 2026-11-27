@@ -2,6 +2,22 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.40.0 · 28/11/2026
+
+- Suivi des quêtes : notre propre liste à la place des quêtes du suivi du jeu (première étape). Quêtes rangées par
+  zone, dans l'ordre du journal, la zone où tu es en premier (« ici ») ; titres de zone repliables d'un clic
+  (gardés d'une session à l'autre) ; quêtes à rendre en premier. « Ne déplier que ma zone » (actif d'office) : les
+  autres zones restent repliées, un clic en ouvre une jusqu'au prochain changement de zone.
+- Même style qu'avant : titre à la couleur de la difficulté, (Donjon), (Élite) ; avancée en début de ligne,
+  rouge » jaune » vert ; « À rendre ».
+- Clic : la quête dans le journal ; Maj-clic : son lien dans la discussion ; clic droit : ouvrir, ne plus suivre,
+  partager, lien dans la discussion, chercher un groupe (« LFG [quête] », en anglais, prêt dans la discussion),
+  lien Wowhead, abandonner.
+- Il grandit vers le bas jusqu'à la hauteur maximale, puis défile à la molette (le titre de la zone en cours reste
+  en haut). Le reste du suivi du jeu (campagne, objectifs bonus...) s'affiche dessous, au même style (réglage).
+- Les boutons d'objets de quête viendront à l'étape suivante.
+- Redémarrer le jeu (nouvelle icône).
+
 ## 0.39.0 · 27/11/2026
 
 - Suivi des quêtes : l'avancée des objectifs en début de ligne (« 0/12 Glande à venin d'Aile-fière »), réglage

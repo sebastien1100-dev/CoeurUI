@@ -44,3 +44,26 @@ Le module ne dépend de rien chez EllesmereUI. Avoir quelques quêtes suivies, d
    « personnages tués ») ; couleur selon l'avancée inchangée ; les autres lignes (« Parler à... ») ne changent pas.
 3. Tuer un monstre de quête : le nombre monte, toujours en début de ligne.
 4. Couper le réglage : à la prochaine mise à jour du suivi, « Glande à venin d'Aile-fière : 0/12 ».
+
+## 0.40.0 · notre suivi, étape 1 : quêtes et objectifs
+
+1. **Redémarrer le jeu** (nouvelle icône). Aucune erreur Lua. `/cui version` : « 0.40.0 ».
+2. Les quêtes suivies sont dans notre liste, rangées par zone ; la zone où tu es en premier, avec « ici » ; les
+   autres dans l'ordre du journal. Plus de quêtes en double dans le suivi du jeu.
+3. Clic sur un titre de zone : elle se replie (chevron tourné), clic : elle se déplie ; /reload : elle est restée
+   repliée (réglage « Garder les zones repliées »).
+4. Titre : [niveau], couleur de la difficulté, (Donjon) / (Élite) en gris ; pastille « ! » ou « ? » ; objectifs
+   « 0/12 Glande... » rouge » jaune » vert ; coche verte quand fait ; « À rendre » quand la quête est finie ; les
+   quêtes à rendre en tête de leur zone.
+5. Clic sur une quête : le journal s'ouvre sur elle ; Maj-clic : son lien dans la discussion.
+6. Clic droit : menu avec ouvrir, ne plus suivre, partager (en groupe), lien dans la discussion, chercher un
+   groupe (« LFG [quête] » en anglais, prêt dans la discussion, à envoyer avec Entrée), lien Wowhead,
+   abandonner (le jeu demande confirmation).
+7. Peu de quêtes : le cadre est juste assez haut (il grandit vers le bas). Beaucoup : il s'arrête à la hauteur
+   maximale et la molette le fait défiler ; le titre de la zone en cours reste en haut, sans bande plus sombre ;
+   rien ne passe à travers lui.
+8. Accepter, finir, rendre une quête, en suivre une de plus : la liste suit tout de suite.
+9. Réglages : par zone (coupé : une seule liste), quêtes à rendre en premier, tailles, avancée en début de ligne,
+   largeur, hauteur, défilement, fond et opacité, repli en combat / en donjon (seuls les titres de zone restent).
+10. Reste du suivi du jeu (campagne, objectifs bonus...) : sous notre liste, même style ; réglage coupé : caché.
+11. Cadenas : cadre « Suivi des quêtes » à placer ; /reload : il est resté.
