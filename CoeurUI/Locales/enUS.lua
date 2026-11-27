@@ -482,3 +482,12 @@ L.SAC_PAR_CATEGORIES = "Sort by category"
 L.SAC_PO = "%sg"
 L.SAC_PA = "%ds"
 L.SAC_PC = "%dc"
+
+-- Module « Chat bubbles »
+L.BUL_NOM = "Chat bubbles"
+L.BUL_DESC = "Speech bubbles above characters in CœurUI style. In dungeons and raids the game locks them: they stay the game's own there."
+L.BUL_AFFICHAGE = "DISPLAY"
+L.BUL_TAILLE = "Text size"
+L.BUL_OPACITE = "Background opacity"
+L.BUL_COULEURS = "Text colour by channel"
+L.BUL_COULEURS_NOTE = "Off: everything in light grey."

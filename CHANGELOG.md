@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.32.0 · 27/11/2026
+
+- Nouveau module « Bulles de discussion » (coupé d'office) : les bulles au-dessus des personnages au style des
+  infobulles (fond sombre, liseré gris fin), avec une pointe au même style. Réglages : taille du texte, opacité du fond, couleur
+  du texte selon le canal.
+- Dans les donjons et les raids, le jeu verrouille les bulles : elles y restent les siennes.
+- Couper le module demande un rechargement.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.31.0 · 27/11/2026
 
 - Sacs et banque : la banque, dans le même style et le même rangement que les sacs, s'ouvre à gauche des sacs

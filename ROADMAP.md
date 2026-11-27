@@ -25,8 +25,7 @@
 
 ## Ensuite (dans l'ordre, un à la fois)
 
-EllesmereUI (et ses modules) sera retiré quand les modules de CœurUI seront prêts : CœurUI ne doit dépendre de rien
-chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait la même chose.
+CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC de jeu (noté le 27/11/2026).
 
 1. ~~Icône et logo : script `tools/` qui génère les TGA à partir de la planche du joueur, `IconTexture` dans le `.toc`,
    couleurs du thème affinées sur la planche.~~ Validé en jeu (0.1.1).
@@ -99,10 +98,11 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
        27/11/2026 (« CœurUI · Maquette Effets ») : boutons du jeu habillés ; temps dessous, blanc sous 10 s ;
        liseré du type pour les affaiblissements ; améliorations et affaiblissements indépendants (cadre au
        cadenas et sous-onglet de réglages chacun).
-   11. Sacs et banque (demandés le 27/11/2026). Choix du joueur : un seul sac, avec ou sans catégories (réglage) ;
+   11. ~~Sacs et banque (demandés le 27/11/2026). Choix du joueur : un seul sac, avec ou sans catégories (réglage) ;
        sacs de composants et carquois à part ; recherche, vente de la camelote, niveau d'objet, nouveaux objets ;
-       banque à côté des sacs, même style. Maquette validée le 27/11/2026 (« CœurUI · Maquette Sacs et banque »).
+       banque à côté des sacs, même style. Maquette validée le 27/11/2026 (« CœurUI · Maquette Sacs et banque »).~~
        Étapes : 1) sacs ; 2) camelote ; 3) banque. Étape 1 validée (0.29.0). Étape 2 validée (0.30.0). Étape 3 validée (0.31.0).
+       Module terminé.
    12. ~~Barres d'expérience et de réputation (demandées le 27/11/2026), rangées dans le module « Barres d'actions »
        (page « Expérience et réputation », cadre à elles au cadenas). Maquette validée le 27/11/2026 (« CœurUI ·
        Maquette Barres d'expérience et de réputation ») : violet, quêtes à rendre en jaune (« +1 niveau »), repos
@@ -115,6 +115,9 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
        quêtes en groupe). Étape 4 validée en jeu (0.28.0) : plaques amies, nom seul (choix du joueur), barre si blessé,
        niveau des joueurs en option. Module terminé. Étapes : 1) vie, nom, cible plus grande, menace, monstres de quête ;
        2) mes affaiblissements (avancée, demandé le 27/11/2026) ; 3) incantation ; 4) plaques amies.
+   14. ~~Bulles de discussion (demandées le 27/11/2026). Choix du joueur : style sobre des infobulles, pointe
+       au même style ; réglages taille du texte, opacité du fond, couleur selon le canal. Hors donjons et raids (le
+       jeu les verrouille).~~ Validé en jeu (0.32.0).
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication
@@ -127,8 +130,6 @@ Idées notées pendant le travail, pas encore commencées.
 
 - Effets sur les cadres d'unité (ex. affaiblissements posés par le joueur sous le cadre de la cible), dans le
   module « Cadres d'unité » (proposé le 27/11/2026).
-- Bulles de discussion au-dessus des personnages, au style de CœurUI (question posée le 27/11/2026, pas encore
-  tranchée).
 - Profils de réglages (plusieurs jeux de réglages, choisis par perso). Pas avant que les modules d'interface soient
   posés. À faire le moment venu : une migration de la sauvegarde qui range les réglages actuels dans un profil
   « Par défaut » (rien n'est perdu), le choix du profil branché dans le registre des modules (c'est lui qui donne

@@ -481,3 +481,12 @@ L.SAC_PAR_CATEGORIES = "Ranger par catégories"
 L.SAC_PO = "%s po"
 L.SAC_PA = "%d pa"
 L.SAC_PC = "%d pc"
+
+-- Module « Bulles de discussion »
+L.BUL_NOM = "Bulles de discussion"
+L.BUL_DESC = "Les bulles au-dessus des personnages au style de CœurUI. Dans les donjons et les raids, le jeu les verrouille : elles y restent les siennes."
+L.BUL_AFFICHAGE = "AFFICHAGE"
+L.BUL_TAILLE = "Taille du texte"
+L.BUL_OPACITE = "Opacité du fond"
+L.BUL_COULEURS = "Couleur du texte selon le canal"
+L.BUL_COULEURS_NOTE = "Coupé : tout en gris clair."
