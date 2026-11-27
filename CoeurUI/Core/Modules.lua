@@ -153,6 +153,16 @@ function Module:SetCVar(name, value)
     end)
 end
 
+-- Rend un seul réglage du jeu changé par le module (s'il l'avait changé), sans attendre qu'on le coupe.
+function Module:RestoreCVar(name)
+    CUI:AfterCombat(function()
+        local cvars = self.entry and self.entry.cvars
+        if not cvars or cvars[name] == nil then return end
+        _G.C_CVar.SetCVar(name, cvars[name])
+        cvars[name] = nil
+    end)
+end
+
 local function restoreCVars(m)
     local cvars = m.entry and m.entry.cvars
     if not cvars or not next(cvars) then return end

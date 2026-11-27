@@ -70,7 +70,7 @@ local function barDefaults(shown, vertical)
     return {
         afficher = shown, nombre = 12, parLigne = 12, orientation = vertical and "vertical" or "horizontal",
         taille = vertical and 34 or 40, espacement = 3, visibilite = "toujours", opacite = 100,
-        raccourci = true, macro = false, charges = true,
+        raccourci = true, macro = false, charges = true, recharge = true,
     }
 end
 
@@ -150,6 +150,7 @@ local PAGE_BARRES = {
     barItem({ type = "toggle", key = "raccourci", label = "BA_RACCOURCI" }),
     barItem({ type = "toggle", key = "macro", label = "BA_MACRO" }),
     barItem({ type = "toggle", key = "charges", label = "BA_CHARGES" }),
+    barItem({ type = "toggle", key = "recharge", label = "BA_RECHARGE" }),
 }
 
 -- Familier, postures : comme une barre, 10 boutons au plus, seul texte : le raccourci. Familier
@@ -170,6 +171,7 @@ local function pageGroupe(key, compte)
         quandItem(), opaciteItem(),
         { type = "section", text = "BA_TEXTES" },
         { type = "toggle", key = "raccourci", label = "BA_RACCOURCI" },
+        { type = "toggle", key = "recharge", label = "BA_RECHARGE" },
     }) do
         page[#page + 1] = item
     end
@@ -232,11 +234,58 @@ local function fontText(fs, size)
     if fs then fs:SetFont(CUI:GetFont(), size, "OUTLINE") end
 end
 
+-- Temps de recharge en chiffres : écrits par le jeu lui-même sur la recharge du bouton (les recharges
+-- sont cachées aux addons en combat). Le jeu ne les montre qu'avec son option « countdownForCooldowns »,
+-- mise en marche tant qu'une barre les demande (rendue ensuite). Une barre qui n'en veut pas : chiffres
+-- recachés après chaque passage du jeu (crochet seulement).
+local hookedCooldowns = {}
+-- Pages qui ont le réglage « Temps de recharge » : barres 1 à 8, familier, postures.
+local COUNTDOWN_PAGES = { fam = true, post = true }
+for _, def in ipairs(BARS) do COUNTDOWN_PAGES[def.key] = true end
+
+local function wantsCountdown(b)
+    local def = ours[b]
+    return def and M.enabled and M.db[def.key].recharge or false
+end
+
+local function refreshCountdown(b, s)
+    local cd = b.cooldown
+    if not (cd and cd.SetHideCountdownNumbers) then return end
+    if not hookedCooldowns[cd] then
+        hookedCooldowns[cd] = true
+        _G.hooksecurefunc(cd, "SetHideCountdownNumbers", function(self, hide)
+            if not hide and ours[b] and not wantsCountdown(b) then
+                self:SetHideCountdownNumbers(true)
+            end
+        end)
+    end
+    cd:SetHideCountdownNumbers(not s.recharge)
+    local fs = cd.GetCountdownFontString and cd:GetCountdownFontString()
+    if fs then
+        fs:SetFont(CUI:GetFont(), math.max(10, math.floor((s.taille or 36) * 0.4)), "OUTLINE")
+    end
+end
+
 local function refreshTexts(b)
     local s = M.db[ours[b].key]
     if b.HotKey then b.HotKey:SetAlpha(s.raccourci and 1 or 0) end
     if b.Name then b.Name:SetAlpha(s.macro and 1 or 0) end
     if b.Count then b.Count:SetAlpha(s.charges and 1 or 0) end
+    refreshCountdown(b, s)
+end
+
+-- L'option du jeu : en marche si une barre affichée veut les chiffres, rendue sinon.
+local function updateCountdownCVar()
+    local wanted = false
+    for key in pairs(COUNTDOWN_PAGES) do
+        local s = M.db[key]
+        if s and s.recharge and s.afficher then wanted = true break end
+    end
+    if wanted then
+        M:SetCVar("countdownForCooldowns", 1)
+    else
+        M:RestoreCVar("countdownForCooldowns")
+    end
 end
 
 -- Hors de portée : un voile rouge à nous, par-dessus l'icône. La couleur de l'icône elle-même reste
@@ -292,6 +341,13 @@ local function skin(b)
     for _, key in ipairs({ "SlotBackground", "SlotArt", "FlyoutBorderShadow", "IconBorder" }) do
         local t = b[key]
         if t and t.SetAlpha then t:SetAlpha(0) end
+    end
+    -- Animations d'incantation du jeu sur le bouton (remplissage pendant le sort, éclair rouge
+    -- d'interruption, cible au sol) : invisibles. Le jeu les joue toujours, on ne les voit plus ;
+    -- l'incantation se lit sur la barre d'incantation des cadres d'unité.
+    for _, key in ipairs({ "SpellCastAnimFrame", "InterruptDisplay", "TargetReticleAnimFrame" }) do
+        local anim = b[key]
+        if anim and anim.SetAlpha then anim:SetAlpha(0) end
     end
     -- Notre habit : liseré gris fin, fond sombre.
     -- Fond sombre dessous ; liseré au-dessus de l'image (toujours visible, même si le jeu agrandit
@@ -962,6 +1018,7 @@ end
 
 function M:OnEnable()
     CUI:AfterCombat(build) -- boutons protégés : jamais rangés en combat
+    CUI:AfterCombat(updateCountdownCVar)
     self:Every(0.1, updateAlpha)
     self:On("UPDATE_SHAPESHIFT_FORMS", function() CUI:AfterCombat(updateStanceMover) end)
     self:Every(0.5, paintMicro)
@@ -974,6 +1031,7 @@ end
 function M:OnSettingChanged(key)
     if key == "choix" then return end
     CUI:AfterCombat(layoutAll)
+    CUI:AfterCombat(updateCountdownCVar)
 end
 
 function M:OnFontChanged()

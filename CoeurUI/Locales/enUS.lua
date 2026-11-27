@@ -261,6 +261,7 @@ L.BA_TEXTES = "TEXTS"
 L.BA_RACCOURCI = "Key binding"
 L.BA_MACRO = "Macro names"
 L.BA_CHARGES = "Charges"
+L.BA_RECHARGE = "Cooldown timer (seconds)"
 
 -- "Quest tracker" module
 L.SQ_NOM = "Quest tracker"

@@ -109,3 +109,20 @@ barres du jeu). Le module ne dépend de rien chez EllesmereUI. Ne pas ouvrir le 
     visibilité, opacité (ni rangées ni aperçu : toujours une rangée). Aucun réglage grisé hors opacité en mode « au survol ».
 25. « Valeurs par défaut » sur une page : seule cette page (ou la barre choisie, page Barres) revient à ses réglages.
 26. Aucune page du tiroir « Barres d'actions » n'a d'aperçu ; chaque réglage change tout de suite la vraie barre.
+
+## 0.21.0 · temps de recharge
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.21.0 ».
+2. Lancer un sort avec un temps de recharge : sur son bouton, les secondes restantes en chiffres blancs (police
+   CœurUI), par-dessus l'ombre tournante ; ils disparaissent à la fin de la recharge.
+3. En combat : les chiffres s'affichent et descendent ; aucune erreur.
+4. Page « Barres », barre 1 : couper « Temps de recharge (en secondes) » : plus de chiffres sur la barre 1, toujours
+   sur les autres. Le remettre : ils reviennent.
+5. Familier et Postures : même option dans leur page.
+6. Couper l'option sur toutes les barres : l'option du jeu « nombres de recharge » revient comme avant. Couper le
+   module et recharger : pareil.
+7. Taille des boutons plus grande : les chiffres grandissent un peu.
+8. Langue anglaise : « Cooldown timer (seconds) ».
+9. Lancer un sort avec incantation depuis une barre : plus d'animation sur le bouton (ni remplissage, ni cercle) ;
+   se faire interrompre : pas d'éclair rouge sur le bouton. Sort de zone au sol : pas d'animation de cible sur le
+   bouton. La barre d'incantation, elle, s'affiche normalement.

@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.21.0 · 27/11/2026
+
+- Barres d'actions : le temps de recharge des sorts s'affiche en secondes sur les boutons (police de CœurUI). Option
+  « Temps de recharge (en secondes) » dans les textes de chaque barre, du familier et des postures (activée d'office).
+- Les chiffres sont ceux du jeu (son option « nombres de recharge », mise en marche par CœurUI tant qu'une barre les
+  demande, rendue quand plus aucune n'en veut ou quand le module est coupé). Ils peuvent aussi apparaître sur
+  d'autres recharges du jeu (objets des sacs...).
+- Barres d'actions : plus d'animation d'incantation sur les boutons (remplissage pendant le sort, éclair rouge
+  d'interruption, cible au sol) ; l'incantation se lit sur la barre d'incantation.
+- Un /reload suffit.
+
 ## 0.20.0 · 27/11/2026
 
 - Cadres d'unité : nouvelle barre d'incantation de la cible, sous son cadre et à sa largeur, comme celle du joueur.

@@ -260,6 +260,7 @@ L.BA_TEXTES = "TEXTES"
 L.BA_RACCOURCI = "Raccourci"
 L.BA_MACRO = "Nom des macros"
 L.BA_CHARGES = "Charges"
+L.BA_RECHARGE = "Temps de recharge (en secondes)"
 
 -- Module « Suivi des quêtes »
 L.SQ_NOM = "Suivi des quêtes"
