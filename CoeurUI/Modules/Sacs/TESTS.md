@@ -68,3 +68,17 @@
 9. Les boutons liste et tiroir de chaque fenêtre ne changent qu'elle : banque en vrac, sacs par catégories, et
    l'inverse. Le réglage « Banque par catégories » du panneau suit le bouton liste de la banque.
 10. Couper « Banque au style de CœurUI » puis reparler au banquier : la banque du jeu revient, normale.
+
+## 0.47.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.47.0 ».
+2. Ouvrir les sacs : fenêtre ardoise (teinte de la fenêtre de CœurUI), double liseré très discret, ombre douce ; titre
+   « Sacs » un peu plus grand ; traits sombres sous le titre et au-dessus du bas ; recherche dans une case sombre.
+3. Cases : fond sombre et double liseré ; objets verts, bleus, violets : liseré de leur couleur ; case vide : juste
+   la case. Survol : liseré doré (ou couleur de la classe) par-dessus, qui part avec la souris.
+4. Par catégories : « ÉQUIPEMENT · 5 », « PLACES LIBRES · 18 »... (nombre en gris sombre). Sacs à part : leur nom
+   et « places libres » à droite, sans nombre ajouté.
+5. Niveau d'objet en bas à gauche, à la couleur de la qualité (blanc pour un objet commun).
+6. Emplacements de sac en bas (tiroir) : petites cases du même style ; banque : cadenas sur les emplacements à acheter.
+7. Chez le banquier : la banque au même style, à gauche des sacs. Recherche commune, tri, vente de la camelote :
+   comme avant.

@@ -1,5 +1,7 @@
 -- Module « Sacs et banque » (maquette validée le 27/11/2026, « CœurUI · Maquette Sacs et banque »).
--- Deux fenêtres sobres (fond sombre, liseré gris fin, pas d'or), au même rangement :
+-- Style « Givre » (planche « Sacs et banque » de la direction artistique) : fenêtres ardoise au double
+-- liseré discret et à l'ombre douce, cases du thème, sections en petites capitales avec leur nombre.
+-- Deux fenêtres, au même rangement :
 --   - « Sacs » : tous les sacs du joueur, à la place de ceux du jeu ;
 --   - « Banque » : chez le banquier, à gauche des sacs, à la place de la banque du jeu (réglage).
 -- Dans chacune :
@@ -24,7 +26,6 @@ local C = CUI.Colors
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
 local HEADER, SEARCH, FOOTER, PAD = 34, 26, 34, 12
-local CASE_VIDE = { 0.063, 0.071, 0.094 } -- #101218
 
 local M = CUI:RegisterModule({
     key = "Sacs",
@@ -146,9 +147,7 @@ local function lines(parent, color)
     return l
 end
 
-local function setLines(l, color)
-    for _, t in ipairs(l) do t:SetVertexColor(color[1], color[2], color[3], 1) end
-end
+local GRIS_SOMBRE = { 0.353, 0.369, 0.408 } -- #5A5E68 : nombre d'une section
 
 local function hide(region)
     if region and region.SetAlpha then region:SetAlpha(0) end
@@ -184,8 +183,8 @@ local function skinButton(b)
     if icon then
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", 1, -1)
-        icon:SetPoint("BOTTOMRIGHT", -1, 1)
+        icon:SetPoint("TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", -2, 2)
     end
     local normal = b.GetNormalTexture and b:GetNormalTexture()
     if normal then normal:SetAlpha(0) end
@@ -202,9 +201,11 @@ local function skinButton(b)
             region:SetAlpha(0)
         end
     end
-    b.cuiBack = texture(b, "BACKGROUND", -8, C.fond)
-    b.cuiBack:SetAllPoints()
-    b.cuiLines = lines(b, C.graphite)
+    -- Case du thème (fond, double liseré ; le liseré extérieur prend la couleur de la qualité) ; liseré
+    -- de survol par-dessus l'icône, de la couleur des boutons.
+    b.cuiPanel = CUI:CreatePanel(b, { radius = 3, fill = C.case, shadow = false })
+    b.cuiLines = lines(b, C.or_)
+    for _, t in ipairs(b.cuiLines) do t:Hide() end
     b.cuiIlvl = b:CreateFontString(nil, "OVERLAY")
     b.cuiIlvl:SetPoint("BOTTOMLEFT", 2, 2)
     b.cuiIlvl:SetShadowColor(0, 0, 0, 1)
@@ -218,8 +219,12 @@ local function skinButton(b)
         b.Count:ClearAllPoints()
         b.Count:SetPoint("BOTTOMRIGHT", -2, 2)
     end
+    b:HookScript("OnLeave", function(self)
+        for _, t in ipairs(self.cuiLines) do t:Hide() end
+    end)
     -- Survol : le nouvel objet n'est plus nouveau.
     b:HookScript("OnEnter", function(self)
+        for _, t in ipairs(self.cuiLines) do t:Show() end
         if self.cuiNew:IsShown() then
             local NI = _G.C_NewItems
             if NI and NI.RemoveNewItem then pcall(NI.RemoveNewItem, self.cuiBag, self.cuiSlot) end
@@ -267,15 +272,13 @@ local function updateButton(b, info)
         -- Case vide : le jeu y met son dessin de sac vide ; on n'en garde rien.
         if info then icon:Show() else icon:SetTexture(nil); icon:Hide() end
     end
-    -- Case vide : fond un peu plus sombre, liseré à peine visible. Sinon : couleur de la qualité à
-    -- partir de « Peu commun ».
-    local back = info and C.fond or CASE_VIDE
-    b.cuiBack:SetVertexColor(back[1], back[2], back[3], 1)
-    local color = info and C.graphite or C.desactiveFond
+    -- Liseré extérieur : couleur de la qualité à partir de « Peu commun », sinon celui du thème (case
+    -- vide comprise : juste la case).
+    local color = C.lisereSombre
     if s.qualite and info and info.quality and info.quality >= 2 then
-        color = CUI:ItemQualityColor(info.quality) or C.graphite
+        color = CUI:ItemQualityColor(info.quality) or C.lisereSombre
     end
-    setLines(b.cuiLines, color)
+    b.cuiPanel.border:SetColor(color)
     -- Niveau d'objet : équipement seulement.
     local ilvl
     if s.ilvl and info and info.hyperlink then
@@ -286,6 +289,9 @@ local function updateButton(b, info)
     end
     b.cuiIlvl:SetFont(font, math.max(8, math.floor(s.taille / 3.4)), "OUTLINE")
     b.cuiIlvl:SetText(ilvl and ilvl > 1 and ilvl or "")
+    -- Niveau d'objet à la couleur de la qualité (blanc pour un objet commun).
+    local qc = info and info.quality and info.quality >= 2 and CUI:ItemQualityColor(info.quality) or C.texte
+    b.cuiIlvl:SetTextColor(qc[1], qc[2], qc[3], 1)
     -- Recharge.
     if b.Cooldown and _G.CooldownFrame_Set then
         if info then
@@ -363,11 +369,10 @@ local function createBagSlot(parent, isBank)
     b:SetSize(20, 20)
     b:RegisterForClicks("LeftButtonUp")
     b:RegisterForDrag("LeftButton")
-    texture(b, "BACKGROUND", -8, C.fond):SetAllPoints()
-    lines(b, C.graphite)
+    CUI:CreatePanel(b, { radius = 3, fill = C.case, shadow = false })
     b.icon = b:CreateTexture(nil, "ARTWORK")
-    b.icon:SetPoint("TOPLEFT", 1, -1)
-    b.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+    b.icon:SetPoint("TOPLEFT", 2, -2)
+    b.icon:SetPoint("BOTTOMRIGHT", -2, 2)
     b.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     b.lock = b:CreateTexture(nil, "OVERLAY")
     b.lock:SetPoint("CENTER")
@@ -508,7 +513,9 @@ local function layout(v)
         if title then
             titleIndex = titleIndex + 1
             local fs = titleFS(v, titleIndex)
-            fs:SetText(title)
+            -- Petites capitales et, pour une catégorie, son nombre de cases en gris sombre.
+            fs:SetText(right and title or (title .. "  " .. CUI:ColorCode(GRIS_SOMBRE)
+                .. "· " .. #entries .. "|r"))
             fs:ClearAllPoints()
             fs:SetPoint("TOPLEFT", win, "TOPLEFT", PAD, -y)
             if right then
@@ -666,12 +673,12 @@ local function buildView(v)
     win:SetClampedToScreen(true)
     win:EnableMouse(true)
     win:Hide()
-    CUI:CreateBorderedRect(win, 3, C.bordureDiscrete, { C.fond[1], C.fond[2], C.fond[3], 0.96 })
+    CUI:CreatePanel(win, { fill = C.fenetre })
     -- Échap ferme la fenêtre, comme les sacs et la banque du jeu.
     table.insert(_G.UISpecialFrames, v.frameName)
 
     local title = win:CreateFontString(nil, "OVERLAY")
-    title:SetFont(CUI:GetFont(), 13, "")
+    title:SetFont(CUI:GetFont(), 14, "")
     title:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
     title:SetPoint("TOPLEFT", PAD, -10)
     title:SetText(L[v.title])
@@ -759,9 +766,9 @@ local function buildView(v)
         win:SetUserPlaced(false)
         CUI:SaveMoverPosition(v.key)
     end)
-    local headerLine = texture(win, "ARTWORK", 0, C.graphite)
-    headerLine:SetPoint("TOPLEFT", 1, -HEADER)
-    headerLine:SetPoint("TOPRIGHT", -1, -HEADER)
+    local headerLine = texture(win, "ARTWORK", 0, C.lisereSombre)
+    headerLine:SetPoint("TOPLEFT", 2, -HEADER)
+    headerLine:SetPoint("TOPRIGHT", -2, -HEADER)
     headerLine:SetHeight(1)
 
     -- Recherche (commune : taper dans l'une filtre les deux).
@@ -769,7 +776,7 @@ local function buildView(v)
     box:SetPoint("TOPLEFT", PAD, -(HEADER + 8))
     box:SetPoint("TOPRIGHT", -PAD, -(HEADER + 8))
     box:SetHeight(SEARCH)
-    CUI:CreateBorderedRect(box, 3, C.bordureDiscrete, { 0.063, 0.071, 0.094, 1 })
+    CUI:CreatePanel(box, { radius = 3, fill = C.case, shadow = false })
     local search = _G.CreateFrame("EditBox", v.frameName .. "Recherche", box)
     v.search = search
     search:SetPoint("TOPLEFT", 8, 0)
@@ -800,14 +807,14 @@ local function buildView(v)
     end)
     search:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 
-    v.separator = texture(win, "ARTWORK", 0, C.graphite)
+    v.separator = texture(win, "ARTWORK", 0, C.lisereSombre)
     v.separator:SetHeight(1)
     v.separator:Hide()
 
     -- Bas de la fenêtre.
-    local footerLine = texture(win, "ARTWORK", 0, C.graphite)
-    footerLine:SetPoint("BOTTOMLEFT", 1, FOOTER)
-    footerLine:SetPoint("BOTTOMRIGHT", -1, FOOTER)
+    local footerLine = texture(win, "ARTWORK", 0, C.lisereSombre)
+    footerLine:SetPoint("BOTTOMLEFT", 2, FOOTER)
+    footerLine:SetPoint("BOTTOMRIGHT", -2, FOOTER)
     footerLine:SetHeight(1)
     v.freeText = win:CreateFontString(nil, "OVERLAY")
     v.freeText:SetFont(CUI:GetFont(), 11, "")

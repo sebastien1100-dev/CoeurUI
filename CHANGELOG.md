@@ -2,6 +2,16 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.47.0 · 28/11/2026
+
+- Sacs et banque au style « Givre » : fenêtres ardoise au double liseré très discret avec une ombre douce, titre
+  fondu dans le fond, traits sombres sous le titre et au-dessus du bas, recherche dans une case du thème.
+- Cases comme les boutons des barres d'actions : fond sombre et double liseré discret ; le liseré prend la couleur
+  de la qualité à partir de « Peu commun » ; survol : liseré de la couleur des boutons. Emplacements de sac pareils.
+- Chaque catégorie affiche son nombre de cases (« ÉQUIPEMENT · 5 ») ; le niveau d'objet prend la couleur de la
+  qualité.
+- Un /reload suffit.
+
 ## 0.46.0 · 28/11/2026
 
 - Infobulles et menus au style « Givre » : fond ardoise presque opaque (la teinte des fenêtres), double liseré très
