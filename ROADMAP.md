@@ -118,6 +118,37 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
    14. ~~Bulles de discussion (demandées le 27/11/2026). Choix du joueur : style sobre des infobulles, pointe
        au même style ; réglages taille du texte, opacité du fond, couleur selon le canal. Hors donjons et raids (le
        jeu les verrouille).~~ Validé en jeu (0.32.0).
+   15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le
+       27/11/2026 (« CœurUI · Maquette Cadres de groupe »). Étapes : 1) cadres (disposition, tri, rôle, ressource,
+       portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
+       dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0).
+   16. Cadres de raid (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
+   17. Cadres de boss (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
+   18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,
+       code, tests en jeu. Ordre à choisir par le joueur. Liste :
+       - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
+       - carte du monde et journal des quêtes ;
+       - grimoire (sorts et techniques) ;
+       - talents ;
+       - métiers ;
+       - dialogues des PNJ et des quêtes (accepter, rendre, choix de récompense) ;
+       - fenêtre de butin et jets de butin en groupe ;
+       - marchand (achat, vente, réparation, rachat) ;
+       - formateur ;
+       - courrier ;
+       - hôtel des ventes ;
+       - échange entre joueurs ;
+       - social : amis, ignorés, qui est en ligne ;
+       - guilde et banque de guilde ;
+       - recherche de groupe (donjons, liste des groupes) ;
+       - journal d'aventure (donjons et raids) ;
+       - succès ;
+       - collections (montures, mascottes, jouets, apparences) et transmogrification ;
+       - inspection d'un autre joueur ;
+       - JcJ (honneur, champs de bataille) ;
+       - calendrier ;
+       - menu du jeu (Échap) et fenêtres de confirmation du jeu ;
+       - la boutique du jeu est exclue (cadre interdit aux addons).
 4. Client PC minimal : mises à jour de l'addon.
 
 ## Avant la première publication

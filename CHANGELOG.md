@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.33.0 · 27/11/2026
+
+- Cadres d'unité : cadres de groupe, première étape (page « Groupe »). Un cadre par membre, toi compris (réglable),
+  au style du cadre du joueur, à la place de ceux du jeu.
+- Colonne ou ligne, dans les quatre sens ; tri par rôle (tank, soigneur, dégâts), ordre du groupe, nom ou classe.
+- Rôle en icône au trait, ressource, chef, marqueur de raid ; cadre pâli hors de portée ; « Mort », « Fantôme »,
+  « Déconnecté » ; liseré blanc sur la cible, rouge sur qui a la menace.
+- Cadenas ouvert : un groupe de test animé pour placer et régler les cadres, même seul.
+- Correction : erreur à la création des cadres de groupe (« attempt to call a nil value »).
+- Redémarrer le jeu (nouveaux fichiers).
+
 ## 0.32.0 · 27/11/2026
 
 - Nouveau module « Bulles de discussion » (coupé d'office) : les bulles au-dessus des personnages au style des

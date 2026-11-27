@@ -97,3 +97,24 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
     quand on détache ou coupe la barre. Il suit la cible quand on la déplace.
 11. La barre du joueur marche toujours comme en 0.19.0.
 12. Langue anglaise : « Target cast bar ».
+
+## 0.33.0 · cadres de groupe, étape 1 : les cadres
+
+1. **Redémarrer le jeu** (nouveaux fichiers). Aucune erreur Lua. `/cui version` : « 0.33.0 ».
+2. `/cui` › Cadres d'unité : nouvelle page « Groupe ». Seul : aucun cadre de groupe à l'écran.
+3. Cadenas ouvert : cadre « Groupe » à placer et groupe de test de 5 (guerrier, prêtre, mage, chasseur,
+   démoniste) : vies qui bougent, chasseur qui pâlit par moments, démoniste « Mort » par moments, couronne sur
+   le guerrier, étoile sur le mage, liseré blanc sur le prêtre, rouge sur le guerrier. Cadenas fermé : il part.
+4. Cadenas ouvert, changer les réglages : sens (4 choix), largeur, hauteur, espacement, texte de la vie,
+   couleur, rôle, ressource, chef, marqueur, pâlir et son opacité : le groupe de test suit tout de suite.
+   « M'afficher » coupé : 4 cadres.
+5. En groupe : plus de cadres de groupe du jeu ; les nôtres, toi compris, dans l'ordre choisi.
+6. Tri par rôle : tank, soigneur, puis dégâts (rôles posés par l'outil de recherche ou le chef). Par nom, par
+   classe, ordre du groupe : l'ordre change (hors combat).
+7. Clic gauche : cible l'équipier (liseré blanc) ; clic droit : menu du jeu ; survol : infobulle.
+8. Un équipier s'éloigne : son cadre pâlit ; il revient : normal.
+9. Un équipier meurt : « Mort », barre grise ; fantôme : « Fantôme » ; se déconnecte : « Déconnecté ».
+10. Marqueur de raid posé sur un équipier : il apparaît en haut à droite de son cadre.
+11. Combat : un équipier rejoint ou quitte le groupe : les cadres suivent, aucune erreur.
+12. Réglage changé en combat : appliqué à la sortie du combat, aucune erreur.
+13. Couper « Cadres de groupe de CœurUI » : nos cadres partent ; /reload : ceux du jeu reviennent.

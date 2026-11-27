@@ -2,7 +2,7 @@
 -- Remplace les cadres du jeu (cachés tant que le module est actif ; le couper demande un /reload).
 -- Sous-onglets : Général (tailles des libellés, texture : communs à tous les cadres ; la police est
 -- celle de CœurUI, page « Général » de la fenêtre), Joueur,
--- Cible, Cible de la cible, Familier. Les cadres se placent avec le cadenas de la fenêtre (mode
+-- Cible, Cible de la cible, Familier, Groupe (Groupe.lua). Les cadres se placent avec le cadenas de la fenêtre (mode
 -- déplacement). Barres d'incantation du joueur et de la cible : réglées dans leur page.
 --
 -- Valeurs « secrètes » : sur ce client, la vie, le nom, le niveau... d'une unité peuvent être cachés
@@ -298,6 +298,19 @@ local function setHealthText(fs, mode, hp, pct)
     if not ok then fs:SetText("") end
 end
 
+-- Pourcentage de vie (valeur possiblement secrète : rendue par le jeu quand il sait le faire).
+local function healthPercent(unit, hp, maxHp)
+    local pct
+    if _G.UnitHealthPercent and _G.CurveConstants then
+        local ok, value = pcall(_G.UnitHealthPercent, unit, true, _G.CurveConstants.ScaleTo100)
+        pct = ok and value or nil
+    end
+    if pct == nil then
+        pct = (known(hp) and known(maxHp) and maxHp > 0) and (hp / maxHp * 100) or 0
+    end
+    return pct
+end
+
 -- Données d'exemple (aperçus, cadres sans unité en mode déplacement).
 local function fillExample(v, s, kind, grey)
     local playerName = _G.UnitName("player")
@@ -388,15 +401,7 @@ local function update(f)
         color = GRIS
         v.hp:SetText(L.CU_MORT)
     else
-        local pct
-        if _G.UnitHealthPercent and _G.CurveConstants then
-            local ok, value = pcall(_G.UnitHealthPercent, unit, true, _G.CurveConstants.ScaleTo100)
-            pct = ok and value or nil
-        end
-        if pct == nil then
-            pct = (known(hp) and known(maxHp) and maxHp > 0) and (hp / maxHp * 100) or 0
-        end
-        setHealthText(v.hp, s.texteVie, hp, pct)
+        setHealthText(v.hp, s.texteVie, hp, healthPercent(unit, hp, maxHp))
     end
     v.health:SetStatusBarColor(color[1], color[2], color[3])
 
@@ -1000,10 +1005,18 @@ function CUI.CadresUnite.RefreshPreview(box)
     fillExample(box.visual, s, box.kind, false)
 end
 
+-- Pièces partagées avec les cadres de groupe (Groupe.lua) ----------------------------------------
+
+M.shared = {
+    known = known, classColor = classColor, healthColor = healthColor, powerColor = powerColor,
+    setHealthText = setHealthText, healthPercent = healthPercent, GRIS = GRIS, VERT = VERT,
+}
+
 -- Marche / arrêt ----------------------------------------------------------------------------
 
 function M:OnEnable()
     CUI:AfterCombat(build) -- cadres protégés : jamais créés en combat
+    if M.groupe then CUI:SafeCall(CUI:Tr("CU_GROUPE"), M.groupe.Enable) end -- Groupe.lua
 
     self:On("PLAYER_ENTERING_WORLD", function()
         updateAll()
@@ -1053,10 +1066,12 @@ end
 function M:OnSettingChanged()
     relayoutAll()
     applyAllCasts() -- cadres simples : tout de suite, même en combat
+    if M.groupe then M.groupe.Apply() end
 end
 
 -- Police de CœurUI changée (page « Général »).
 function M:OnFontChanged()
     relayoutAll()
     applyAllCasts()
+    if M.groupe then M.groupe.Apply() end
 end

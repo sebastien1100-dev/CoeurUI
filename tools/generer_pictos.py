@@ -110,6 +110,26 @@ def cadenas(d):
     tampon(d, [p(*q) for q in arc])
 
 
+def role_tank(d):
+    """Bouclier (rôle tank)."""
+    gauche = bezier((12, 20.5), (7.5, 18.5), (5, 15.5), (5, 11))
+    droite = bezier((19, 11), (19, 15.5), (16.5, 18.5), (12, 20.5))
+    tampon(d, [p(*q) for q in [(12, 3.5), (19, 6), (19, 11)] + droite + gauche + [(5, 6), (12, 3.5)]])
+
+
+def role_soin(d):
+    """Croix (rôle soigneur)."""
+    ligne(d, (12, 4.5), (12, 19.5))
+    ligne(d, (4.5, 12), (19.5, 12))
+
+
+def role_degats(d):
+    """Épée (rôle dégâts) : lame (contour) en diagonale, garde, poignée."""
+    ligne(d, (16, 4.5), (19.5, 4.5), (19.5, 8), (10, 17.5), (6.5, 14), (16, 4.5))
+    ligne(d, (4.5, 12.5), (11.5, 19.5))
+    ligne(d, (7, 17), (4.5, 19.5))
+
+
 def recharger(d):
     """Flèche en cercle (recharger l'interface) : arc de 300°, pointe en haut à droite."""
     cx, cy, r = 12, 12, 7
@@ -250,7 +270,7 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
-ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Cadenas": cadenas, "Recharger": recharger,
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}
