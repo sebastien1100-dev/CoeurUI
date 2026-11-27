@@ -220,7 +220,20 @@ def aide(d):
     ligne(d, (12, 19.5), (12, 19.6))
 
 
-ICONES = {"Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
+def copier(d):
+    """Deux feuilles (copier la discussion)."""
+    rect_arrondi(d, 8.5, 8.5, 11.5, 11.5, 2)
+    ligne(d, (15.5, 8.5), (15.5, 6), (15, 4.5), (6, 4.5), (4.5, 6), (4.5, 15), (6, 15.5), (8.5, 15.5))
+
+
+def bas(d):
+    """Flèche vers le bas sur un trait (descendre en bas de la discussion)."""
+    ligne(d, (12, 4.5), (12, 16))
+    ligne(d, (6.5, 10.5), (12, 16), (17.5, 10.5))
+    ligne(d, (6, 19.5), (18, 19.5))
+
+
+ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement}

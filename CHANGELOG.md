@@ -2,6 +2,21 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.22.0 · 27/11/2026
+
+- Nouveau module « Discussion » (coupé d'office) : la discussion du jeu au style sobre de CœurUI. Fond sombre
+  léger réglable, liseré gris fin ; onglets en petites capitales grises, l'onglet ouvert en blanc souligné ; pastille
+  rouge sur un onglet qui reçoit un message.
+- Canaux raccourcis ([G], [Gr], [R], [1. Général] au lieu de [1. Général - zone]), heure en gris discret (aucune, 21:05 ou 21:05:42), noms en couleur de
+  classe.
+- Liens web soulignés : un clic ouvre une petite fenêtre avec l'adresse prête à copier (Ctrl+C).
+- Boutons du jeu autour de la discussion retirés ; au survol, deux petits pictos : « Copier la discussion » (les
+  derniers messages en texte, prêts à copier) et « Descendre en bas ».
+- Vieux messages effacés au bout d'un temps réglable ; ils reviennent au survol.
+- Placée avec le cadenas ; largeur, hauteur, taille du texte réglables. Couper le module demande un rechargement.
+- La fenêtre « Lien Wowhead » du suivi des quêtes est maintenant celle du noyau (même aspect).
+- Redémarrer le jeu (nouveaux fichiers).
+
 ## 0.21.0 · 27/11/2026
 
 - Barres d'actions : le temps de recharge des sorts s'affiche en secondes sur les boutons (police de CœurUI). Option

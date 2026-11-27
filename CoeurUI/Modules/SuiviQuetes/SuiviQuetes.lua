@@ -286,68 +286,14 @@ end
 
 -- Lien Wowhead ----------------------------------------------------------------------------------
 
-local linkFrame
-
+-- Fenêtre « à copier » du noyau, avec l'adresse de la quête.
 local function showLink(id, title)
-    if not linkFrame then
-        local f = _G.CreateFrame("Frame", "CoeurUILienWowhead", _G.UIParent)
-        f:SetSize(440, 150)
-        f:SetPoint("CENTER", 0, 120)
-        f:SetFrameStrata("DIALOG")
-        f:SetToplevel(true)
-        f:EnableMouse(true)
-        f:SetMovable(true)
-        f:RegisterForDrag("LeftButton")
-        f:SetScript("OnDragStart", f.StartMoving)
-        f:SetScript("OnDragStop", f.StopMovingOrSizing)
-        CUI:CreateBorderedRect(f, 6, C.or_, C.fenetre)
-        local logo = f:CreateTexture(nil, "ARTWORK")
-        logo:SetTexture(CUI.MEDIA .. "Logo")
-        logo:SetSize(16, 16)
-        logo:SetPoint("TOPLEFT", 14, -12)
-        f.title = CUI:CreateText(f, "normal", "texte")
-        f.title:SetPoint("LEFT", logo, "RIGHT", 8, 0)
-        f.title:SetPoint("RIGHT", f, "RIGHT", -14, 0)
-        f.title:SetWordWrap(false)
-        f.label = CUI:CreateText(f, "petit", "texteDiscret")
-        f.label:SetPoint("TOPLEFT", 14, -40)
-        local box = _G.CreateFrame("EditBox", nil, f)
-        box:SetPoint("TOPLEFT", 14, -56)
-        box:SetPoint("TOPRIGHT", -14, -56)
-        box:SetHeight(26)
-        box:SetAutoFocus(false)
-        box:SetFontObject(CUI.Fonts.normal)
-        box:SetTextInsets(8, 8, 0, 0)
-        CUI:CreateBorderedRect(box, 4, C.bordure, C.fond)
-        -- Lecture seule : toute frappe remet l'adresse.
-        box:SetScript("OnTextChanged", function(self, user)
-            if user and self.url then
-                self:SetText(self.url)
-                self:HighlightText()
-            end
-        end)
-        box:SetScript("OnEscapePressed", function() f:Hide() end)
-        box:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
-        -- Un clic dans l'adresse la garde sélectionnée (plus de bouton « Sélectionner »).
-        box:SetScript("OnMouseUp", function(self) self:HighlightText() end)
-        f.box = box
-        f.hint = CUI:CreateText(f, "petit", "texteSecondaire")
-        f.hint:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 0, -8)
-        f.close = CUI:CreateButton(f, "")
-        f.close:SetPoint("BOTTOMRIGHT", -12, 12)
-        f.close:SetScript("OnClick", function() f:Hide() end)
-        linkFrame = f
-    end
-    local f = linkFrame
-    f.title:SetText(L.SQ_LIEN_TITRE:format(title or ""))
-    f.label:SetText(L.SQ_LIEN_ADRESSE)
-    f.hint:SetText(L.SQ_LIEN_AIDE)
-    f.close:SetLabel(L.FERMER)
-    f.box.url = L.SQ_WOWHEAD_URL:format(id)
-    f.box:SetText(f.box.url)
-    f:Show()
-    f.box:SetFocus()
-    f.box:HighlightText()
+    CUI:ShowCopyWindow({
+        title = L.SQ_LIEN_TITRE:format(title or ""),
+        label = L.SQ_LIEN_ADRESSE,
+        text = L.SQ_WOWHEAD_URL:format(id),
+        hint = L.SQ_LIEN_AIDE,
+    })
 end
 
 -- Quête du bloc sous la souris : le menu du jeu a pour propriétaire un conteneur, pas la quête.

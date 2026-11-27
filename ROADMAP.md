@@ -92,7 +92,9 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
    8b. ~~Barre d'incantation de la cible, dans « Cadres d'unité »~~ Validée en jeu (0.20.0). Maquette validée le 27/11/2026
       (mêmes planches C et D) : sous le cadre de la cible ou détachée ; gris + cadenas pour un sort qu'on ne peut pas
       interrompre ; pas de latence ; réglages dans la page « Cible », sans aperçu. La cible de la cible suit la cible.
-   9. Discussion (tchat).
+   9. ~~Discussion (tchat)~~ Validée en jeu (0.22.0). Maquette validée le 27/11/2026 (« CœurUI · Maquette Discussion ») :
+      la discussion du jeu habillée ; onglets en petites capitales, pastille ; canaux raccourcis, heure grise,
+      couleurs de classe ; liens web à copier ; canaux numérotés sans leur zone ([1. Général], le jeu impose « numéro. nom ») ; pictos copier / descendre au survol ; effacement réglable.
    10. Effets : améliorations et affaiblissements (buffs et débuffs).
    11. Sacs et banque (demandés le 27/11/2026). Maquette à faire avant le code.
 4. Client PC minimal : mises à jour de l'addon.
@@ -105,6 +107,8 @@ chez lui. Pendant les tests d'un module, couper le module EllesmereUI qui fait l
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Bulles de discussion au-dessus des personnages, au style de CœurUI (question posée le 27/11/2026, pas encore
+  tranchée).
 - Profils de réglages (plusieurs jeux de réglages, choisis par perso). Pas avant que les modules d'interface soient
   posés. À faire le moment venu : une migration de la sauvegarde qui range les réglages actuels dans un profil
   « Par défaut » (rien n'est perdu), le choix du profil branché dans le registre des modules (c'est lui qui donne
