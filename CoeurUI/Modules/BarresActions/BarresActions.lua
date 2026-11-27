@@ -2,7 +2,7 @@
 -- liseré gris fin, coins à peine arrondis, pas d'or), à la place des barres du jeu.
 -- Étape 1 : barres 1 à 8. Étape 2 : familier, postures, bouton d'action en plus, quitter le
 -- véhicule (boutons du jeu réutilisés : le jeu les tient à jour). Étape 3 : micro-menu (icônes CœurUI
--- au trait posées sur les boutons du jeu) et sacs.
+-- au trait posées sur les boutons du jeu) et sacs. Barres d'expérience et de réputation : Experience.lua.
 --
 -- Par barre : afficher ou non, nombre de boutons, boutons par rangée, sens (horizontale ou
 -- verticale), taille, espacement, visibilité (toujours, au survol, en combat, jamais), opacité hors
@@ -1019,6 +1019,7 @@ end
 function M:OnEnable()
     CUI:AfterCombat(build) -- boutons protégés : jamais rangés en combat
     CUI:AfterCombat(updateCountdownCVar)
+    if M.xp then CUI:SafeCall(CUI:Tr("BA_XP"), M.xp.Enable) end -- Experience.lua
     self:Every(0.1, updateAlpha)
     self:On("UPDATE_SHAPESHIFT_FORMS", function() CUI:AfterCombat(updateStanceMover) end)
     self:Every(0.5, paintMicro)
@@ -1028,13 +1029,18 @@ end
 function M:OnDisable()
 end
 
-function M:OnSettingChanged(key)
+function M:OnSettingChanged(key, _, subKey)
     if key == "choix" then return end
+    if subKey == "xp" then
+        if M.xp then M.xp.Apply() end
+        return
+    end
     CUI:AfterCombat(layoutAll)
     CUI:AfterCombat(updateCountdownCVar)
 end
 
 function M:OnFontChanged()
+    if M.xp then M.xp.Font() end
     for b in pairs(ours) do
         fontText(b.HotKey, 10)
         fontText(b.Count, 11)

@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.24.0 · 27/11/2026
+
+- Barres d'actions : nouvelle page « Expérience et réputation ». Deux barres fines au style de CœurUI à la place de
+  celles du jeu, chacune avec son propre cadre au cadenas.
+- Expérience en violet, puis en jaune celle des quêtes terminées à rendre, puis le bonus de repos en bleu.
+  « +1 niveau » s'affiche à droite quand les quêtes à rendre font passer un niveau.
+- Réputation suivie dans la couleur de son rang. Clic dessus : la page des réputations.
+- Texte au-dessus des barres au survol (ou toujours, ou jamais), infobulle avec le détail.
+- Réglages : largeur et hauteur de chaque barre, taille du texte, quêtes à rendre, repos, infobulle.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.23.0 · 27/11/2026
 
 - Nouveau module « Effets » (coupé d'office) : les améliorations et affaiblissements du joueur en carrés sobres

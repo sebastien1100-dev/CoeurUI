@@ -126,3 +126,24 @@ barres du jeu). Le module ne dépend de rien chez EllesmereUI. Ne pas ouvrir le 
 9. Lancer un sort avec incantation depuis une barre : plus d'animation sur le bouton (ni remplissage, ni cercle) ;
    se faire interrompre : pas d'éclair rouge sur le bouton. Sort de zone au sol : pas d'animation de cible sur le
    bouton. La barre d'incantation, elle, s'affiche normalement.
+
+## 0.24.0 · expérience et réputation
+
+**Avant de commencer** : couper ce qui, dans EllesmereUI, remplace les barres d'expérience ou de réputation.
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. `/cui version` : « 0.24.0 ».
+2. Tiroir « Barres d'actions » : une page « Expérience et réputation » en bas. Les barres du jeu ont disparu ; deux
+   barres fines CœurUI à la place (réputation au-dessus de l'expérience au départ).
+3. Expérience : violet jusqu'à l'expérience actuelle, bleu après (bonus de repos) ; rien d'écrit au repos.
+4. Terminer une quête sans la rendre : un morceau jaune s'ajoute après le violet ; assez de quêtes à rendre pour un
+   niveau : la barre jaune va jusqu'au bout et « +1 niveau » s'affiche à droite.
+5. Survol de l'expérience : son texte au-dessus (niveau, %, quêtes, repos) et son infobulle. Survol de la
+   réputation : son texte (faction, rang, %) et son infobulle. La souris partie, tout disparaît.
+6. Clic sur la barre de réputation : la page des réputations s'ouvre.
+7. Suivre une autre faction (page des réputations) : la barre change, dans la couleur de son rang. Ne plus en suivre
+   aucune : sa barre disparaît, l'expérience reste à sa place.
+8. Réglages : largeur et hauteur de chaque barre, texte (au survol, toujours, jamais), taille du texte, quêtes à
+   rendre, repos, infobulle. Chacun s'applique tout de suite.
+9. Cadenas : deux cadres, « Expérience » et « Réputation », à placer séparément ; `/reload` : ils sont restés.
+10. Couper « Afficher l'expérience » et « Afficher la réputation » : les barres du jeu reviennent.
+11. Langue anglaise : page « Experience and reputation ».

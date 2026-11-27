@@ -2,7 +2,7 @@
 ## Title: CœurUI
 ## Notes: Interface minimaliste, en modules qu'on active un par un.
 ## Author: sebastien1100-dev
-## Version: 0.23.0
+## Version: 0.24.0
 ## IconTexture: Interface\AddOns\CoeurUI\Media\Icone
 ## SavedVariables: CoeurUIDB
 ## SavedVariablesPerCharacter: CoeurUICharDB
@@ -31,6 +31,7 @@ Modules\CadresUnite\CadresUnite.lua
 Modules\Minicarte\Minicarte.lua
 Modules\Infobulles\Infobulles.lua
 Modules\BarresActions\BarresActions.lua
+Modules\BarresActions\Experience.lua
 Modules\SuiviQuetes\SuiviQuetes.lua
 Modules\Discussion\Discussion.lua
 Modules\Effets\Effets.lua
