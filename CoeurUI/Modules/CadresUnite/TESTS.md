@@ -51,3 +51,28 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 5. Cadenas : le cadre « Familier » a son contour doré (exemple gris sans familier) et se place.
 6. Langue anglaise : « Pet ».
 7. Survol de son propre cadre : plus de ligne verte « Clic droit pour les paramètres de bordure ».
+
+## 0.19.0 · barre d'incantation du joueur
+
+**Avant de commencer** : couper la barre d'incantation d'EllesmereUI s'il en dessine une.
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.19.0 ».
+2. Lancer un sort avec un temps d'incantation (ex. Boule de feu) : une barre bleue apparaît collée sous le cadre du
+   joueur, à sa largeur ; icône à gauche, nom du sort, temps « 1,4 / 2,5 » à droite ; petite zone gris sombre au
+   bout (latence). À la fin : pleine et plus claire un instant, puis elle s'efface. Plus de barre du jeu.
+3. Canalisation (ex. Projectiles des arcanes, Drain de vie) : barre verte qui se vide, avec des repères pour les tics.
+4. Bouger pendant une incantation (ou se faire interrompre) : barre rouge « Interrompu », puis elle s'efface.
+   Appuyer de nouveau sur le sort pendant l'incantation : la barre continue normalement (pas d'« Échec »).
+5. Se faire frapper pendant une incantation : la barre recule (temps repoussé) et suit.
+6. Page **Joueur** : section « Barre d'incantation » sous « Textes et couleurs », section « Éléments de
+   l'incantation » à droite. Chaque réglage change la barre (au prochain sort). Option coupée : tous les réglages
+   de l'incantation grisés ; la barre du jeu revient.
+7. « Détacher du cadre » : la largeur se règle ; cadenas ouvert : la barre « Incantation » a son contour doré et un
+   exemple gris-bleu ; la placer, verrouiller, `/reload` : elle est restée. Réattacher : elle revient sous le cadre.
+8. Temps affiché « Restant » puis « Aucun » ; hauteur plus grande : le texte grandit un peu.
+9. En combat : rien de bloqué, aucune erreur.
+10. Langue anglaise : « Cast bar », temps « 1.4 / 2.5 ».
+11. Familier appelé : son cadre est sous la barre d'incantation (sans la chevaucher). Détacher la barre ou la couper :
+    il remonte juste sous le cadre du joueur ; la rattacher : il redescend. Changer la hauteur de la barre : il suit.
+12. Déplacer le cadre du joueur avec le cadenas : le familier le suit. Déplacer le familier, verrouiller, `/reload` :
+    il garde sa place par rapport au joueur.

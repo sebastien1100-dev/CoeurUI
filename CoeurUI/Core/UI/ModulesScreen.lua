@@ -698,7 +698,25 @@ function CUI:RefreshModulesScreen()
     body:SetContentHeight(height)
 end
 
+-- Combat : la fenêtre se cache (en gardant sa page) et revient à la fin du combat. Ouverte pendant
+-- un combat (/cui, bouton de minicarte...) : elle s'ouvrira à la fin du combat.
+local inCombat = false
+local reopenAfterCombat = false
+
+local function openLater()
+    if not reopenAfterCombat then CUI:Print(L.FENETRE_APRES_COMBAT) end
+    reopenAfterCombat = true
+end
+
 function CUI:ToggleModulesScreen()
+    if inCombat then
+        if reopenAfterCombat then
+            reopenAfterCombat = false -- deuxième appui : on n'ouvre plus
+        else
+            openLater()
+        end
+        return
+    end
     if not window then createWindow() end
     window:SetShown(not window:IsShown())
 end
@@ -709,6 +727,10 @@ function CUI:IsModulesScreenShown()
 end
 
 function CUI:SetModulesScreenShown(shown, samePage)
+    if shown and inCombat then
+        reopenAfterCombat = true
+        return
+    end
     if not window then
         if not shown then return end
         createWindow()
@@ -723,5 +745,20 @@ function CUI:OnModulesChanged()
 end
 
 -- Le cadenas se grise en combat et revient après.
-CUI:On("PLAYER_REGEN_DISABLED", "core:cadenas", function() paintLock() end)
-CUI:On("PLAYER_REGEN_ENABLED", "core:cadenas", function() paintLock() end)
+CUI:On("PLAYER_REGEN_DISABLED", "core:cadenas", function()
+    paintLock()
+    inCombat = true
+    if window and window:IsShown() then
+        reopenAfterCombat = true
+        keepPage = true
+        window:Hide()
+    end
+end)
+CUI:On("PLAYER_REGEN_ENABLED", "core:cadenas", function()
+    inCombat = false
+    paintLock()
+    if reopenAfterCombat then
+        reopenAfterCombat = false
+        CUI:SetModulesScreenShown(true)
+    end
+end)

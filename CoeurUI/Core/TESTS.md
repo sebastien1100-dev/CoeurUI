@@ -227,3 +227,11 @@ Avec au moins un module à cadres actif (Cadres d'unité, Minicarte).
 2. Entrer en combat pendant le déverrouillage : tout se verrouille et la fenêtre revient.
 3. Panneau « Déplacement des cadres » : tailles de grille 4 8 16 32 48 64 ; 4 : grille très serrée, l'aimant colle
    les cadres tous les 4 points.
+
+## 0.19.0 · fenêtre cachée en combat
+
+1. Fenêtre de CœurUI ouverte sur une page (ex. Cadres d'unité > Joueur), entrer en combat : elle se cache. Sortir
+   du combat : elle revient sur la même page.
+2. En combat, `/cui` ou clic sur le bouton de minicarte : message « en combat : la fenêtre s'ouvrira à la fin du
+   combat. » ; elle s'ouvre à la sortie du combat. Deuxième appui en combat : elle ne s'ouvre plus.
+3. Cadres déverrouillés, entrer en combat : tout se verrouille ; la fenêtre revient seulement à la fin du combat.

@@ -2,6 +2,26 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.19.0 · 27/11/2026
+
+- Cadres d'unité : nouvelle barre d'incantation du joueur, collée sous son cadre et à sa largeur, au style sobre de
+  CœurUI. Icône du sort, nom, temps restant et total ; zone de latence au bout de la barre ; repères des tics sur
+  les canalisations les plus courantes.
+- Bleu pendant une incantation, vert pendant une canalisation (la barre se vide), rouge « Interrompu » ou « Échec »
+  quand le sort ne part pas ; elle s'efface ensuite.
+- Option « Détacher du cadre » : la barre se place alors seule avec le cadenas, avec sa propre largeur.
+- Réglages dans la page « Joueur », section « Barre d'incantation » : afficher, détacher, hauteur, largeur, temps
+  affiché, icône, nom, latence, tics.
+- La barre d'incantation du jeu est cachée tant que celle de CœurUI est affichée ; elle revient quand on la coupe.
+- Le cadre du familier suit maintenant le cadre du joueur : juste dessous, ou sous la barre d'incantation quand elle
+  y est attachée (il remonte quand on la détache ou la coupe). Sa place est remise à zéro une fois : le replacer
+  avec le cadenas si besoin.
+- La fenêtre de CœurUI se cache pendant un combat et revient à la fin, sur la même page. Ouverte en combat (/cui,
+  bouton de minicarte) : elle s'ouvre à la fin du combat.
+- Correction (Cadres d'unité) : changer un réglage de la barre d'incantation en combat provoquait une erreur
+  « action bloquée ».
+- Un /reload suffit.
+
 ## 0.18.0 · 26/11/2026
 
 - Nouveau module « Suivi des quêtes » (coupé d'office) : le suivi des quêtes du jeu au style sobre de CœurUI. Titres
