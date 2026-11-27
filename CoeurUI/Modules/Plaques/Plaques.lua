@@ -11,7 +11,10 @@
 -- par CœurUI. Marqueur de raid à droite de la barre.
 -- Étape 3 : incantation sous la vie (bleu acier ; canalisation en vert ; grise avec un cadenas si on
 -- ne peut pas l'interrompre ; rouge cœur un instant si elle est interrompue), nom du sort et temps.
--- Étape suivante : plaques amies.
+-- Étape 4 : plaques amies (PNJ et joueurs alliés) : le nom seul, vert pour un PNJ, couleur de classe
+-- pour un joueur ; barre fine seulement quand l'allié est blessé. En donjon et en raid, le jeu garde les
+-- plaques amies pour lui (interdites aux addons) : elles restent les siennes. Ma propre plaque (barre de
+-- ressources personnelle) reste celle du jeu.
 --
 -- Les plaques du jeu restent en place (le jeu les crée, les place, les rend cliquables) : CœurUI
 -- pose son dessin dessus et rend celui du jeu invisible. Les plaques amies (et les plaques interdites
@@ -42,6 +45,7 @@ local ROLES = {
 }
 local function questsOn(read) return read("quetes") end
 local function effectsOn(read) return read("effets") end
+local function friendsOn(read) return read("habiller") end
 
 local M = CUI:RegisterModule({
     key = "Plaques",
@@ -50,6 +54,7 @@ local M = CUI:RegisterModule({
     defaultEnabled = false,
     needsReload = true, -- les plaques du jeu ne reviennent entières qu'après un /reload
     defaults = {
+        amis = { habiller = true, blesse = true, niveau = false, tailleNom = 11, largeur = 110, hauteur = 4 },
         ennemis = {
             largeur = 150, hauteur = 10, cible = 125, niveau = true, pourcentage = true, tailleNom = 12,
             quetes = true, nomJaune = true, reste = true, menace = true, role = "auto",
@@ -58,6 +63,20 @@ local M = CUI:RegisterModule({
         },
     },
     subs = {
+        { key = "amis", name = "PN_AMIS", intro = false, settings = {
+            { type = "section", text = "PN_AFFICHAGE" },
+            { type = "toggle", key = "habiller", label = "PN_AMIS_HABILLER", description = "PN_AMIS_NOTE" },
+            { type = "toggle", key = "blesse", label = "PN_AMIS_BLESSE", enabledIf = friendsOn },
+            { type = "toggle", key = "niveau", label = "PN_AMIS_NIVEAU", enabledIf = friendsOn },
+            { type = "column" },
+            { type = "section", text = "PN_DISPOSITION" },
+            { type = "slider", key = "tailleNom", label = "PN_TAILLE_NOM", min = 8, max = 18, step = 1, format = "%d pt",
+              enabledIf = friendsOn },
+            { type = "slider", key = "largeur", label = "PN_LARGEUR", min = 60, max = 260, step = 2, format = "%d",
+              enabledIf = friendsOn },
+            { type = "slider", key = "hauteur", label = "PN_HAUTEUR", min = 2, max = 16, step = 1, format = "%d",
+              enabledIf = friendsOn },
+        } },
         { key = "ennemis", name = "PN_ENNEMIS", intro = false, settings = {
             { type = "section", text = "PN_DISPOSITION" },
             { type = "slider", key = "largeur", label = "PN_LARGEUR", min = 60, max = 260, step = 2, format = "%d" },
@@ -208,6 +227,13 @@ local function setBorder(p, color)
     for _, line in ipairs(p.border) do line:SetVertexColor(color[1], color[2], color[3], 1) end
 end
 
+-- Barre de vie montrée ou cachée (plaque amie : seulement quand l'allié est blessé).
+local function setBarShown(p, shown)
+    p.health:SetShown(shown)
+    p.bg:SetShown(shown)
+    for _, line in ipairs(p.border) do line:SetShown(shown) end
+end
+
 local function createPlate(base)
     local p = _G.CreateFrame("Frame", nil, base)
     p:SetPoint("CENTER", base, "CENTER", 0, 0)
@@ -219,7 +245,8 @@ local function createPlate(base)
     p.health:SetValue(1)
     p.health:SetPoint("TOPLEFT", p, "TOPLEFT", 1, -1)
     p.health:SetPoint("BOTTOMRIGHT", p, "BOTTOMRIGHT", -1, 1)
-    texture(p, "BACKGROUND", -8, C.fond):SetAllPoints()
+    p.bg = texture(p, "BACKGROUND", -8, C.fond)
+    p.bg:SetAllPoints()
     p.border = {}
     for i = 1, 4 do p.border[i] = texture(p, "OVERLAY", 6, C.bordureDiscrete) end
     p.border[1]:SetPoint("TOPLEFT"); p.border[1]:SetPoint("TOPRIGHT"); p.border[1]:SetHeight(1)
@@ -276,6 +303,18 @@ end
 
 -- Taille, polices, échelle (cible plus grande).
 local function layoutPlate(p)
+    if p.friend then
+        local a = M.db.amis
+        p:SetSize(a.largeur, a.hauteur)
+        p.name:SetFont(CUI:GetFont(), a.tailleNom, "OUTLINE")
+        p.level:SetFont(CUI:GetFont(), math.max(7, a.tailleNom - 2), "OUTLINE")
+        p.name:SetWidth(0)
+        local icon = a.tailleNom + 6
+        p.raid:SetSize(icon, icon)
+        p.raid:ClearAllPoints()
+        p.raid:SetPoint("LEFT", p.name, "RIGHT", 3, 0)
+        return
+    end
     local s = M.db.ennemis
     p:SetSize(s.largeur, s.hauteur)
     local font = CUI:GetFont()
@@ -328,6 +367,13 @@ local function updateHealth(p)
     local hp, maxHp = _G.UnitHealth(unit), _G.UnitHealthMax(unit)
     p.health:SetMinMaxValues(0, maxHp)
     p.health:SetValue(hp)
+    if p.friend then
+        -- Vie cachée par le jeu : on ne sait pas si l'allié est blessé ; pas de barre.
+        local wounded = known(hp) and known(maxHp) and hp < maxHp
+        setBarShown(p, M.db.amis.blesse and wounded or false)
+        p.pct:Hide()
+        return
+    end
     if M.db.ennemis.pourcentage then
         local pct
         if _G.UnitHealthPercent and _G.CurveConstants then
@@ -347,11 +393,13 @@ local function updateHealth(p)
 end
 
 local function updateThreat(p)
+    if p.friend then return end
     local state = threatState(p.unit)
     setBorder(p, state == "danger" and C.coeur or state == "warn" and ORANGE or C.bordureDiscrete)
 end
 
 local function updateQuest(p)
+    if p.friend then return end
     local s = M.db.ennemis
     if s.quetes then
         local isQuest, rest = questInfo(p.unit)
@@ -378,11 +426,41 @@ end
 
 local function updateTarget(p)
     local isTarget = _G.UnitIsUnit(p.unit, "target")
-    local big = known(isTarget) and isTarget
+    local big = not p.friend and known(isTarget) and isTarget
     p:SetScale(big and M.db.ennemis.cible / 100 or 1)
 end
 
+-- Plaque amie : le nom (vert pour un PNJ, couleur de classe pour un joueur), barre si blessé.
+local function updateFriend(p)
+    local unit = p.unit
+    p.name:SetText(_G.UnitName(unit))
+    local color = VERT
+    local isPlayer = _G.UnitIsPlayer(unit)
+    if known(isPlayer) and isPlayer then
+        local _, classFile = _G.UnitClass(unit)
+        color = classColor(classFile) or VERT
+    end
+    p.name:SetTextColor(color[1], color[2], color[3])
+    p.health:SetStatusBarColor(color[1], color[2], color[3])
+    setBorder(p, C.bordureDiscrete)
+    -- Niveau : joueurs seulement (pas sur les PNJ alliés).
+    local level = _G.UnitLevel(unit)
+    if M.db.amis.niveau and known(isPlayer) and isPlayer and known(level) then
+        p.level:SetText(level <= 0 and "??" or level)
+        p.level:Show()
+    else
+        p.level:Hide()
+    end
+    p.pct:Hide()
+    p.quest:Hide()
+    p.questText:Hide()
+    updateHealth(p)
+    updateRaidMark(p)
+    updateTarget(p)
+end
+
 local function updateAll(p)
+    if p.friend then return updateFriend(p) end
     local unit = p.unit
     local s = M.db.ennemis
     p.name:SetText(_G.UnitName(unit))
@@ -498,6 +576,11 @@ local function layoutAuras(p)
     local base = p.base
     local container = base and auraContainer(base)
     if not container then return end
+    if p.friend then
+        -- Plaque amie : le nom seul, sans les effets du jeu.
+        if container.SetIgnoreParentAlpha then container:SetIgnoreParentAlpha(false) end
+        return
+    end
     local s = M.db.ennemis
     if container.SetIgnoreParentAlpha then container:SetIgnoreParentAlpha(s.effets and true or false) end
     container:SetAlpha(s.effets and 1 or 0)
@@ -666,7 +749,7 @@ end
 
 local function onSpellEvent(event, unit, castGUID)
     local p = unit and plates[unit]
-    if not p then return end
+    if not p or p.friend then return end
     local cast = p.cast
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_DELAYED" then
         startCast(p, false)
@@ -688,7 +771,7 @@ end
 -- Incantation déjà en cours quand la plaque arrive.
 local function resumeCast(p)
     hideCast(p)
-    if not M.db.ennemis.incantation then return end
+    if p.friend or not M.db.ennemis.incantation then return end
     if _G.UnitCastingInfo(p.unit) ~= nil then
         startCast(p, false)
     elseif _G.UnitChannelInfo(p.unit) ~= nil then
@@ -725,7 +808,9 @@ local function attach(unit)
     local NP = _G.C_NamePlate
     local base = NP and NP.GetNamePlateForUnit and NP.GetNamePlateForUnit(unit)
     if not base or (base.IsForbidden and base:IsForbidden()) then return end
-    if not isEnemy(unit) then
+    local friend = not isEnemy(unit)
+    local isMe = _G.UnitIsUnit(unit, "player")
+    if friend and (not M.db.amis.habiller or not known(isMe) or isMe) then
         hideGame(base, false)
         local container = auraContainer(base)
         if container then
@@ -739,9 +824,11 @@ local function attach(unit)
     local p = base.cuiPlate
     p.base = base
     p.unit = unit
+    p.friend = friend
     p.isQuest, p.questRest = false, nil
     plates[unit] = p
     hideGame(base, true)
+    setBarShown(p, not friend)
     layoutPlate(p)
     updateAll(p)
     p:Show()
@@ -763,6 +850,16 @@ local function refreshQuests()
         questPending = false
         forEach(updateQuest)
     end)
+end
+
+-- Toutes les plaques affichées, relues depuis le début.
+local function rescan()
+    local NP = _G.C_NamePlate
+    if not (NP and NP.GetNamePlates) then return end
+    for _, base in ipairs(NP.GetNamePlates() or {}) do
+        local unit = base.namePlateUnitToken or (base.UnitFrame and base.UnitFrame.unit)
+        if unit then CUI:SafeCall(CUI:Tr("PN_NOM"), attach, unit) end
+    end
 end
 
 -- Marche / arrêt -------------------------------------------------------------------------------
@@ -804,21 +901,18 @@ function M:OnEnable()
     self:On("UNIT_QUEST_LOG_CHANGED", refreshQuests)
     self:On("PLAYER_REGEN_ENABLED", refreshQuests) -- infobulles lisibles de nouveau
     self:On("PLAYER_SPECIALIZATION_CHANGED", function() forEach(updateThreat) end)
-    -- Plaques déjà là (module activé en jeu, /reload).
-    local NP = _G.C_NamePlate
-    if NP and NP.GetNamePlates then
-        for _, base in ipairs(NP.GetNamePlates() or {}) do
-            local unit = base.namePlateUnitToken or (base.UnitFrame and base.UnitFrame.unit)
-            if unit then CUI:SafeCall(CUI:Tr("PN_NOM"), attach, unit) end
-        end
-    end
+    rescan() -- plaques déjà là (module activé en jeu, /reload)
 end
 
 -- Coupé : tout reste en place jusqu'au /reload (needsReload).
 function M:OnDisable()
 end
 
-function M:OnSettingChanged(key)
+function M:OnSettingChanged(key, _, subKey)
+    if subKey == "amis" and key == "habiller" then
+        rescan()
+        return
+    end
     forEach(function(p)
         layoutPlate(p)
         updateAll(p)

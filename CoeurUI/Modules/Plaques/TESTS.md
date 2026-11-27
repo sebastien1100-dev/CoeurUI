@@ -51,3 +51,20 @@
 10. Quête « tuer 8 » : « 0/8 » au début, « 1/8 » après le premier, comme le journal de quêtes.
 11. En groupe : les monstres de mes quêtes ont toujours leur « ! » et mon avancement ; ceux qui ne servent qu'aux
     quêtes des autres membres n'en ont pas.
+
+## 0.28.0 · étape 4 : plaques amies
+
+1. `/reload` (pas de nouveau fichier). Aucune erreur Lua. `/cui version` : « 0.28.0 ».
+2. Tiroir « Plaques de nom » : pages « Amis » et « Ennemis ».
+3. En ville (plaques amies affichées, touche du jeu) : PNJ avec le nom seul en vert ; joueurs alliés avec le nom
+   seul dans la couleur de leur classe ; plus rien du dessin du jeu.
+4. Allié blessé : une barre fine sous son nom ; soigné : la barre disparaît.
+5. Marqueur de raid sur un allié : à droite de son nom.
+6. Clic sur une plaque amie : cible l'allié (comme le jeu).
+7. Ma propre plaque (barre de ressources personnelle, si elle est activée) : celle du jeu, inchangée.
+8. En donjon : plaques amies du jeu (interdites aux addons), aucune erreur ; plaques ennemies CœurUI.
+9. Un PNJ qui devient hostile (ou l'inverse) : sa plaque change de style.
+10. Réglages « Amis » : habiller (coupé : plaques amies du jeu tout de suite), barre si blessé, niveau devant le
+    nom des joueurs (en petit gris ; jamais sur les PNJ), taille du nom,
+    largeur, hauteur.
+11. Langue anglaise : page « Friends ».

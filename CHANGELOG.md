@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.28.0 · 27/11/2026
+
+- Plaques de nom : nouvelle page « Amis ». Les plaques des PNJ et joueurs alliés montrent le nom seul, vert pour un
+  PNJ, couleur de classe pour un joueur ; une barre fine apparaît quand l'allié est blessé.
+- En donjon et en raid, le jeu garde les plaques amies pour lui : elles restent les siennes.
+- Réglages : habiller ou non, barre quand l'allié est blessé, niveau devant le nom des joueurs (coupé d'office), taille du nom,
+  largeur et hauteur de la barre.
+
 ## 0.27.0 · 27/11/2026
 
 - Plaques de nom : l'incantation des ennemis sous leur barre de vie, avec le nom du sort et le temps restant. Bleu
