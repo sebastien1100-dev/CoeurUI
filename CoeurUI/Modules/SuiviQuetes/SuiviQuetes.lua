@@ -340,6 +340,12 @@ local function setupZoneRow(row)
     row.count = newText(row, 11)
     row.count:SetPoint("RIGHT", -2, 0)
     row.count:SetJustifyV("MIDDLE")
+    -- Trait léger sous une zone dépliée, centré, aux 80 % de la largeur du fond.
+    row.line = row:CreateTexture(nil, "ARTWORK")
+    row.line:SetTexture(WHITE)
+    row.line:SetHeight(1)
+    row.line:SetPoint("TOP", row, "BOTTOM", 0, 1)
+    row.line:SetVertexColor(C.bordureDiscrete[1], C.bordureDiscrete[2], C.bordureDiscrete[3], 0.7)
     row:SetScript("OnClick", function(self) if self.zoneName then toggleZone(self.zoneName, self.isOpen) end end)
 end
 
@@ -365,6 +371,8 @@ local function paintZoneRow(row, zone, open)
     row.count:SetTextColor(0.44, 0.45, 0.49)
     row.chevron:SetVertexColor(GREY[1], GREY[2], GREY[3])
     row.chevron:SetRotation(open and 0 or (math.pi / 2))
+    row.line:SetWidth(math.floor(M.db.largeur * 0.8 + 0.5))
+    row.line:SetShown(open)
 end
 
 -- Bloc d'une quête : pastille, titre, lignes d'objectifs ; clic, Maj-clic, clic droit, survol.

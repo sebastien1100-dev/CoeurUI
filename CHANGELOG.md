@@ -2,6 +2,11 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.40.1 · 28/11/2026
+
+- Suivi des quêtes : un trait léger souligne le titre d'une zone dépliée (80 % de la largeur du fond).
+- Un /reload suffit.
+
 ## 0.40.0 · 28/11/2026
 
 - Suivi des quêtes : notre propre liste à la place des quêtes du suivi du jeu (première étape). Quêtes rangées par
