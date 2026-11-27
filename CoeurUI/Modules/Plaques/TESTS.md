@@ -68,3 +68,16 @@
     nom des joueurs (en petit gris ; jamais sur les PNJ), taille du nom,
     largeur, hauteur.
 11. Langue anglaise : page « Friends ».
+
+## 0.49.0 · style « Givre »
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.49.0 ».
+2. Plaques ennemies : barre de vie dans une case sombre au double liseré discret, coins arrondis, fines stries en
+   diagonale sur la couleur ; pas d'ombre. Cible : plus grande, même style.
+3. Menace (tank qui perd l'aggro, soigneur qui la prend) : liseré orange puis rouge cœur ; revenu au calme : sombre.
+4. Incantation : même case, stries ; bleu acier, vert (canalisation), grise au cadenas, rouge cœur un instant si
+   interrompue.
+5. Mes affaiblissements au-dessus du nom : cases sombres au double liseré, temps dessous.
+6. Monstre de quête : barre de la couleur choisie, avancement à gauche ; pris par un autre : gris.
+7. Plaque amie blessée (barre très fine, hauteur 4) : la barre reste visible dans sa case. Hauteur réglée à 2 : pas
+   de dessin cassé.

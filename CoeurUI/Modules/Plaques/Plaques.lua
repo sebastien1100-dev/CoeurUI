@@ -16,6 +16,10 @@
 -- plaques amies pour lui (interdites aux addons) : elles restent les siennes. Ma propre plaque (barre de
 -- ressources personnelle) reste celle du jeu.
 --
+-- Style « Givre » (planche « Plaques de nom » de la direction artistique, sans ombre) : barres de vie et
+-- d'incantation dans une case du thème (double liseré discret, coins arrondis), couleur unie à fines
+-- stries ; la menace colore le liseré extérieur ; affaiblissements en cases du thème.
+--
 -- Les plaques du jeu restent en place (le jeu les crée, les place, les rend cliquables) : CœurUI
 -- pose son dessin dessus et rend celui du jeu invisible. Les plaques amies (et les plaques interdites
 -- aux addons) restent celles du jeu. Valeurs cachées par le jeu (vie en combat...) : passées telles
@@ -27,7 +31,6 @@ local C = CUI.Colors
 local issecret = _G.issecretvalue or function() return false end
 local function known(v) return v ~= nil and not issecret(v) end
 
-local WHITE = "Interface\\Buttons\\WHITE8x8"
 local ROUGE = { 0.769, 0.278, 0.239 }   -- #C4473D
 local JAUNE = { 0.851, 0.761, 0.290 }   -- #D9C24A
 local GRIS = { 0.45, 0.47, 0.51 }
@@ -227,13 +230,6 @@ end
 
 -- Dessin d'une plaque ----------------------------------------------------------------------
 
-local function texture(parent, layer, sub, color)
-    local t = parent:CreateTexture(nil, layer, nil, sub)
-    t:SetTexture(WHITE)
-    t:SetVertexColor(color[1], color[2], color[3], color[4] or 1)
-    return t
-end
-
 local function newText(parent)
     local fs = parent:CreateFontString(nil, "OVERLAY")
     fs:SetShadowColor(0, 0, 0, 0.9)
@@ -243,14 +239,26 @@ local function newText(parent)
 end
 
 local function setBorder(p, color)
-    for _, line in ipairs(p.border) do line:SetVertexColor(color[1], color[2], color[3], 1) end
+    p.panel.border:SetColor(color)
+end
+
+-- Case d'une barre (sans ombre : beaucoup de plaques à l'écran) ; la barre posée dedans, en retrait de
+-- 2 points (1 point pour une barre très fine).
+local function barCase(frame)
+    return CUI:CreatePanel(frame, { radius = 2, fill = C.case, shadow = false })
+end
+
+local function fitBar(bar, frame, height)
+    local inset = height >= 8 and 2 or 1
+    bar:ClearAllPoints()
+    bar:SetPoint("TOPLEFT", frame, "TOPLEFT", inset, -inset)
+    bar:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -inset, inset)
 end
 
 -- Barre de vie montrée ou cachée (plaque amie : seulement quand l'allié est blessé).
 local function setBarShown(p, shown)
     p.health:SetShown(shown)
-    p.bg:SetShown(shown)
-    for _, line in ipairs(p.border) do line:SetShown(shown) end
+    p.panel:SetShown(shown)
 end
 
 local function createPlate(base)
@@ -259,19 +267,11 @@ local function createPlate(base)
     p:EnableMouse(false)
     -- Barre de vie : fond, barre, liseré de 1 point (4 traits).
     p.health = _G.CreateFrame("StatusBar", nil, p)
-    p.health:SetStatusBarTexture(WHITE)
+    CUI:SetBarTexture(p.health, "striee")
     p.health:SetMinMaxValues(0, 1)
     p.health:SetValue(1)
-    p.health:SetPoint("TOPLEFT", p, "TOPLEFT", 1, -1)
-    p.health:SetPoint("BOTTOMRIGHT", p, "BOTTOMRIGHT", -1, 1)
-    p.bg = texture(p, "BACKGROUND", -8, C.fond)
-    p.bg:SetAllPoints()
-    p.border = {}
-    for i = 1, 4 do p.border[i] = texture(p, "OVERLAY", 6, C.bordureDiscrete) end
-    p.border[1]:SetPoint("TOPLEFT"); p.border[1]:SetPoint("TOPRIGHT"); p.border[1]:SetHeight(1)
-    p.border[2]:SetPoint("BOTTOMLEFT"); p.border[2]:SetPoint("BOTTOMRIGHT"); p.border[2]:SetHeight(1)
-    p.border[3]:SetPoint("TOPLEFT"); p.border[3]:SetPoint("BOTTOMLEFT"); p.border[3]:SetWidth(1)
-    p.border[4]:SetPoint("TOPRIGHT"); p.border[4]:SetPoint("BOTTOMRIGHT"); p.border[4]:SetWidth(1)
+    fitBar(p.health, p, 10)
+    p.panel = barCase(p)
     -- Textes : nom au-dessus (niveau en petit gris devant), pourcentage dans la barre.
     p.name = newText(p)
     p.name:SetPoint("BOTTOM", p, "TOP", 0, 3)
@@ -286,18 +286,10 @@ local function createPlate(base)
     p.questText:SetPoint("RIGHT", p.health, "LEFT", -4, 0)
     -- Incantation : barre sous la vie, cadenas, nom du sort et temps dessous.
     p.cast = _G.CreateFrame("Frame", nil, p)
-    texture(p.cast, "BACKGROUND", -8, C.fond):SetAllPoints()
-    p.cast.border = {}
-    for i = 1, 4 do p.cast.border[i] = texture(p.cast, "OVERLAY", 6, C.bordureDiscrete) end
-    local cb = p.cast.border
-    cb[1]:SetPoint("TOPLEFT"); cb[1]:SetPoint("TOPRIGHT"); cb[1]:SetHeight(1)
-    cb[2]:SetPoint("BOTTOMLEFT"); cb[2]:SetPoint("BOTTOMRIGHT"); cb[2]:SetHeight(1)
-    cb[3]:SetPoint("TOPLEFT"); cb[3]:SetPoint("BOTTOMLEFT"); cb[3]:SetWidth(1)
-    cb[4]:SetPoint("TOPRIGHT"); cb[4]:SetPoint("BOTTOMRIGHT"); cb[4]:SetWidth(1)
+    p.cast.panel = barCase(p.cast)
     p.cast.bar = _G.CreateFrame("StatusBar", nil, p.cast)
-    p.cast.bar:SetStatusBarTexture(WHITE)
-    p.cast.bar:SetPoint("TOPLEFT", 1, -1)
-    p.cast.bar:SetPoint("BOTTOMRIGHT", -1, 1)
+    CUI:SetBarTexture(p.cast.bar, "striee")
+    fitBar(p.cast.bar, p.cast, 8)
     p.cast.bar:SetMinMaxValues(0, 1)
     p.cast.lock = p.cast:CreateTexture(nil, "OVERLAY")
     p.cast.lock:SetTexture(CUI.MEDIA .. "Cadenas")
@@ -321,6 +313,7 @@ local function layoutPlate(p)
     if p.friend then
         local a = M.db.amis
         p:SetSize(a.largeur, a.hauteur)
+        fitBar(p.health, p, a.hauteur)
         p.name:SetFont(CUI:GetFont(), a.tailleNom, "OUTLINE")
         p.level:SetFont(CUI:GetFont(), math.max(7, a.tailleNom - 2), "OUTLINE")
         p.name:SetWidth(0)
@@ -332,6 +325,8 @@ local function layoutPlate(p)
     end
     local s = M.db.ennemis
     p:SetSize(s.largeur, s.hauteur)
+    fitBar(p.health, p, s.hauteur)
+    fitBar(p.cast.bar, p.cast, s.hauteurInc)
     local font = CUI:GetFont()
     p.name:SetFont(font, s.tailleNom, "OUTLINE")
     p.level:SetFont(font, math.max(7, s.tailleNom - 2), "OUTLINE")
@@ -407,7 +402,7 @@ end
 local function updateThreat(p)
     if p.friend then return end
     local state = threatState(p.unit)
-    setBorder(p, state == "danger" and C.coeur or state == "warn" and ORANGE or C.bordureDiscrete)
+    setBorder(p, state == "danger" and C.coeur or state == "warn" and ORANGE or C.lisereSombre)
 end
 
 local function updateQuest(p)
@@ -461,7 +456,7 @@ local function updateFriend(p)
     end
     p.name:SetTextColor(color[1], color[2], color[3])
     p.health:SetStatusBarColor(color[1], color[2], color[3])
-    setBorder(p, C.bordureDiscrete)
+    setBorder(p, C.lisereSombre)
     -- Niveau : joueurs seulement (pas sur les PNJ alliés).
     local level = _G.UnitLevel(unit)
     if M.db.amis.niveau and known(isPlayer) and isPlayer and known(level) then
@@ -560,22 +555,13 @@ local function skinAura(b)
         end
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", b, "TOPLEFT", 1, -1)
-        icon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -1, 1)
+        icon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
+        icon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
     end
     hideRegion(b.Border)
     hideRegion(b.IconBorder)
     hideRegion(b.DebuffBorder)
-    b.cuiBack = b:CreateTexture(nil, "BACKGROUND", nil, -8)
-    b.cuiBack:SetTexture(WHITE)
-    b.cuiBack:SetVertexColor(C.fond[1], C.fond[2], C.fond[3], 1)
-    b.cuiBack:SetAllPoints()
-    b.cuiLines = {}
-    for i = 1, 4 do b.cuiLines[i] = texture(b, "OVERLAY", 6, C.graphite) end
-    b.cuiLines[1]:SetPoint("TOPLEFT"); b.cuiLines[1]:SetPoint("TOPRIGHT"); b.cuiLines[1]:SetHeight(1)
-    b.cuiLines[2]:SetPoint("BOTTOMLEFT"); b.cuiLines[2]:SetPoint("BOTTOMRIGHT"); b.cuiLines[2]:SetHeight(1)
-    b.cuiLines[3]:SetPoint("TOPLEFT"); b.cuiLines[3]:SetPoint("BOTTOMLEFT"); b.cuiLines[3]:SetWidth(1)
-    b.cuiLines[4]:SetPoint("TOPRIGHT"); b.cuiLines[4]:SetPoint("BOTTOMRIGHT"); b.cuiLines[4]:SetWidth(1)
+    b.cuiPanel = CUI:CreatePanel(b, { radius = 3, fill = C.case, shadow = false }) -- case du thème
     -- Temps restant : le décompte du jeu (il le tient à jour, même en combat), posé sous l'icône.
     local cd = b.Cooldown
     if cd then

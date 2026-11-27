@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.49.0 · 28/11/2026
+
+- Plaques de nom au style « Givre » : barres de vie et d'incantation dans une case sombre au double liseré discret,
+  coins arrondis, couleur unie à fines stries en diagonale. Pas d'ombre (plus léger avec beaucoup de plaques).
+- Menace : le liseré extérieur passe en orange ou rouge cœur, comme avant ; sinon il est sombre.
+- Mes affaiblissements au-dessus du nom : cases du thème.
+- Un /reload suffit.
+
 ## 0.48.0 · 28/11/2026
 
 - Suivi des quêtes au style « Givre » : la liste est posée sur le panneau du thème (fond ardoise, double liseré
