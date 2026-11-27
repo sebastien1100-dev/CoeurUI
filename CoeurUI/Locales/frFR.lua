@@ -151,9 +151,11 @@ L.CU_MORT = "Mort"
 L.CU_EXEMPLE = "%s (exemple)"
 L.CU_EXEMPLE_NOM = "Nom du personnage"
 L.CU_EXEMPLE_CIBLE = "Gardien des ruines"
--- Barre d'incantation (page « Joueur »)
+-- Barres d'incantation (pages « Joueur » et « Cible »)
 L.CU_INC = "BARRE D'INCANTATION"
 L.CU_INC_NOM = "Incantation"
+L.CU_INC_NOM_CIBLE = "Incantation de la cible"
+L.CU_INC_PROTEGE = "Gris + cadenas si on ne peut pas l'interrompre"
 L.CU_INC_AFFICHER = "Afficher la barre d'incantation"
 L.CU_INC_DETACHER = "Détacher du cadre"
 L.CU_INC_DETACHER_DESC = "Attachée : sous le cadre, à sa largeur. Détachée : placée avec le cadenas, à sa propre largeur."

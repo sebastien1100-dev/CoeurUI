@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.20.0 · 27/11/2026
+
+- Cadres d'unité : nouvelle barre d'incantation de la cible, sous son cadre et à sa largeur, comme celle du joueur.
+  Bleue quand on peut interrompre le sort, grise avec un petit cadenas quand on ne peut pas ; verte pour une
+  canalisation ; rouge « Interrompu » quand le sort est coupé. Pas de zone de latence.
+- Elle suit la cible : changer de cible montre tout de suite le sort que la nouvelle cible incante.
+- Option « Détacher du cadre » : placée seule avec le cadenas (au centre de l'écran par défaut), à sa propre largeur.
+- Réglages dans la page « Cible », section « Barre d'incantation », sans aperçu.
+- Si le jeu cache le temps du sort de la cible en combat : la barre avance sans chiffres (ou reste pleine).
+- Le cadre de la cible de la cible suit maintenant le cadre de la cible : juste dessous, ou sous sa barre
+  d'incantation quand elle y est attachée. Sa place est remise à zéro une fois : le replacer avec le cadenas si besoin.
+- Un /reload suffit.
+
 ## 0.19.1 · 27/11/2026
 
 - Suivi des quêtes : la fenêtre « Lien Wowhead » n'a plus de bouton « Sélectionner » (l'adresse est déjà

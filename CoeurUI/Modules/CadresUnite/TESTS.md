@@ -76,3 +76,24 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
     il remonte juste sous le cadre du joueur ; la rattacher : il redescend. Changer la hauteur de la barre : il suit.
 12. Déplacer le cadre du joueur avec le cadenas : le familier le suit. Déplacer le familier, verrouiller, `/reload` :
     il garde sa place par rapport au joueur.
+
+## 0.20.0 · barre d'incantation de la cible
+
+1. `/reload`. Aucune erreur Lua. `/cui version` : « 0.20.0 ».
+2. Cibler un PNJ qui incante (mage, prêtre...) : barre bleue collée sous le cadre de la cible, icône, nom, temps.
+   Pas de zone de latence. Sort fini : la barre s'efface.
+3. Le couper (coup de pied, contresort...) : rouge « Interrompu », puis s'efface.
+4. Sort qu'on ne peut pas interrompre (boss, bouclier) : barre grise avec un petit cadenas devant le nom. En combat,
+   si le jeu cache cette information, la barre reste bleue (pas d'erreur).
+5. Canalisation de la cible (Drain de vie...) : verte, se vide, avec des repères de tics.
+6. Changer de cible pendant qu'elle incante : la barre montre aussitôt l'incantation de la nouvelle cible (ou se
+   cache si elle n'incante rien). Plus de cible : plus de barre.
+7. En combat, si le jeu cache le temps : la barre avance sans chiffres, ou reste pleine ; aucune erreur.
+8. Page **Cible** : section « Barre d'incantation » à gauche, « Éléments de l'incantation » à droite (icône, nom,
+   tics, « Gris + cadenas... »), sans aperçu de la barre. Couper l'option : réglages grisés, plus de barre.
+9. « Détacher du cadre » : cadenas ouvert, cadre « Incantation de la cible » avec un exemple, au centre de l'écran ;
+   le placer, `/reload` : il est resté.
+10. Cible de la cible : son cadre est sous la barre de la cible (sans la chevaucher), aligné à droite ; il remonte
+    quand on détache ou coupe la barre. Il suit la cible quand on la déplace.
+11. La barre du joueur marche toujours comme en 0.19.0.
+12. Langue anglaise : « Target cast bar ».

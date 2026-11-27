@@ -152,9 +152,11 @@ L.CU_MORT = "Dead"
 L.CU_EXEMPLE = "%s (example)"
 L.CU_EXEMPLE_NOM = "Character name"
 L.CU_EXEMPLE_CIBLE = "Ruins warden"
--- Cast bar ("Player" page)
+-- Cast bars ("Player" and "Target" pages)
 L.CU_INC = "CAST BAR"
 L.CU_INC_NOM = "Cast bar"
+L.CU_INC_NOM_CIBLE = "Target cast bar"
+L.CU_INC_PROTEGE = "Grey + padlock when it can't be interrupted"
 L.CU_INC_AFFICHER = "Show the cast bar"
 L.CU_INC_DETACHER = "Detach from the frame"
 L.CU_INC_DETACHER_DESC = "Attached: under the frame, at its width. Detached: placed with the padlock, at its own width."

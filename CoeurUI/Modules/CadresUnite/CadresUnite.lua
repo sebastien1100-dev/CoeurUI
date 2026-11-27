@@ -2,7 +2,8 @@
 -- Remplace les cadres du jeu (cachés tant que le module est actif ; le couper demande un /reload).
 -- Sous-onglets : Général (tailles des libellés, texture : communs à tous les cadres ; la police est
 -- celle de CœurUI, page « Général » de la fenêtre), Joueur,
--- Cible, Cible de la cible. Les cadres se placent avec le cadenas de la fenêtre (mode déplacement).
+-- Cible, Cible de la cible, Familier. Les cadres se placent avec le cadenas de la fenêtre (mode
+-- déplacement). Barres d'incantation du joueur et de la cible : réglées dans leur page.
 --
 -- Valeurs « secrètes » : sur ce client, la vie, le nom, le niveau... d'une unité peuvent être cachés
 -- en combat. On ne les compare ni ne les calcule jamais en Lua : on les passe tels quels à une barre
@@ -63,13 +64,16 @@ local function castPlace()
     }
 end
 
-local function castElements()
+local function castElements(kind)
+    local last = kind == "joueur"
+        and { type = "toggle", key = "incLatence", label = "CU_INC_LATENCE", enabledIf = incOn }
+        or { type = "toggle", key = "incProtege", label = "CU_INC_PROTEGE", enabledIf = incOn }
     return {
         { type = "section", text = "CU_INC_ELEMENTS" },
         { type = "toggle", key = "incIcone", label = "CU_INC_ICONE", enabledIf = incOn },
         { type = "toggle", key = "incNom", label = "CU_INC_NOM_SORT", enabledIf = incOn },
-        { type = "toggle", key = "incLatence", label = "CU_INC_LATENCE", enabledIf = incOn },
         { type = "toggle", key = "incTics", label = "CU_INC_TICS", enabledIf = incOn },
+        last,
     }
 end
 
@@ -98,7 +102,7 @@ local function framePage(kind, minW, maxW, minH, maxH, couleurTexte, elements, c
         items[#items + 1] = { type = "toggle", key = "portrait", label = "CU_PORTRAIT" }
         items[#items + 1] = { type = "toggle", key = "chef", label = "CU_CHEF" }
     end
-    if cast then add(castElements()) end
+    if cast then add(castElements(kind)) end
     return items
 end
 
@@ -115,7 +119,9 @@ local M = CUI:RegisterModule({
                    incantation = true, incDetachee = false, incHauteur = 18, incLargeur = 270, incTemps = "rt",
                    incIcone = true, incNom = true, incLatence = true, incTics = true },
         cible = { largeur = 230, hauteur = 34, texteVie = "p", couleur = "classe",
-                  ressource = true, niveau = true, portrait = false, chef = true },
+                  ressource = true, niveau = true, portrait = false, chef = true,
+                  incantation = true, incDetachee = false, incHauteur = 18, incLargeur = 270, incTemps = "rt",
+                  incIcone = true, incNom = true, incTics = true, incProtege = true },
         tot = { largeur = 130, hauteur = 20, texteVie = "aucun", couleur = "classe" },
         fam = { largeur = 130, hauteur = 20, texteVie = "aucun", couleur = "classe" },
     },
@@ -133,7 +139,7 @@ local M = CUI:RegisterModule({
         { key = "joueur", name = "CU_JOUEUR", intro = false,
           settings = framePage("joueur", 120, 300, 20, 60, "CU_COULEUR_CLASSE", true, true) },
         { key = "cible", name = "CU_CIBLE", intro = false,
-          settings = framePage("cible", 120, 300, 20, 60, "CU_COULEUR_ATTITUDE", true) },
+          settings = framePage("cible", 120, 300, 20, 60, "CU_COULEUR_ATTITUDE", true, true) },
         { key = "tot", name = "CU_CIBLE_CIBLE", intro = false,
           settings = framePage("tot", 80, 200, 14, 40, "CU_COULEUR_ATTITUDE", false) },
         { key = "fam", name = "CU_FAMILIER", intro = false,
@@ -334,12 +340,13 @@ local UNITS = {
       default = { "CENTER", "CENTER", -250, -180 } },
     { kind = "cible", unit = "target", name = "CoeurUICadreCible", label = "CU_CIBLE",
       default = { "CENTER", "CENTER", 250, -180 } },
+    -- Cible de la cible : rattachée au bas du cadre de la cible (barre d'incantation attachée comprise),
+    -- qu'elle suit. Familier : pareil sous le joueur. Nouvelles clés de position (les anciennes étaient
+    -- comptées depuis l'écran, pas depuis le cadre suivi).
     { kind = "tot", unit = "targettarget", name = "CoeurUICadreCibleCible", label = "CU_CIBLE_CIBLE",
-      default = { "CENTER", "CENTER", 300, -222 } },
-    -- Familier : rattaché au bas du cadre du joueur (barre d'incantation attachée comprise), qu'il suit.
-    -- Nouvelle clé de position (l'ancienne était comptée depuis l'écran, pas depuis le joueur).
+      moverKey = "cadre_cible_cible", follows = "cible", default = { "TOPRIGHT", "BOTTOMRIGHT", 0, -4 } },
     { kind = "fam", unit = "pet", name = "CoeurUICadreFamilier", label = "CU_FAMILIER", moverKey = "cadre_familier",
-      followsPlayer = true, default = { "TOPLEFT", "BOTTOMLEFT", 0, -4 } },
+      follows = "joueur", default = { "TOPLEFT", "BOTTOMLEFT", 0, -4 } },
 }
 local frames = {}   -- kind -> bouton
 local built = false
@@ -427,18 +434,20 @@ local function relayoutAll()
     end)
 end
 
--- Point de rattachement du familier : sous le cadre du joueur, et sous la barre d'incantation quand
--- elle y est attachée. Ancré au seul cadre du joueur (protégé, jamais caché en combat) : un cadre
--- protégé ne s'ancre jamais à la barre d'incantation, qui se montre et se cache en combat.
-local petAnchor
-local function placePetAnchor()
-    if not petAnchor or not frames.joueur then return end
-    local s = M.db.joueur
+-- Points de rattachement : le familier sous le cadre du joueur, la cible de la cible sous celui de la
+-- cible, et sous leur barre d'incantation quand elle y est attachée. Ancrés au seul cadre de l'unité
+-- (protégé, jamais caché en combat) : un cadre protégé ne s'ancre jamais à une barre d'incantation,
+-- qui se montre et se cache en combat.
+local anchors = {} -- kind du cadre suivi (joueur, cible) -> point de rattachement
+local function placeAnchor(kind)
+    local anchor, owner = anchors[kind], frames[kind]
+    if not anchor or not owner then return end
+    local s = M.db[kind]
     local y = (s.incantation and not s.incDetachee) and -(s.incHauteur + 4) or 0
     CUI:AfterCombat(function()
-        petAnchor:ClearAllPoints()
-        petAnchor:SetPoint("TOPLEFT", frames.joueur, "BOTTOMLEFT", 0, y)
-        petAnchor:SetPoint("TOPRIGHT", frames.joueur, "BOTTOMRIGHT", 0, y)
+        anchor:ClearAllPoints()
+        anchor:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, y)
+        anchor:SetPoint("TOPRIGHT", owner, "BOTTOMRIGHT", 0, y)
     end)
 end
 
@@ -468,11 +477,12 @@ local function createFrame(def)
     relayout(f) -- police et tailles posées avant tout texte
 
     local parent
-    if def.followsPlayer then
-        petAnchor = petAnchor or _G.CreateFrame("Frame", nil, _G.UIParent)
-        petAnchor:SetHeight(1)
-        placePetAnchor()
-        parent = petAnchor
+    if def.follows then
+        local anchor = anchors[def.follows] or _G.CreateFrame("Frame", nil, _G.UIParent)
+        anchor:SetHeight(1)
+        anchors[def.follows] = anchor
+        placeAnchor(def.follows)
+        parent = anchor
     end
     CUI:RegisterMover({
         key = def.moverKey or ("cadre_" .. def.kind), frame = f, label = def.label, default = def.default,
@@ -512,22 +522,32 @@ local function hideBlizzardFrames()
     end
 end
 
--- Barre d'incantation du joueur (maquette validée le 27/11/2026) ----------------------------
--- Sous le cadre du joueur, à sa largeur, ou détachée (placée avec le cadenas). Cadre simple (pas
--- protégé) : il peut changer en combat. La barre du jeu est cachée tant que la nôtre est affichée
--- (rangée dans le cadre invisible, rendue à son parent quand on coupe l'option).
--- Valeurs possiblement secrètes (nom, temps) : nom et icône passés tels quels au jeu ; sans temps
--- connus, la barre reste pleine et sans chiffres.
+-- Barres d'incantation du joueur et de la cible (maquettes validées le 27/11/2026) -------------
+-- Sous le cadre de leur unité, à sa largeur, ou détachées (placées avec le cadenas). Cadres simples
+-- (pas protégés) : ils peuvent changer en combat. La barre du jeu du joueur est cachée tant que la
+-- nôtre est affichée ; celle de la cible part avec le cadre de la cible du jeu (déjà caché).
+-- Valeurs possiblement secrètes (surtout la cible en combat : nom, temps, « ne peut pas être
+-- interrompu ») : nom et icône passés tels quels au jeu ; sans temps connus, la barre avance seule
+-- si le jeu sait le faire (durée du sort), sinon elle reste pleine ; jamais de chiffres.
 
-local INC_MOVER = "cadre_incantation"
 local INC_COULEURS = {
-    cast = { 0.29, 0.47, 0.72 },   -- incantation : bleu acier
-    canal = { 0.31, 0.60, 0.42 },  -- canalisation : vert
-    fin = { 0.43, 0.60, 0.84 },    -- réussie : un instant plus clair
-    echec = C.coeur,               -- interrompue, échec
+    cast = { 0.29, 0.47, 0.72 },     -- incantation : bleu acier
+    canal = { 0.31, 0.60, 0.42 },    -- canalisation : vert
+    fin = { 0.43, 0.60, 0.84 },      -- réussie : un instant plus clair
+    echec = C.coeur,                 -- interrompue, échec
+    protege = { 0.48, 0.49, 0.53 },  -- la cible incante un sort qu'on ne peut pas interrompre : gris
 }
 local INC_TENUE = { fin = 0.15, echec = 0.6 } -- temps affiché avant de s'effacer
 local INC_FONDU = 0.3
+
+local CAST_DEFS = {
+    { kind = "joueur", unit = "player", name = "CoeurUIIncantation", mover = "cadre_incantation",
+      label = "CU_INC_NOM", default = { "CENTER", "CENTER", 0, -120 }, latence = true },
+    { kind = "cible", unit = "target", name = "CoeurUIIncantationCible", mover = "cadre_incantation_cible",
+      label = "CU_INC_NOM_CIBLE", default = { "CENTER", "CENTER", 0, 60 }, protege = true },
+}
+local bars = {}       -- kind -> barre
+local barByUnit = {}  -- unité -> barre
 
 -- Intervalle des tics des canalisations connues (identifiant du premier rang » secondes).
 -- Les autres rangs sont reconnus par le nom du sort, lu au jeu.
@@ -564,19 +584,17 @@ local function tickInterval(spellID, name)
     return ticsByName[name]
 end
 
-local cast = { mode = nil } -- mode : nil, "cast", "canal", "fin", "echec", "exemple"
-
 local function decimal(x)
     return (("%.1f"):format(x):gsub("%.", L.CU_INC_DECIMALE))
 end
 
-local function setCastColor(c)
-    cast.frame.bar:SetStatusBarColor(c[1], c[2], c[3])
+local function setCastColor(b, c)
+    b.frame.bar:SetStatusBarColor(c[1], c[2], c[3])
 end
 
-local function setCastTime(remaining, total)
-    local mode = M.db.joueur.incTemps
-    local fs = cast.frame.time
+local function setCastTime(b, remaining, total)
+    local mode = M.db[b.kind].incTemps
+    local fs = b.frame.time
     if mode == "aucun" or not remaining then
         fs:SetText("")
     elseif mode == "r" then
@@ -586,24 +604,34 @@ local function setCastTime(remaining, total)
     end
 end
 
-local function hideTicks()
-    for _, t in ipairs(cast.frame.ticks) do t:Hide() end
+local function hideTicks(b)
+    for _, t in ipairs(b.frame.ticks) do t:Hide() end
+end
+
+-- Barre animée par le jeu (temps cachés) : arrêtée avant toute autre valeur.
+local function stopTimer(b)
+    local bar = b.frame.bar
+    if b.timer and bar.ClearTimerDuration then pcall(bar.ClearTimerDuration, bar) end
+    b.timer = false
 end
 
 -- Fin de l'affichage : la barre se cache (ou l'exemple revient, cadenas ouvert).
-local function hideCast()
-    local f = cast.frame
-    cast.mode = nil
+local function hideCast(b)
+    local f = b.frame
+    b.mode = nil
+    stopTimer(b)
     f.latency:Hide()
-    hideTicks()
-    if cast.example then
-        cast.mode = "exemple"
+    f.lock:Hide()
+    f.name:SetPoint("LEFT", f.bar, "LEFT", 6, 0)
+    hideTicks(b)
+    if b.example then
+        b.mode = "exemple"
         f.name:SetText(L.CU_INC_EXEMPLE)
         f.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
         f.bar:SetMinMaxValues(0, 1)
         f.bar:SetValue(0.56)
-        setCastColor(INC_COULEURS.cast)
-        setCastTime(1.4, 2.5)
+        setCastColor(b, INC_COULEURS.cast)
+        setCastTime(b, 1.4, 2.5)
         f:SetAlpha(1)
         f:Show()
     else
@@ -611,10 +639,10 @@ local function hideCast()
     end
 end
 
-local function placeTicks(total, interval)
-    hideTicks()
-    if not (M.db.joueur.incTics and interval and total > 0) then return end
-    local f = cast.frame
+local function placeTicks(b, total, interval)
+    hideTicks(b)
+    if not (M.db[b.kind].incTics and interval and total > 0) then return end
+    local f = b.frame
     local n = math.floor(total / interval + 0.5)
     if n < 2 or n > 20 then return end
     local width = f.bar:GetWidth()
@@ -633,31 +661,47 @@ local function placeTicks(total, interval)
     end
 end
 
--- Une incantation (ou canalisation) commence ou change : tout est relu au jeu.
-local function startCast(channel)
-    local f = cast.frame
-    local name, texture, startMS, endMS, castID, spellID
-    if channel then
-        local n, _, tex, s, e, _, _, id = _G.UnitChannelInfo("player")
-        name, texture, startMS, endMS, spellID = n, tex, s, e, id
+-- Couleur selon que le sort peut être interrompu (cible seulement ; valeur cachée : bleu normal).
+local function paintProtect(b, notInterruptible)
+    local f = b.frame
+    local protect = b.def.protege and M.db[b.kind].incProtege and known(notInterruptible) and notInterruptible
+    if protect then
+        setCastColor(b, INC_COULEURS.protege)
     else
-        local n, _, tex, s, e, _, cid, _, id = _G.UnitCastingInfo("player")
-        name, texture, startMS, endMS, castID, spellID = n, tex, s, e, cid, id
+        setCastColor(b, b.mode == "canal" and INC_COULEURS.canal or INC_COULEURS.cast)
+    end
+    local lock = protect and M.db[b.kind].incNom or false
+    f.lock:SetShown(lock)
+    -- Le nom laisse la place au cadenas quand il est là.
+    f.name:SetPoint("LEFT", f.bar, "LEFT", lock and ((b.fontSize or 11) + 8) or 6, 0)
+end
+
+-- Une incantation (ou canalisation) commence ou change : tout est relu au jeu.
+local function startCast(b, channel)
+    local f, unit = b.frame, b.unit
+    local name, texture, startMS, endMS, castID, notInterruptible, spellID
+    if channel then
+        local n, _, tex, s, e, _, ni, id = _G.UnitChannelInfo(unit)
+        name, texture, startMS, endMS, notInterruptible, spellID = n, tex, s, e, ni, id
+    else
+        local n, _, tex, s, e, _, cid, ni, id = _G.UnitCastingInfo(unit)
+        name, texture, startMS, endMS, castID, notInterruptible, spellID = n, tex, s, e, cid, ni, id
     end
     if name == nil then return end
-    cast.mode = channel and "canal" or "cast"
-    cast.wasCast = not channel
-    cast.castID = known(castID) and castID or nil
+    stopTimer(b)
+    b.mode = channel and "canal" or "cast"
+    b.wasCast = not channel
+    b.castID = known(castID) and castID or nil
     f.name:SetText(name)
     f.icon:SetTexture(texture)
-    setCastColor(channel and INC_COULEURS.canal or INC_COULEURS.cast)
+    paintProtect(b, notInterruptible)
     f.bar:SetMinMaxValues(0, 1)
     f.latency:Hide()
-    hideTicks()
+    hideTicks(b)
     if known(startMS) and known(endMS) and startMS and endMS and endMS > startMS then
-        cast.start, cast.finish = startMS / 1000, endMS / 1000
-        local total = cast.finish - cast.start
-        if not channel and M.db.joueur.incLatence and _G.GetNetStats then
+        b.start, b.finish = startMS / 1000, endMS / 1000
+        local total = b.finish - b.start
+        if b.def.latence and not channel and M.db[b.kind].incLatence and _G.GetNetStats then
             local _, _, _, world = _G.GetNetStats()
             if known(world) and world and world > 0 then
                 local frac = math.min(1, world / 1000 / total)
@@ -665,61 +709,75 @@ local function startCast(channel)
                 f.latency:Show()
             end
         end
-        if channel then placeTicks(total, tickInterval(spellID, name)) end
+        if channel then placeTicks(b, total, tickInterval(spellID, name)) end
     else
-        cast.start = nil -- temps cachés : barre pleine, sans chiffres
-        f.bar:SetValue(1)
-        setCastTime(nil)
+        -- Temps cachés : le jeu anime la barre s'il le sait, sinon elle reste pleine. Pas de chiffres.
+        b.start = nil
+        setCastTime(b, nil)
+        local getDuration = channel and _G.UnitChannelDuration or _G.UnitCastingDuration
+        local ok, duration = false, nil
+        if getDuration and f.bar.SetTimerDuration then
+            ok, duration = pcall(getDuration, unit)
+        end
+        if ok and duration and pcall(f.bar.SetTimerDuration, f.bar, duration) then
+            b.timer = true
+        else
+            f.bar:SetValue(1)
+        end
     end
     f:SetAlpha(1)
     f:Show()
 end
 
 -- Fin d'une incantation : réussie (« fin ») ou ratée (« echec », avec son texte).
-local function endCast(mode, text)
-    local f = cast.frame
-    cast.mode, cast.endTime = mode, _G.GetTime()
+local function endCast(b, mode, text)
+    local f = b.frame
+    stopTimer(b)
+    b.mode, b.endTime = mode, _G.GetTime()
     f.latency:Hide()
+    f.lock:Hide()
+    f.name:SetPoint("LEFT", f.bar, "LEFT", 6, 0)
     if mode == "echec" then
-        hideTicks()
+        hideTicks(b)
         f.bar:SetValue(1)
         f.name:SetText(text)
-        setCastTime(nil)
-        setCastColor(INC_COULEURS.echec)
-    elseif cast.wasCast then
+        setCastTime(b, nil)
+        setCastColor(b, INC_COULEURS.echec)
+    elseif b.wasCast then
         f.bar:SetValue(1)
-        setCastColor(INC_COULEURS.fin)
+        setCastColor(b, INC_COULEURS.fin)
     end
 end
 
-local function sameCast(castGUID)
-    if not cast.castID or castGUID == nil or not known(castGUID) then return true end
-    return castGUID == cast.castID
+local function sameCast(b, castGUID)
+    if not b.castID or castGUID == nil or not known(castGUID) then return true end
+    return castGUID == b.castID
 end
 
-local function onCastUpdate(f)
-    local mode = cast.mode
-    if (mode == "cast" or mode == "canal") and cast.start then
+local function onCastUpdate(b)
+    local f, mode = b.frame, b.mode
+    if (mode == "cast" or mode == "canal") and b.start then
         local now = _G.GetTime()
-        local total = cast.finish - cast.start
-        local elapsed = math.min(math.max(now - cast.start, 0), total)
+        local total = b.finish - b.start
+        local elapsed = math.min(math.max(now - b.start, 0), total)
         local p = elapsed / total
         f.bar:SetValue(mode == "canal" and 1 - p or p)
-        setCastTime(total - elapsed, total)
+        setCastTime(b, total - elapsed, total)
         -- Sans évènement de fin (rare) : effacée un peu après la fin prévue.
-        if now > cast.finish + 1 then hideCast() end
+        if now > b.finish + 1 then hideCast(b) end
     elseif mode == "fin" or mode == "echec" then
-        local t = _G.GetTime() - cast.endTime - INC_TENUE[mode]
+        local t = _G.GetTime() - b.endTime - INC_TENUE[mode]
         if t >= INC_FONDU then
-            hideCast()
+            hideCast(b)
         elseif t > 0 then
             f:SetAlpha(1 - t / INC_FONDU)
         end
     end
 end
 
-local function createCastBar()
-    local f = _G.CreateFrame("Frame", "CoeurUIIncantation", _G.UIParent)
+local function createCastBar(def)
+    local b = { def = def, kind = def.kind, unit = def.unit }
+    local f = _G.CreateFrame("Frame", def.name, _G.UIParent)
     f:SetFrameStrata("LOW")
     f:Hide()
     f.iconBox = _G.CreateFrame("Frame", nil, f)
@@ -741,11 +799,19 @@ local function createCastBar()
     f.name, f.time = newText(texts), newText(texts)
     f.name:SetJustifyH("LEFT")
     f.time:SetJustifyH("RIGHT")
-    f:SetScript("OnUpdate", onCastUpdate)
-    cast.frame = f
+    -- Petit cadenas devant le nom : sort qu'on ne peut pas interrompre.
+    f.lock = texts:CreateTexture(nil, "OVERLAY")
+    f.lock:SetTexture(CUI.MEDIA .. "Cadenas")
+    f.lock:SetVertexColor(C.texte[1], C.texte[2], C.texte[3])
+    f.lock:Hide()
+    f.name:SetPoint("LEFT", f.bar, "LEFT", 6, 0)
+    f:SetScript("OnUpdate", function() onCastUpdate(b) end)
+    b.frame = f
+    bars[def.kind], barByUnit[def.unit] = b, b
+    return b
 end
 
--- Barre du jeu : rangée dans le cadre invisible (hide = true) ou rendue à son parent d'origine.
+-- Barre du jeu du joueur : rangée dans le cadre invisible (hide = true) ou rendue à son parent.
 local castBarParents = {} -- barre du jeu -> parent d'origine
 local blizzardCastHidden = false
 local function setBlizzardCastBar(hide)
@@ -778,40 +844,40 @@ local function setBlizzardCastBar(hide)
     end
 end
 
--- Place, taille et pièces de la barre selon les réglages.
-local function applyCast()
-    local f = cast.frame
-    if not f then return end
-    local s, g = M.db.joueur, M.db.general
-    setBlizzardCastBar(s.incantation)
-    placePetAnchor() -- le familier descend sous la barre attachée, remonte sinon
+-- Place, taille et pièces d'une barre selon les réglages.
+local function applyCast(b)
+    local f, def = b.frame, b.def
+    local s, g = M.db[b.kind], M.db.general
+    if b.kind == "joueur" then setBlizzardCastBar(s.incantation) end
+    placeAnchor(b.kind) -- le cadre rattaché (familier, cible de la cible) passe sous la barre attachée
 
     if s.incantation and s.incDetachee then
         f:SetSize(s.incLargeur, s.incHauteur)
-        if not cast.mover then
-            cast.mover = true
+        if not b.mover then
+            b.mover = true
             CUI:RegisterMover({
-                key = INC_MOVER, frame = f, label = "CU_INC_NOM", default = { "CENTER", "CENTER", 0, -120 },
+                key = def.mover, frame = f, label = def.label, default = def.default,
                 onUnlock = function()
-                    cast.example = true
-                    if not cast.mode then hideCast() end
+                    b.example = true
+                    if not b.mode then hideCast(b) end
                 end,
                 onLock = function()
-                    cast.example = false
-                    if cast.mode == "exemple" then hideCast() end
+                    b.example = false
+                    if b.mode == "exemple" then hideCast(b) end
                 end,
             })
         end
     else
-        if cast.mover then
-            cast.mover = false
-            CUI:UnregisterMover(INC_MOVER)
-            cast.example = false
-            if cast.mode == "exemple" then hideCast() end
+        if b.mover then
+            b.mover = false
+            CUI:UnregisterMover(def.mover)
+            b.example = false
+            if b.mode == "exemple" then hideCast(b) end
         end
+        local owner = frames[b.kind]
         f:ClearAllPoints()
-        f:SetPoint("TOPLEFT", frames.joueur, "BOTTOMLEFT", 0, -4)
-        f:SetPoint("TOPRIGHT", frames.joueur, "BOTTOMRIGHT", 0, -4)
+        f:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -4)
+        f:SetPoint("TOPRIGHT", owner, "BOTTOMRIGHT", 0, -4)
         f:SetHeight(s.incHauteur)
     end
 
@@ -830,37 +896,51 @@ local function applyCast()
     f.name:SetFont(font, size, "")
     f.time:SetFont(font, size, "")
     f.name:SetShown(s.incNom)
+    f.lock:SetSize(size, size)
+    f.lock:ClearAllPoints()
+    f.lock:SetPoint("LEFT", f.bar, "LEFT", 5, 0)
     f.time:ClearAllPoints()
     f.time:SetPoint("RIGHT", f.bar, "RIGHT", -6, 0)
     f.name:ClearAllPoints()
-    f.name:SetPoint("LEFT", f.bar, "LEFT", 6, 0)
+    b.fontSize = size
+    f.name:SetPoint("LEFT", f.bar, "LEFT", f.lock:IsShown() and (size + 8) or 6, 0)
     f.name:SetPoint("RIGHT", f.time, "LEFT", -6, 0)
 
     if not s.incantation then
-        cast.mode = nil
+        stopTimer(b)
+        b.mode = nil
         f:Hide()
-    elseif cast.mode == "exemple" then
-        hideCast() -- exemple redessiné (temps affiché...)
+    elseif b.mode == "exemple" then
+        hideCast(b) -- exemple redessiné (temps affiché...)
     end
 end
 
--- Évènements des sorts du joueur.
+local function applyAllCasts()
+    for _, b in pairs(bars) do applyCast(b) end
+end
+
+-- Évènements des sorts (joueur et cible).
 local function onSpellEvent(event, unit, castGUID)
-    if unit ~= "player" or not cast.frame or not M.db.joueur.incantation then return end
+    local b = barByUnit[unit]
+    if not b or not M.db[b.kind].incantation then return end
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_DELAYED" then
-        startCast(false)
+        startCast(b, false)
     elseif event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_CHANNEL_UPDATE" then
-        startCast(true)
+        startCast(b, true)
     elseif event == "UNIT_SPELLCAST_STOP" then
-        if cast.mode == "cast" and sameCast(castGUID) then endCast("fin") end
+        if b.mode == "cast" and sameCast(b, castGUID) then endCast(b, "fin") end
     elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" then
-        if cast.mode == "canal" then endCast("fin") end
+        if b.mode == "canal" then endCast(b, "fin") end
     elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
-        if (cast.mode == "cast" and sameCast(castGUID)) or cast.mode == "canal" then
-            endCast("echec", L.CU_INC_INTERROMPU)
+        if (b.mode == "cast" and sameCast(b, castGUID)) or b.mode == "canal" then
+            endCast(b, "echec", L.CU_INC_INTERROMPU)
         end
     elseif event == "UNIT_SPELLCAST_FAILED" then
-        if cast.mode == "cast" and sameCast(castGUID) then endCast("echec", L.CU_INC_ECHEC) end
+        if b.mode == "cast" and sameCast(b, castGUID) then endCast(b, "echec", L.CU_INC_ECHEC) end
+    elseif event == "UNIT_SPELLCAST_INTERRUPTIBLE" then
+        if b.mode == "cast" or b.mode == "canal" then paintProtect(b, false) end
+    elseif event == "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" then
+        if b.mode == "cast" or b.mode == "canal" then paintProtect(b, true) end
     end
 end
 
@@ -869,16 +949,18 @@ local INC_EVENTS = {
     "UNIT_SPELLCAST_INTERRUPTED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE",
     "UNIT_SPELLCAST_CHANNEL_STOP",
 }
+-- Pas sur tous les clients : inscrits seulement s'ils existent.
+local INC_EVENTS_OPTIONAL = { "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE" }
 
--- Après un écran de chargement : une incantation déjà en cours est reprise.
-local function resumeCast()
-    if not cast.frame or not M.db.joueur.incantation then return end
-    if _G.UnitCastingInfo("player") ~= nil then
-        startCast(false)
-    elseif _G.UnitChannelInfo("player") ~= nil then
-        startCast(true)
-    elseif cast.mode == "cast" or cast.mode == "canal" then
-        hideCast()
+-- Incantation déjà en cours (écran de chargement, nouvelle cible) : reprise ; sinon, barre cachée.
+local function resumeCast(b)
+    if not b or not M.db[b.kind].incantation then return end
+    if _G.UnitCastingInfo(b.unit) ~= nil then
+        startCast(b, false)
+    elseif _G.UnitChannelInfo(b.unit) ~= nil then
+        startCast(b, true)
+    elseif b.mode and b.mode ~= "exemple" then
+        hideCast(b)
     end
 end
 
@@ -889,8 +971,9 @@ local function build()
     for _, def in ipairs(UNITS) do
         createFrame(def)
     end
-    createCastBar()
-    applyCast()
+    for _, def in ipairs(CAST_DEFS) do
+        applyCast(createCastBar(def))
+    end
 end
 
 -- Aperçus dans les pages de réglages ---------------------------------------------------------
@@ -924,14 +1007,18 @@ function M:OnEnable()
 
     self:On("PLAYER_ENTERING_WORLD", function()
         updateAll()
-        resumeCast()
+        for _, b in pairs(bars) do resumeCast(b) end
     end)
     for _, event in ipairs(INC_EVENTS) do
         self:On(event, onSpellEvent)
     end
+    for _, event in ipairs(INC_EVENTS_OPTIONAL) do
+        pcall(self.On, self, event, onSpellEvent) -- évènement inconnu de ce client : ignoré
+    end
     self:On("PLAYER_TARGET_CHANGED", function()
         if frames.cible then update(frames.cible) end
         if frames.tot then update(frames.tot) end
+        resumeCast(bars.cible) -- la nouvelle cible incante peut-être déjà
     end)
     -- Familier appelé, renvoyé ou changé.
     self:On("UNIT_PET", function(_, unit)
@@ -965,11 +1052,11 @@ end
 
 function M:OnSettingChanged()
     relayoutAll()
-    applyCast() -- cadre simple : tout de suite, même en combat
+    applyAllCasts() -- cadres simples : tout de suite, même en combat
 end
 
 -- Police de CœurUI changée (page « Général »).
 function M:OnFontChanged()
     relayoutAll()
-    applyCast()
+    applyAllCasts()
 end
