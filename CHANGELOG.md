@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.37.0 · 27/11/2026
+
+- Cadres d'unité : cadres de boss (page « Boss »). Jusqu'à 5 boss en colonne à droite de l'écran, au style de la
+  cible, à la place de ceux du jeu ; vie en pourcentage, marqueur de raid, liseré blanc sur le boss ciblé.
+- Barre d'incantation sous chaque boss (grise avec un cadenas si on ne peut pas l'interrompre) ; mes
+  affaiblissements à gauche du cadre, avec leur durée.
+- Cadenas ouvert : 5 boss d'exemple pour placer et régler les cadres.
+- Soins à venir aussi sur les cadres du joueur, de la cible, de la cible de la cible et du familier (réglage dans
+  « Général » de Cadres d'unité, actif d'office).
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.36.0 · 27/11/2026
 
 - Cadres de groupe : option « Familiers détachés ». Les familiers quittent le dessous de leur maître pour une

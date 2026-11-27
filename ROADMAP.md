@@ -123,7 +123,9 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
        dissiper, seulement ceux de ma classe) ; 3) familiers des équipiers. Étape 1 validée (0.33.0). Étape 2 validée (0.34.0). Étape 3 validée (0.35.0). Familiers détachés (option) validés (0.36.0). Module terminé.
    16. Cadres de raid (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
-   17. Cadres de boss (demandés le 27/11/2026), à ranger dans « Cadres d'unité ».
+   17. Cadres de boss (demandés le 27/11/2026), à ranger dans « Cadres d'unité ». Choix du joueur : colonne à droite,
+       vie en pourcentage, marqueur et cible, incantation, mes affaiblissements. Maquette validée le 27/11/2026
+       (« CœurUI · Maquette Cadres de boss »). Validé en jeu (0.37.0). Module terminé.
    18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,
        code, tests en jeu. Ordre à choisir par le joueur. Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
@@ -159,6 +161,10 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Suivi des quêtes : option « trier par zone, la zone où l'on se trouve en premier » (demandé le 27/11/2026).
+  Faisable en réordonnant les quêtes suivies (zone de chaque quête = son titre de zone dans le journal ; zone
+  actuelle du jeu), hors combat, à chaque changement de zone. Des titres de zone dans le suivi demanderaient
+  de remplacer le suivi du jeu par le nôtre : plus lourd, à décider avec la maquette.
 - Plus de polices et de textures de barre (demandé le 27/11/2026) : aujourd'hui, seulement les quatre polices du
   jeu (Friz Quadrata, Arial Narrow, Morpheus, Skurri) et une texture lisse (`Media/BarreLisse.tga`). En ajouter
   dans `CoeurUI/Media/` et dans la liste du noyau (`Core/UI/Media.lua`) ; polices seulement sous licence libre

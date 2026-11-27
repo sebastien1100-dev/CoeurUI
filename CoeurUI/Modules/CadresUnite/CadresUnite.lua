@@ -113,7 +113,7 @@ local M = CUI:RegisterModule({
     defaultEnabled = false,
     needsReload = true, -- les cadres du jeu ne reviennent qu'après un /reload
     defaults = {
-        general = { tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "lisse" },
+        general = { tailleNom = 12, tailleNiveau = 12, tailleVie = 11, texture = "lisse", soinsAVenir = true },
         joueur = { largeur = 230, hauteur = 34, texteVie = "vp", couleur = "classe",
                    ressource = true, niveau = true, portrait = false, chef = true,
                    incantation = true, incDetachee = false, incHauteur = 18, incLargeur = 270, incTemps = "rt",
@@ -134,6 +134,7 @@ local M = CUI:RegisterModule({
             { type = "column" },
             { type = "section", text = "CU_BARRES" },
             { type = "dropdown", key = "texture", label = "CU_TEXTURE", options = function() return CUI:BarTextureOptions() end },
+            { type = "toggle", key = "soinsAVenir", label = "CU_GR_SOINS_A_VENIR", description = "CU_SOINS_A_VENIR_NOTE" },
             apercuItem("joueur"),
         } },
         { key = "joueur", name = "CU_JOUEUR", intro = false,
@@ -226,6 +227,12 @@ local function createVisual(parent)
     v.leader = texts:CreateTexture(nil, "OVERLAY")
     v.leader:SetTexture("Interface\\GroupFrame\\UI-Group-LeaderIcon")
     v.leader:SetSize(14, 14)
+    -- Soins à venir : une barre vert clair qui part du bout de la vie, rognée au bord de la barre.
+    v.health:SetClipsChildren(true)
+    v.incoming = _G.CreateFrame("StatusBar", nil, v.health)
+    v.incoming:SetFrameLevel(v.health:GetFrameLevel() + 1)
+    v.incoming:SetMinMaxValues(0, 1)
+    v.incoming:Hide()
     return v
 end
 
@@ -256,6 +263,16 @@ local function layout(v, s, g, kind)
 
     local texture = CUI:GetBarTexture(g.texture)
     v.health:SetStatusBarTexture(texture)
+    -- Soins à venir : accrochés au bout de la vie (à refaire après chaque changement de texture).
+    v.incoming:SetStatusBarTexture(texture)
+    v.incoming:SetStatusBarColor(C.actif[1], C.actif[2], C.actif[3], 0.45)
+    v.incoming:SetWidth(math.max(1, w - 2))
+    local fillTex = v.health:GetStatusBarTexture()
+    v.incoming:ClearAllPoints()
+    if fillTex then
+        v.incoming:SetPoint("TOPLEFT", fillTex, "TOPRIGHT")
+        v.incoming:SetPoint("BOTTOMLEFT", fillTex, "BOTTOMRIGHT")
+    end
     v.power:SetStatusBarTexture(texture)
 
     local font = CUI:GetFont()
@@ -404,6 +421,16 @@ local function update(f)
         setHealthText(v.hp, s.texteVie, hp, healthPercent(unit, hp, maxHp))
     end
     v.health:SetStatusBarColor(color[1], color[2], color[3])
+    -- Soins à venir (valeur possiblement secrète : passée telle quelle à la barre).
+    local incoming = (M.db.general.soinsAVenir and not (known(dead) and dead) and _G.UnitGetIncomingHeals)
+        and _G.UnitGetIncomingHeals(unit) or nil
+    if incoming ~= nil then
+        v.incoming:SetMinMaxValues(0, maxHp)
+        v.incoming:SetValue(incoming)
+        v.incoming:Show()
+    else
+        v.incoming:Hide()
+    end
 
     if v.powerBox:IsShown() then
         v.power:SetMinMaxValues(0, _G.UnitPowerMax(unit))
@@ -552,6 +579,10 @@ local CAST_DEFS = {
       label = "CU_INC_NOM_CIBLE", default = { "CENTER", "CENTER", 0, 60 }, protege = true },
 }
 local bars = {}       -- kind -> barre
+-- Réglages d'une barre : ceux de sa page (def.settings pour une barre d'un autre fichier, ex. les boss).
+local function castSettings(b)
+    return b.def.settings and b.def.settings() or M.db[b.kind]
+end
 local barByUnit = {}  -- unité -> barre
 
 -- Intervalle des tics des canalisations connues (identifiant du premier rang » secondes).
@@ -598,7 +629,7 @@ local function setCastColor(b, c)
 end
 
 local function setCastTime(b, remaining, total)
-    local mode = M.db[b.kind].incTemps
+    local mode = castSettings(b).incTemps
     local fs = b.frame.time
     if mode == "aucun" or not remaining then
         fs:SetText("")
@@ -646,7 +677,7 @@ end
 
 local function placeTicks(b, total, interval)
     hideTicks(b)
-    if not (M.db[b.kind].incTics and interval and total > 0) then return end
+    if not (castSettings(b).incTics and interval and total > 0) then return end
     local f = b.frame
     local n = math.floor(total / interval + 0.5)
     if n < 2 or n > 20 then return end
@@ -669,13 +700,13 @@ end
 -- Couleur selon que le sort peut être interrompu (cible seulement ; valeur cachée : bleu normal).
 local function paintProtect(b, notInterruptible)
     local f = b.frame
-    local protect = b.def.protege and M.db[b.kind].incProtege and known(notInterruptible) and notInterruptible
+    local protect = b.def.protege and castSettings(b).incProtege and known(notInterruptible) and notInterruptible
     if protect then
         setCastColor(b, INC_COULEURS.protege)
     else
         setCastColor(b, b.mode == "canal" and INC_COULEURS.canal or INC_COULEURS.cast)
     end
-    local lock = protect and M.db[b.kind].incNom or false
+    local lock = protect and castSettings(b).incNom or false
     f.lock:SetShown(lock)
     -- Le nom laisse la place au cadenas quand il est là.
     f.name:SetPoint("LEFT", f.bar, "LEFT", lock and ((b.fontSize or 11) + 8) or 6, 0)
@@ -706,7 +737,7 @@ local function startCast(b, channel)
     if known(startMS) and known(endMS) and startMS and endMS and endMS > startMS then
         b.start, b.finish = startMS / 1000, endMS / 1000
         local total = b.finish - b.start
-        if b.def.latence and not channel and M.db[b.kind].incLatence and _G.GetNetStats then
+        if b.def.latence and not channel and castSettings(b).incLatence and _G.GetNetStats then
             local _, _, _, world = _G.GetNetStats()
             if known(world) and world and world > 0 then
                 local frac = math.min(1, world / 1000 / total)
@@ -782,7 +813,7 @@ end
 
 local function createCastBar(def)
     local b = { def = def, kind = def.kind, unit = def.unit }
-    local f = _G.CreateFrame("Frame", def.name, _G.UIParent)
+    local f = _G.CreateFrame("Frame", def.name, def.parent or _G.UIParent)
     f:SetFrameStrata("LOW")
     f:Hide()
     f.iconBox = _G.CreateFrame("Frame", nil, f)
@@ -852,7 +883,7 @@ end
 -- Place, taille et pièces d'une barre selon les réglages.
 local function applyCast(b)
     local f, def = b.frame, b.def
-    local s, g = M.db[b.kind], M.db.general
+    local s, g = castSettings(b), M.db.general
     if b.kind == "joueur" then setBlizzardCastBar(s.incantation) end
     placeAnchor(b.kind) -- le cadre rattaché (familier, cible de la cible) passe sous la barre attachée
 
@@ -879,7 +910,7 @@ local function applyCast(b)
             b.example = false
             if b.mode == "exemple" then hideCast(b) end
         end
-        local owner = frames[b.kind]
+        local owner = def.owner or frames[b.kind]
         f:ClearAllPoints()
         f:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -4)
         f:SetPoint("TOPRIGHT", owner, "BOTTOMRIGHT", 0, -4)
@@ -927,7 +958,7 @@ end
 -- Évènements des sorts (joueur et cible).
 local function onSpellEvent(event, unit, castGUID)
     local b = barByUnit[unit]
-    if not b or not M.db[b.kind].incantation then return end
+    if not b or not castSettings(b).incantation then return end
     if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_DELAYED" then
         startCast(b, false)
     elseif event == "UNIT_SPELLCAST_CHANNEL_START" or event == "UNIT_SPELLCAST_CHANNEL_UPDATE" then
@@ -959,7 +990,7 @@ local INC_EVENTS_OPTIONAL = { "UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NO
 
 -- Incantation déjà en cours (écran de chargement, nouvelle cible) : reprise ; sinon, barre cachée.
 local function resumeCast(b)
-    if not b or not M.db[b.kind].incantation then return end
+    if not b or not castSettings(b).incantation then return end
     if _G.UnitCastingInfo(b.unit) ~= nil then
         startCast(b, false)
     elseif _G.UnitChannelInfo(b.unit) ~= nil then
@@ -1010,6 +1041,13 @@ end
 M.shared = {
     known = known, classColor = classColor, healthColor = healthColor, powerColor = powerColor,
     setHealthText = setHealthText, healthPercent = healthPercent, GRIS = GRIS, VERT = VERT,
+    -- Barres d'incantation d'autres cadres (boss) : def = { kind, unit, owner, parent, settings, protege }.
+    createCastBar = function(def)
+        local b = createCastBar(def)
+        applyCast(b)
+        return b
+    end,
+    applyCast = applyCast, resumeCast = resumeCast,
 }
 
 -- Marche / arrêt ----------------------------------------------------------------------------
@@ -1017,6 +1055,7 @@ M.shared = {
 function M:OnEnable()
     CUI:AfterCombat(build) -- cadres protégés : jamais créés en combat
     if M.groupe then CUI:SafeCall(CUI:Tr("CU_GROUPE"), M.groupe.Enable) end -- Groupe.lua
+    if M.boss then CUI:SafeCall(CUI:Tr("CU_BOSS"), M.boss.Enable) end -- Boss.lua
 
     self:On("PLAYER_ENTERING_WORLD", function()
         updateAll()
@@ -1045,7 +1084,8 @@ function M:OnEnable()
     end
     for _, event in ipairs({ "UNIT_HEALTH", "UNIT_MAXHEALTH", "UNIT_POWER_UPDATE", "UNIT_MAXPOWER",
                              "UNIT_DISPLAYPOWER", "UNIT_NAME_UPDATE", "UNIT_LEVEL", "UNIT_FACTION",
-                             "UNIT_PORTRAIT_UPDATE", "UNIT_CLASSIFICATION_CHANGED", "UNIT_FLAGS" }) do
+                             "UNIT_PORTRAIT_UPDATE", "UNIT_CLASSIFICATION_CHANGED", "UNIT_FLAGS",
+                             "UNIT_HEAL_PREDICTION" }) do
         self:On(event, function(_, unit)
             for _, f in pairs(frames) do
                 if f.unit == unit and f:IsShown() then update(f) end
@@ -1067,6 +1107,7 @@ function M:OnSettingChanged()
     relayoutAll()
     applyAllCasts() -- cadres simples : tout de suite, même en combat
     if M.groupe then M.groupe.Apply() end
+    if M.boss then M.boss.Apply() end
 end
 
 -- Police de CœurUI changée (page « Général »).
@@ -1074,4 +1115,5 @@ function M:OnFontChanged()
     relayoutAll()
     applyAllCasts()
     if M.groupe then M.groupe.Apply() end
+    if M.boss then M.boss.Apply() end
 end

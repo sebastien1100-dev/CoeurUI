@@ -159,3 +159,17 @@ cadres du jeu et dessine les siens). EllesmereUI sera retiré quand les modules 
 3. En groupe : les familiers des équipiers (et le tien) dans la colonne à part ; clic : cibler ; clic droit : menu.
 4. Le couper : les familiers reviennent sous leur maître ; plus de cadre « Familiers du groupe » au cadenas.
 5. Combat : un familier appelé ou renvoyé : la colonne suit, aucune erreur.
+
+## 0.37.0 · cadres de boss
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. `/cui version` : « 0.37.0 ». Page « Boss ».
+2. Cadenas ouvert : cadre « Boss » à droite et 5 boss d'exemple : vies qui bougent, crâne sur le premier, liseré
+   blanc sur le deuxième, incantation bleue sur le deuxième, grise avec cadenas sur le troisième, affaiblissements
+   à gauche des deux premiers. Chaque réglage change l'exemple tout de suite. Cadenas fermé : ils partent.
+3. Rencontre avec un boss (donjon) : plus de cadres de boss du jeu ; les nôtres apparaissent ; vie en %.
+4. Clic : cibler le boss (liseré blanc) ; clic droit : menu ; survol : infobulle.
+5. Le boss incante : barre sous son cadre, nom et temps ; sort qu'on ne peut pas interrompre : gris et cadenas.
+6. Tes affaiblissements sur le boss : à gauche de son cadre, avec leur durée ; ceux des autres : non.
+7. Marqueur de raid posé sur le boss : en haut à droite.
+8. Fin de la rencontre : les cadres partent. Combat : aucune erreur.
+9. Couper « Cadres de boss de CœurUI » : nos cadres partent ; /reload : ceux du jeu reviennent.
