@@ -124,7 +124,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        28/11/2026 : « Givre » (proposition 4) avec les barres striées de « Nuit » (proposition 9). Écrit dans le
        noyau (Core/UI/Style.lua, thème « givre ») et appliqué aux cadres d'unité : validé (0.43.0) ; fenêtre de CœurUI : validée (0.44.0). Ensuite,
        module par module : fenêtre de CœurUI, barres d'actions, infobulles, sacs, suivi des quêtes, plaques,
-       discussion, minicarte, effets, bulles.
+       discussion, minicarte, effets, bulles. Tout appliqué et validé (jusqu'à 0.53.0). Terminé.
    15. Cadres de groupe (demandés le 27/11/2026), rangés dans le module « Cadres d'unité ». Maquette validée le
        27/11/2026 (« CœurUI · Maquette Cadres de groupe »). Étapes : 1) cadres (disposition, tri, rôle, ressource,
        portée, état, groupe de test animé) ; 2) effets (soins à venir, mes soins sur la durée, affaiblissements à
@@ -134,7 +134,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        vie en pourcentage, marqueur et cible, incantation, mes affaiblissements. Maquette validée le 27/11/2026
        (« CœurUI · Maquette Cadres de boss »). Validé en jeu (0.37.0). Module terminé.
    18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,
-       code, tests en jeu. Ordre à choisir par le joueur. Liste :
+       code, tests en jeu. Ordre à choisir par le joueur. Module « Skin Blizzard » (une page, un interrupteur par fenêtre),
+       pièces communes dans Core/UI/Skin.lua. Fiche du personnage : en test (0.54.0). Suite de la fiche (captures du
+       joueur le 28/11/2026) : onglets Réputation (en-têtes repliables, barres, cases à cocher), Compétences
+       (en-têtes, barres bleues), JcJ (rang, récompenses), Monnaies, Statistiques (en-têtes, sous-catégories) ;
+       titre de ces onglets resté doré (le jeu le recolore). Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;

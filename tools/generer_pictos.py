@@ -316,10 +316,34 @@ def bas(d):
     ligne(d, (6, 19.5), (18, 19.5))
 
 
+# Fiche du personnage (petits onglets en haut des statistiques) -----------------------------------
+
+def statistiques(d):
+    """Toile des caractéristiques : pentagone, et dedans le relevé (un pentagone inégal)."""
+    def sommet(i, r):
+        a = math.radians(-90 + 72 * i)
+        return (12 + r * math.cos(a), 12.5 + r * math.sin(a))
+    chemin(d, *[sommet(i, 8) for i in range(5)])
+    chemin(d, *[sommet(i, 4 if i % 2 else 5.2) for i in range(5)])
+
+
+def titre(d):
+    """Trois traits horizontaux (la liste des titres)."""
+    for y in (7, 12, 17):
+        ligne(d, (5, y), (19, y))
+
+
+def ensembles(d):
+    """Cuirasse (ensembles d'équipement)."""
+    chemin(d, (9, 4), (5, 5.5), (3.5, 11), (6.5, 12), (7, 20), (17, 20), (17.5, 12), (20.5, 11), (19, 5.5),
+           (15, 4), (12, 7))
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
-          "Boutique": boutique, "Menu": menu, "Logement": logement}
+          "Boutique": boutique, "Menu": menu, "Logement": logement,
+          "Statistiques": statistiques, "Titre": titre, "Ensembles": ensembles}
 
 
 def main():

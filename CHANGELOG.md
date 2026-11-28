@@ -2,6 +2,24 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.54.0 · 28/11/2026
+
+- Nouveau module « Skin Blizzard » : les fenêtres du jeu habillées au style de CœurUI, une à une, sur une seule
+  page, avec un interrupteur par fenêtre. Première fenêtre : la fiche du personnage.
+- Fiche du personnage au style « Givre » : cadre ardoise sans portrait ni décor doré, croix grise ; personnage sur
+  un fond sombre et ses boutons en petites cases ; cases d'équipement du thème (liseré de la qualité, case vide
+  très pâle) ; statistiques en sections à petites capitales, une ligne sur deux plus claire, défilement fin ;
+  onglets de côté en cases (l'ouvert au liseré de la couleur des boutons). Rien ne bouge, seul l'aspect change.
+- Fiche : les objets communs n'ont plus de liseré blanc (liseré de qualité à partir de « Peu commun », comme
+  dans les sacs) ; les trois petits onglets en haut des statistiques et la case des munitions au même style
+  (la case des munitions gardait son cadre doré et sa flèche orange : retirés). Les trois petits
+  onglets du haut ont nos icônes au trait (toile des caractéristiques, cuirasse des ensembles, trois traits des titres), à la place de celles du jeu et
+  de leur cadre brun. Icônes des résistances
+  dans une petite case du thème, sans leur cadre brun.
+- Nouvelle commande `/cui cadre [nom]` (`/cui frame`) : les pièces d'un cadre du jeu, à copier (outil pour habiller
+  les fenêtres suivantes).
+- Redémarrer le jeu (nouveaux fichiers).
+
 ## 0.53.0 · 28/11/2026
 
 - Bulles de discussion au style « Givre » : le cadre des infobulles (fond ardoise, double liseré très discret,

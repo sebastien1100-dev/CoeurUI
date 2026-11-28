@@ -16,7 +16,12 @@ L.AIDE = {
     "/cui activer <module> · active un module",
     "/cui couper <module> · coupe un module",
     "/cui reset · remet tous les réglages à zéro",
+    "/cui cadre [nom] · pièces d'un cadre (sous la souris sans nom), à copier",
 }
+L.CADRE_TITRE = "Pièces du cadre"
+L.CADRE_INCONNU = "cadre introuvable : « %s »."
+L.CADRE_AIDE = "Ctrl+C pour copier ; aussi gardé dans la sauvegarde de CœurUI au prochain /reload."
+
 L.VERSION = "version %s."
 L.MODULES_TITRE = "modules :"
 L.MODULES_AUCUN = "aucun module."
@@ -609,3 +614,10 @@ L.BUL_TAILLE = "Taille du texte"
 L.BUL_OPACITE = "Opacité du fond"
 L.BUL_COULEURS = "Couleur du texte selon le canal"
 L.BUL_COULEURS_NOTE = "Coupé : tout en gris clair."
+
+-- Module « Skin Blizzard »
+L.FJ_NOM = "Skin Blizzard"
+L.FJ_DESC = "Les fenêtres du jeu habillées au style de CœurUI, une à une : un interrupteur par fenêtre."
+L.FJ_FICHE = "Fiche du personnage"
+L.FJ_FENETRES = "FENÊTRES HABILLÉES"
+L.FJ_ACTIF_NOTE = "Coupé : la fenêtre du jeu revient après un /reload."

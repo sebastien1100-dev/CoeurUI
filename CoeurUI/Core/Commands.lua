@@ -15,6 +15,7 @@ local ALIASES = {
     help = "aide",
     enable = "activer",
     disable = "couper",
+    frame = "cadre",
 }
 
 local function showHelp()
@@ -79,6 +80,97 @@ local function reset(arg)
     CUI:Print(L.RESET_FAIT)
 end
 
+-- Inspection d'un cadre (outil pour habiller les fenêtres du jeu) : l'arbre de ses pièces (nom, type,
+-- taille, texture, texte) dans la fenêtre « à copier ». Sans nom : le cadre sous la souris.
+local issecret = _G.issecretvalue or function() return false end
+local MAX_LINES, MAX_DEPTH = 3000, 6
+-- Pièces sans intérêt pour l'habillage (manette, Azérite, châsses) : sautées, avec leurs enfants.
+local SKIPPED = { "JumpHint", "TabIndicators", "AvailableTraitFrame", "RankFrame", "SocketDisplay",
+                  "GearEnchantAnimation", "GamepadFocusIndicator" }
+local function skipped(name)
+    for _, part in ipairs(SKIPPED) do
+        if name:find(part, 1, true) then return true end
+    end
+end
+
+local function safe(fn, ...)
+    local ok, a, b, c, d = pcall(fn, ...)
+    if ok then return a, b, c, d end
+end
+
+-- Toutes les valeurs rendues (régions, enfants), dans une table ; rien si l'appel échoue.
+local function all(fn, obj)
+    local t = { pcall(fn, obj) }
+    if not t[1] then return {} end
+    table.remove(t, 1)
+    return t
+end
+
+local function label(o)
+    local name = safe(o.GetDebugName, o) or safe(o.GetName, o) or "?"
+    if issecret(name) then name = "?" end
+    return tostring(name)
+end
+
+local function describeRegion(r)
+    local kind = safe(r.GetObjectType, r) or "?"
+    local parts = { kind, label(r) }
+    local layer, sub = safe(r.GetDrawLayer, r)
+    if layer then parts[#parts + 1] = layer .. (sub and (" " .. sub) or "") end
+    parts[#parts + 1] = safe(r.IsShown, r) and "visible" or "caché"
+    if kind == "Texture" then
+        local atlas = safe(r.GetAtlas, r)
+        local tex = safe(r.GetTexture, r)
+        if atlas and not issecret(atlas) then parts[#parts + 1] = "atlas=" .. tostring(atlas)
+        elseif tex and not issecret(tex) then parts[#parts + 1] = "tex=" .. tostring(tex) end
+    elseif kind == "FontString" then
+        local text = safe(r.GetText, r)
+        if text and not issecret(text) then parts[#parts + 1] = "« " .. tostring(text):sub(1, 40) .. " »" end
+    end
+    return table.concat(parts, " · ")
+end
+
+local function inspectFrame(root)
+    local lines = {}
+    local function add(depth, text)
+        if #lines < MAX_LINES then lines[#lines + 1] = string.rep("  ", depth) .. text end
+    end
+    local function walk(f, depth)
+        if safe(f.IsForbidden, f) then add(depth, label(f) .. " (interdit)") return end
+        if depth > 0 and skipped(label(f)) then return end
+        local w, h = safe(f.GetSize, f)
+        add(depth, (safe(f.GetObjectType, f) or "?") .. " · " .. label(f) .. " · "
+            .. (safe(f.IsShown, f) and "visible" or "caché")
+            .. (w and (" · " .. math.floor(w) .. "x" .. math.floor(h or 0)) or "")
+            .. " · niveau " .. tostring(safe(f.GetFrameLevel, f) or "?"))
+        for _, r in ipairs(all(f.GetRegions, f)) do add(depth + 1, describeRegion(r)) end
+        if depth < MAX_DEPTH then
+            for _, child in ipairs(all(f.GetChildren, f)) do walk(child, depth + 1) end
+        end
+    end
+    walk(root, 0)
+    return table.concat(lines, "\n")
+end
+
+local function inspect(arg)
+    local frame
+    if arg ~= "" then
+        frame = _G[arg]
+    else
+        local foci = _G.GetMouseFoci and _G.GetMouseFoci()
+        frame = (type(foci) == "table" and foci[1]) or (_G.GetMouseFocus and _G.GetMouseFocus())
+    end
+    if type(frame) ~= "table" or not frame.GetObjectType then
+        CUI:Print(L.CADRE_INCONNU:format(arg))
+        return
+    end
+    local text = inspectFrame(frame)
+    -- Gardé aussi dans la sauvegarde (écrite au /reload) : trop long à coller, il se lit dans le fichier.
+    if type(_G.CoeurUIDB) == "table" then _G.CoeurUIDB.inspection = text end
+    CUI:ShowCopyWindow({ title = L.CADRE_TITRE, label = label(frame), multiline = true,
+                         text = text, hint = L.CADRE_AIDE })
+end
+
 _G.SLASH_COEURUI1 = "/cui"
 _G.SlashCmdList.COEURUI = function(msg)
     local command, arg = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
@@ -105,6 +197,8 @@ _G.SlashCmdList.COEURUI = function(msg)
         toggle(typed, arg, false)
     elseif command == "reset" then
         reset(arg)
+    elseif command == "cadre" then
+        inspect(arg)
     else
         CUI:Print(L.COMMANDE_INCONNUE:format(typed))
         showHelp()

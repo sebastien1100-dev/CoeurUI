@@ -17,7 +17,12 @@ L.AIDE = {
     "/cui enable <module> · enable a module",
     "/cui disable <module> · disable a module",
     "/cui reset · reset every setting",
+    "/cui frame [name] · pieces of a frame (under the mouse without a name), to copy",
 }
+L.CADRE_TITRE = "Frame pieces"
+L.CADRE_INCONNU = "frame not found: \"%s\"."
+L.CADRE_AIDE = "Ctrl+C to copy; also kept in the CœurUI saved data at the next /reload."
+
 L.VERSION = "version %s."
 L.MODULES_TITRE = "modules:"
 L.MODULES_AUCUN = "no modules."
@@ -610,3 +615,10 @@ L.BUL_TAILLE = "Text size"
 L.BUL_OPACITE = "Background opacity"
 L.BUL_COULEURS = "Text colour by channel"
 L.BUL_COULEURS_NOTE = "Off: everything in light grey."
+
+-- "Blizzard skin" module
+L.FJ_NOM = "Blizzard skin"
+L.FJ_DESC = "The game's windows dressed in the CœurUI style, one by one: one switch per window."
+L.FJ_FICHE = "Character sheet"
+L.FJ_FENETRES = "DRESSED WINDOWS"
+L.FJ_ACTIF_NOTE = "Off: the game's window comes back after a /reload."
