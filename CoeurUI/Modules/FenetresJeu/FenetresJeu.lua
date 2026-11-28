@@ -17,6 +17,7 @@ local M = CUI:RegisterModule({
         grimoire = true,
         talents = true,
         metiers = true,
+        carte = true,
     },
     settings = {
         { type = "section", text = "FJ_FENETRES" },
@@ -24,6 +25,7 @@ local M = CUI:RegisterModule({
         { type = "toggle", key = "grimoire", label = "FJ_GRIMOIRE", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "talents", label = "FJ_TALENTS", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "metiers", label = "FJ_METIERS", description = "FJ_ACTIF_NOTE" },
+        { type = "toggle", key = "carte", label = "FJ_CARTE", description = "FJ_ACTIF_NOTE" },
     },
 })
 

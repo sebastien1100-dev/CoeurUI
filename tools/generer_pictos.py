@@ -650,6 +650,57 @@ def metier_calligraphie(d):
     ligne(d, (10, 14), (14, 10))
 
 
+# Carte et journal des quêtes (maquette « 5 · Carte et journal des quêtes ») ---------------------------
+
+def quete_rendre(d):
+    """Point d'interrogation : quête à rendre."""
+    tampon(d, [p(*q) for q in arc(12, 8.5, 4, 180, 360)
+               + bezier((16, 8.5), (16, 11), (12, 11.5), (12, 14.5))])
+    ligne(d, (12, 19.5), (12, 19.6))
+
+
+def quete_en_cours(d):
+    """Trois points : quête en cours."""
+    for x in (6, 12, 18):
+        ligne(d, (x, 12), (x, 12.1))
+
+
+def filtre(d):
+    chemin(d, (4, 5), (20, 5), (14, 12.5), (14, 19), (10, 17), (10, 12.5))
+
+
+def repere(d):
+    """Épingle de carte."""
+    tampon(d, [p(*q) for q in bezier((12, 21), (12, 21), (5.5, 14.5), (5.5, 9.5))
+               + arc(12, 9.5, 6.5, 180, 360)
+               + bezier((18.5, 9.5), (18.5, 14.5), (12, 21), (12, 21))])
+    cercle(d, 12, 9.5, 2.5)
+
+
+def reglages(d):
+    """Roue dentée simple : cercle et huit rayons."""
+    cercle(d, 12, 12, 3)
+    for i in range(8):
+        a = math.radians(45 * i)
+        ligne(d, (12 + 6 * math.cos(a), 12 + 6 * math.sin(a)), (12 + 8.5 * math.cos(a), 12 + 8.5 * math.sin(a)))
+    cercle(d, 12, 12, 6)
+
+
+def calendrier(d):
+    rect_arrondi(d, 4.5, 6, 15, 14, 2)
+    ligne(d, (4.5, 10.5), (19.5, 10.5))
+    ligne(d, (9, 3.5), (9, 7.5))
+    ligne(d, (15, 3.5), (15, 7.5))
+
+
+def feuille(d):
+    """Feuille de quêtes : page et trois lignes."""
+    rect_arrondi(d, 5, 3.5, 14, 17, 2)
+    ligne(d, (8.5, 8.5), (15.5, 8.5))
+    ligne(d, (8.5, 12), (15.5, 12))
+    ligne(d, (8.5, 15.5), (12.5, 15.5))
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
@@ -666,7 +717,9 @@ ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage
           "MetierCuir": metier_cuir, "MetierMinage": metier_minage, "MetierDepecage": metier_depecage,
           "MetierCouture": metier_couture, "MetierCuisine": metier_cuisine, "MetierPeche": metier_peche,
           "MetierSecourisme": metier_secourisme, "MetierJoaillerie": metier_joaillerie,
-          "MetierCalligraphie": metier_calligraphie}
+          "MetierCalligraphie": metier_calligraphie,
+          "QueteRendre": quete_rendre, "QueteEnCours": quete_en_cours, "Filtre": filtre, "Repere": repere,
+          "Reglages": reglages, "Calendrier": calendrier, "Feuille": feuille}
 
 
 def main():

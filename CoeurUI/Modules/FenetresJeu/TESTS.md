@@ -1,5 +1,30 @@
 # Skin Blizzard : tests en jeu
 
+## 0.67.0 · carte et journal des quêtes
+
+1. **Redémarrer le jeu** (nouveau fichier, nouvelles icônes). Aucune erreur Lua. Page « Skin Blizzard » :
+   interrupteur « Carte et journal des quêtes » actif.
+2. Ouvrir la carte (M) : cadre ardoise, plus de médaillon rond ni de cadre de métal ; titre blanc au centre ;
+   agrandir et croix au trait, gris, blancs au survol ; ils marchent. Tirer l'en-tête : la fenêtre bouge, et
+   garde sa place à la prochaine ouverture ; carte agrandie : elle ne bouge pas.
+3. Fil d'Ariane : case sombre, « Monde », « Royaumes de l'Est », « Forêt d'Elwynn » séparés par de petits
+   chevrons ; la zone ouverte en blanc sur une bande, les autres gris clair (blancs au survol) ; leurs menus
+   (chevron vers le bas) s'ouvrent.
+4. Filtre (entonnoir) et repère (épingle) en petites cases ; changer un filtre : pastille rouge dans le coin
+   du filtre, un clic dessus remet les filtres. Bouton qui replie le journal : chevron, il marche dans les
+   deux sens.
+5. Journal : case ardoise, recherche et compteur « Quêtes : 11/40 » en cases sombres, roue des réglages au trait.
+   Zones en petites capitales grises avec chevron, clic : la zone se replie.
+6. Chaque quête : titre de la couleur de sa difficulté (vert, jaune, orange...), comme le suivi ; « ? » blanc
+   pour une quête à rendre, « ... » gris pour une quête en cours ; case de suivi : petite case, coche blanche ;
+   clic sur la case : la quête est suivie ou non. Clic droit : menu ardoise comme avant.
+7. Clic sur une quête : détail sur case ardoise, textes clairs lisibles (titre blanc), « RÉCOMPENSES » en petites
+   capitales, récompenses à icône carrée ; boutons « Retour », « Abandon » (rouge), « Partage », « Suivi » au style
+   de CœurUI, ils marchent.
+8. Parler à un PNJ qui donne une quête : sa fenêtre garde ses textes sombres sur parchemin, lisibles.
+9. Fenêtre des métiers : sections des recettes toujours en petites capitales avec chevron (pièce passée au noyau).
+10. Couper l'interrupteur : après un /reload, la carte du jeu revient telle quelle.
+
 ## 0.66.0 · métiers
 
 1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Métiers » actif. Aucune erreur Lua.

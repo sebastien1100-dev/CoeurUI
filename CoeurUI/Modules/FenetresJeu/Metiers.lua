@@ -84,61 +84,6 @@ end
 
 -- Liste des recettes ----------------------------------------------------------------------------------------
 
--- En-tête de catégorie (ButtonText, CollapseButton.Icon « minus » / « plus ») : chevron à gauche, petites
--- capitales grises, trait sombre ; blancs au survol.
-local function skinCategory(row)
-    if row.cuiCat then if row.cuiPaint then row.cuiPaint() end return end
-    row.cuiCat = true
-    for _, r in ipairs({ row:GetRegions() }) do
-        if r:GetObjectType() == "Texture" then CUI:SkinHide(r) end
-    end
-    local collapse = row.CollapseButton
-    local stateIcon = collapse and collapse.Icon
-    if collapse then CUI:SkinHideTextures(collapse) end
-    local chevron = CUI:CreateChevron(row, "OVERLAY")
-    chevron:SetPoint(row, "LEFT", 10, 0)
-    local text = row.ButtonText
-    if text then
-        text:SetFont(CUI:GetFont(), 10, "")
-        text:ClearAllPoints()
-        text:SetPoint("LEFT", row, "LEFT", 22, 0)
-        local busy = false
-        local function upper(fs, t)
-            if busy or type(t) ~= "string" or issecret(t) then return end
-            busy = true
-            fs:SetText(CUI:Upper(t))
-            busy = false
-        end
-        _G.hooksecurefunc(text, "SetText", upper)
-        upper(text, text:GetText())
-    end
-    local l = line(row, C.lisereSombre)
-    l:SetHeight(1)
-    l:SetPoint("BOTTOMLEFT", 4, 1)
-    l:SetPoint("BOTTOMRIGHT", -4, 1)
-    local function paint()
-        local a = atlasOf(stateIcon) or ""
-        chevron:SetDirection(a:find("plus", 1, true) and "right" or "down")
-        local c = row.cuiOver and C.texte or C.texteDiscret
-        chevron:SetColor(c)
-        if text then text:SetTextColor(c[1], c[2], c[3]) end
-    end
-    if stateIcon and stateIcon.SetAtlas then _G.hooksecurefunc(stateIcon, "SetAtlas", paint) end
-    if text then
-        local inner = false
-        _G.hooksecurefunc(text, "SetTextColor", function()
-            if inner then return end
-            inner = true
-            paint()
-            inner = false
-        end)
-    end
-    row:HookScript("OnEnter", function() row.cuiOver = true paint() end)
-    row:HookScript("OnLeave", function() row.cuiOver = false paint() end)
-    row.cuiPaint = paint
-    paint()
-end
-
 -- Recette (Label coloré par le jeu selon la difficulté, Count, SkillUps, SelectedOverlay, HighlightOverlay) :
 -- pastille de la couleur de difficulté, nom gris clair (blanc choisi ou survolé), bande plus claire.
 local function skinRecipe(row)
@@ -219,7 +164,7 @@ local function skinRecipeList(list)
         if not target then return end
         for _, row in ipairs({ target:GetChildren() }) do
             if row.CollapseButton or row.ButtonText then
-                skinCategory(row)
+                CUI:SkinCollapseHeader(row)
             elseif row.Label then
                 skinRecipe(row)
             end

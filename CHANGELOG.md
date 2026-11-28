@@ -2,6 +2,21 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.67.0 · 28/11/2026
+
+- Skin Blizzard : la carte et le journal des quêtes au style « Givre » (maquette « 5 · Carte et journal des
+  quêtes »), avec leur interrupteur. Cadre de CœurUI sans médaillon ni métal, titre blanc, agrandir,
+  réduire et fermer au trait ; la fenêtre se déplace par l'en-tête quand elle n'est pas agrandie.
+- Carte : dessin et points du jeu gardés ; fil d'Ariane plat avec chevrons ; filtre et repère au trait en
+  cases, pastille rouge quand un filtre est posé ; bouton qui replie le journal au chevron.
+- Journal : case ardoise, recherche, compteur et réglages de CœurUI ; zones en petites capitales avec
+  chevron ; titre de chaque quête de la couleur de sa difficulté (comme le suivi) ; état au trait (« ? »
+  blanc à rendre, « ... » gris en cours) ; case de suivi à coche ; onglets de côté à nos icônes.
+- Détail d'une quête : case ardoise, titre en gras de la couleur de sa difficulté (comme le suivi des
+  quêtes), « DESCRIPTION » et « OBJECTIFS » en petites capitales grises, textes clairs, récompenses en cases
+  carrées, boutons de CœurUI en blanc (« Abandon » en rouge).
+- Redémarrer le jeu (nouveau fichier, nouvelles icônes).
+
 ## 0.66.0 · 28/11/2026
 
 - Skin Blizzard : la fenêtre des métiers au style « Givre » (maquette « 4 · Métiers »), avec son

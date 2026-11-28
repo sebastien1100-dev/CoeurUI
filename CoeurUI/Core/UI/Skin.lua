@@ -58,13 +58,15 @@ end
 -- Fenêtre déplaçable : on la prend par son bandeau de titre (hauteur `height`, la croix à droite laissée
 -- libre) ; sa place est gardée dans store[key] et remise à chaque ouverture, et après chaque fois que le
 -- jeu range ses fenêtres (UpdateUIPanelPositions). Jamais en combat si le cadre est protégé.
---   CUI:SkinMovable(cadre, store, cle, hauteur)
-function CUI:SkinMovable(frame, store, key, height)
+-- allowed (facultatif) : fonction qui dit si la fenêtre peut bouger maintenant (carte agrandie : non).
+--   CUI:SkinMovable(cadre, store, cle, hauteur, allowed)
+function CUI:SkinMovable(frame, store, key, height, allowed)
     if not frame or frame.cuiMovable or type(store) ~= "table" then return end
     frame.cuiMovable = true
     frame:SetMovable(true)
     frame:SetClampedToScreen(true)
     local function locked()
+        if allowed and not allowed() then return true end
         return frame:IsProtected() and _G.InCombatLockdown()
     end
     local function apply()
@@ -80,9 +82,14 @@ function CUI:SkinMovable(frame, store, key, height)
     grip:EnableMouse(true)
     grip:RegisterForDrag("LeftButton")
     grip:SetScript("OnDragStart", function()
-        if not locked() then frame:StartMoving() end
+        if not locked() then
+            frame.cuiMoving = true
+            frame:StartMoving()
+        end
     end)
     grip:SetScript("OnDragStop", function()
+        if not frame.cuiMoving then return end
+        frame.cuiMoving = nil
         frame:StopMovingOrSizing()
         if frame.SetUserPlaced then frame:SetUserPlaced(false) end -- c'est nous qui gardons la place
         local point, _, relPoint, x, y = frame:GetPoint(1)
@@ -709,6 +716,66 @@ function CUI:SkinListHeader(row)
     end
     if state then _G.hooksecurefunc(state, "SetAtlas", paint) end
     if name then _G.hooksecurefunc(name, "SetTextColor", paint) end
+    row:HookScript("OnEnter", function() row.cuiOver = true paint() end)
+    row:HookScript("OnLeave", function() row.cuiOver = false paint() end)
+    row.cuiPaint = paint
+    paint()
+end
+
+-- En-tête repliable « liste moderne » du jeu (ButtonText, CollapseButton.Icon « minus » / « plus » : catégories
+-- des recettes, zones du journal des quêtes) : chevron à gauche, petites capitales grises, trait sombre ;
+-- blancs au survol.
+--   CUI:SkinCollapseHeader(ligne)
+function CUI:SkinCollapseHeader(row)
+    if row.cuiCollapse then if row.cuiPaint then row.cuiPaint() end return end
+    row.cuiCollapse = true
+    for _, r in ipairs({ row:GetRegions() }) do
+        if r:GetObjectType() == "Texture" then CUI:SkinHide(r) end
+    end
+    local collapse = row.CollapseButton
+    local stateIcon = collapse and collapse.Icon
+    if collapse then CUI:SkinHideTextures(collapse) end
+    local chevron = CUI:CreateChevron(row, "OVERLAY")
+    chevron:SetPoint(row, "LEFT", 10, 0)
+    local text = row.ButtonText
+    if text then
+        text:SetFont(CUI:GetFont(), 10, "")
+        text:ClearAllPoints()
+        text:SetPoint("LEFT", row, "LEFT", 22, 0)
+        local busy = false
+        local function upper(fs, t)
+            if busy or type(t) ~= "string" or issecret(t) then return end
+            busy = true
+            fs:SetText(CUI:Upper(t))
+            busy = false
+        end
+        _G.hooksecurefunc(text, "SetText", upper)
+        upper(text, text:GetText())
+    end
+    local l = row:CreateTexture(nil, "ARTWORK")
+    l:SetTexture(WHITE)
+    l:SetVertexColor(C.lisereSombre[1], C.lisereSombre[2], C.lisereSombre[3], 1)
+    l:SetHeight(1)
+    l:SetPoint("BOTTOMLEFT", 4, 1)
+    l:SetPoint("BOTTOMRIGHT", -4, 1)
+    local function paint()
+        local a = stateIcon and stateIcon.GetAtlas and stateIcon:GetAtlas()
+        if type(a) ~= "string" or issecret(a) then a = "" end
+        chevron:SetDirection(a:find("plus", 1, true) and "right" or "down")
+        local c = row.cuiOver and C.texte or C.texteDiscret
+        chevron:SetColor(c)
+        if text then text:SetTextColor(c[1], c[2], c[3]) end
+    end
+    if stateIcon and stateIcon.SetAtlas then _G.hooksecurefunc(stateIcon, "SetAtlas", paint) end
+    if text then
+        local inner = false
+        _G.hooksecurefunc(text, "SetTextColor", function()
+            if inner then return end
+            inner = true
+            paint()
+            inner = false
+        end)
+    end
     row:HookScript("OnEnter", function() row.cuiOver = true paint() end)
     row:HookScript("OnLeave", function() row.cuiOver = false paint() end)
     row.cuiPaint = paint
