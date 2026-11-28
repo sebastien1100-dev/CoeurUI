@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.65.0 · 28/11/2026
+
+- Icônes carrées partout : barres d'actions, effets et effets des plaques de nom gardent leurs icônes
+  carrées (le jeu remettait parfois l'image entière, à coins arrondis), comme les sacs et la fiche. La teinte
+  « hors de portée », le grisé et le temps de recharge restent comme avant.
+- Correction : erreur Lua en combat sur les effets des plaques (« secret number value ») ; les valeurs cachées
+  par le jeu ne sont plus lues.
+
 ## 0.64.0 · 28/11/2026
 
 - Minicarte : nouveau réglage « Taille des points » (de 50 à 100 %) pour les points du groupe, des PNJ et des

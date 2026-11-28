@@ -181,6 +181,7 @@ local function skinButton(b, key)
         icon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
         icon:SetPoint("BOTTOMRIGHT", b, "TOPRIGHT", -2, -b:GetWidth() + 2)
         b.cuiIcon = icon
+        CUI:SquareItemIcon(b, icon) -- carrée pour de bon (le jeu remet l'image entière)
     end
     -- Décor du jeu invisible (contours, symbole du type, bordure d'enchantement).
     for _, k in ipairs({ "Border", "DebuffBorder", "TempEnchantBorder", "Symbol", "IconBorder" }) do hide(b[k]) end

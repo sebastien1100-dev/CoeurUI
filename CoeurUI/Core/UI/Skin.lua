@@ -391,11 +391,16 @@ function CUI:SquareItemIcon(b, icon)
     icon = icon or (b and (b.icon or b.Icon))
     if not b or not icon then return end
     if icon.cuiCopy then return icon.cuiCopy end
+    -- Valeurs que le jeu peut cacher en combat (« secrètes », effets des plaques...) : jamais lues ni
+    -- calculées ; une valeur par défaut à leur place, ou passées au jeu telles quelles.
     local layer, sub = icon:GetDrawLayer()
-    local copy = b:CreateTexture(nil, layer or "BORDER", nil, math.min(7, (sub or 0) + 1))
+    if type(layer) ~= "string" or issecret(layer) then layer = "BORDER" end
+    if type(sub) ~= "number" or issecret(sub) then sub = 0 end
+    local copy = b:CreateTexture(nil, layer, nil, math.min(7, sub + 1))
     copy:SetAllPoints(icon)
     icon.cuiCopy = copy
     local wanted = icon:GetAlpha()
+    if type(wanted) ~= "number" or issecret(wanted) then wanted = 1 end
     local inside = false
     local function sync()
         if inside then return end
@@ -409,10 +414,16 @@ function CUI:SquareItemIcon(b, icon)
             copy:SetTexture(icon:GetTexture())
             copy:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         end
-        if icon.IsDesaturated then copy:SetDesaturated(icon:IsDesaturated() and true or false) end
+        if icon.IsDesaturated then
+            local d = icon:IsDesaturated()
+            if not issecret(d) then copy:SetDesaturated(d and true or false) end
+        end
         local cr, cg, cb, ca = icon:GetVertexColor()
-        if type(cr) == "number" and not issecret(cr) then copy:SetVertexColor(cr, cg, cb, ca or 1) end
-        copy:SetShown(icon:IsShown())
+        if type(cr) == "number" and not (issecret(cr) or issecret(cg) or issecret(cb) or issecret(ca)) then
+            copy:SetVertexColor(cr, cg, cb, ca or 1)
+        end
+        local shown = icon:IsShown()
+        if issecret(shown) then copy:Show() else copy:SetShown(shown and true or false) end
         copy:SetAlpha(wanted)
         icon:SetAlpha(0)
         inside = false

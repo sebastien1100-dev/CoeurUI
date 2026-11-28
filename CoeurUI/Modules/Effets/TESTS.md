@@ -1,5 +1,10 @@
 # Effets : tests en jeu
 
+## 0.65.0 · icônes carrées
+
+1. Icônes des effets carrées, à l'apparition d'un nouvel effet comme après un /reload ; durée et nombre
+   de charges lisibles.
+
 ## 0.23.0 · première version
 
 **Avant de commencer** : couper le module d'EllesmereUI qui habille les effets, s'il y en a un.

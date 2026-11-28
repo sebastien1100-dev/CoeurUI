@@ -557,6 +557,7 @@ local function skinAura(b)
         icon:ClearAllPoints()
         icon:SetPoint("TOPLEFT", b, "TOPLEFT", 2, -2)
         icon:SetPoint("BOTTOMRIGHT", b, "BOTTOMRIGHT", -2, 2)
+        CUI:SquareItemIcon(b, icon) -- carrée pour de bon (le jeu remet l'image entière)
     end
     hideRegion(b.Border)
     hideRegion(b.IconBorder)

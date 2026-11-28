@@ -348,6 +348,9 @@ local function skin(b)
         icon:ClearAllPoints()
         icon:SetPoint("TOPLEFT", 2, -2)
         icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        -- Carrée pour de bon (le jeu remet l'image entière, au liseré arrondi) : copie du noyau, qui suit la
+        -- teinte « hors de portée », le grisé, etc.
+        CUI:SquareItemIcon(b, icon)
     end
     -- Habit du jeu (cadre, fond d'emplacement) : invisible.
     local normal = b:GetNormalTexture()

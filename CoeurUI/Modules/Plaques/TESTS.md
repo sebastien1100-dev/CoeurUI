@@ -1,5 +1,9 @@
 # Plaques de nom : tests en jeu
 
+## 0.65.0 · icônes carrées
+
+1. Icônes des effets sur les plaques de nom carrées, même quand un effet change ou se renouvelle.
+
 ## 0.25.0 · étape 1 : plaques ennemies
 
 **Avant de commencer** : couper ce qui, dans EllesmereUI (ou un autre addon), remplace les plaques de nom.

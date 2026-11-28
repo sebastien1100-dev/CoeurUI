@@ -1,5 +1,10 @@
 # Barres d'actions : tests en jeu
 
+## 0.65.0 · icônes carrées
+
+1. Icônes des boutons carrées (pas de coins arrondis), y compris après avoir changé de sort sur un bouton ;
+   hors de portée : icône teintée en rouge ; pas assez de ressource : grisée ; temps de recharge par-dessus.
+
 ## 0.14.0 · étape 1 : barres 1 à 8
 
 **Avant de commencer** : couper **EllesmereUIActionBars** dans la liste des addons (il remplace lui aussi les

@@ -190,7 +190,7 @@ Idées notées pendant le travail, pas encore commencées.
 - Icônes carrées partout (demandé le 28/11/2026) : toute icône d'objet ou de sort montrée par CœurUI ou par
   une fenêtre habillée passe par CUI:SquareItemIcon (Core/UI/Skin.lua : copie sans masque, rognée de 8 %
   toujours, le jeu remettant l'image entière). Fait : fiche du personnage, menu de choix d'une pièce, sacs et
-  banque (0.56.0). À reprendre : barres d'actions, effets, butin, marchands, courrier, échange, récompenses de
+  banque (0.56.0), barres d'actions, effets, plaques (0.65.0). À reprendre : butin, marchands, courrier, échange, récompenses de
   quête, et chaque fenêtre du Skin Blizzard au fur et à mesure.
 - Système de thèmes (demandé le 28/11/2026) : la porte est ouverte dans Core/UI/Style.lua (CUI.Themes, un seul
   thème « givre » ; CUI:GetTheme, CUI:ApplyTheme repeint ce qui est dessiné). Reste à faire : d'autres thèmes,
