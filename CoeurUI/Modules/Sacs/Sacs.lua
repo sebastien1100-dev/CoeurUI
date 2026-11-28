@@ -168,10 +168,11 @@ local function holderFor(v, bag)
     local h = v.holders[bag]
     if h then return h end
     h = _G.CreateFrame("Frame", nil, v.frame)
+    -- Le sac : numéro du parent (SetID), que le jeu lit lui-même. Aucune fonction ni valeur écrite par CœurUI
+    -- sur ce chemin : sinon le clic droit qui utilise un objet (parchemin, potion) est bloqué par le jeu
+    -- (ADDON_ACTION_FORBIDDEN, « UseContainerItem »).
     h:SetID(bag)
     h:SetAllPoints()
-    -- Les boutons du jeu demandent leur sac à leur parent.
-    h.GetBagID = function(self) return self:GetID() end
     v.holders[bag] = h
     v.buttons[bag] = {}
     return h
@@ -250,7 +251,6 @@ local function buttonFor(v, bag, slot)
     if not ok then error(created) end
     b = created
     b:SetID(slot)
-    b.bagID = bag
     b.cuiBag, b.cuiSlot = bag, slot
     skinButton(b)
     v.buttons[bag][slot] = b

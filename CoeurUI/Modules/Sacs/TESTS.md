@@ -1,5 +1,10 @@
 # Sacs et banque : tests en jeu
 
+## 0.65.1 · utiliser un objet
+
+1. Clic droit sur un parchemin, une potion, de la nourriture : l'objet est utilisé, aucune erreur
+   (BugSack vide). Banque ouverte : clic droit range l'objet dans la banque.
+
 ## 0.56.0 · icônes carrées
 
 1. Sacs et banque ouverts : chaque icône d'objet est carrée (plus de coins arrondis) ; clic, glisser,

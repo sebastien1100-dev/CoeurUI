@@ -2,6 +2,11 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.65.1 · 28/11/2026
+
+- Sacs : le clic droit sur un objet qui lance un sort (parchemin, potion...) était bloqué par le jeu
+  (« UseContainerItem » interdit à CœurUI) ; il marche de nouveau.
+
 ## 0.65.0 · 28/11/2026
 
 - Icônes carrées partout : barres d'actions, effets et effets des plaques de nom gardent leurs icônes
