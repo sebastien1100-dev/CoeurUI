@@ -2,6 +2,11 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.71.1 · 28/11/2026
+
+- Métiers : sur la page des recettes, la barre de niveau du métier restait vide (comme celles de la vue
+  d'ensemble avant 0.68.0) ; elle se remplit en bleu.
+
 ## 0.71.0 · 28/11/2026
 
 - Cadres d'unité : le nom des autres joueurs (cible, cible de la cible, focalisation, groupe, raid, boss) ne

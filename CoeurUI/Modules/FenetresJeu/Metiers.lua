@@ -403,16 +403,6 @@ local function skinCard(card)
     if bar then
         if bar.Flare then CUI:SkinHide(bar.Flare) end
         CUI:SkinStatBar(bar, BLEU)
-        -- Notre remplissage passait sous le fond de la carte : monté au niveau de la barre, le texte au-dessus.
-        local copy = bar.cuiFillCopy
-        if copy then
-            local level = bar:GetFrameLevel()
-            local inner = copy:GetParent()
-            local clip = inner and inner:GetParent()
-            if clip then clip:SetFrameLevel(level) end
-            if inner then inner:SetFrameLevel(level) end
-            if bar.Rank then bar.Rank:SetFrameLevel(level + 2) end
-        end
         local text = bar.Rank and bar.Rank.Text
         if text then
             text:SetTextColor(C.texte[1], C.texte[2], C.texte[3])

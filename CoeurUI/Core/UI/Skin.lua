@@ -878,7 +878,14 @@ function CUI:SkinStatBar(bar, color)
         bar:HookScript("OnSizeChanged", sync)
         bar:HookScript("OnShow", function() _G.C_Timer.After(0, sync) end)
         bar.cuiSync = sync
-        bar.cuiFillCopy = copy
+        -- Barre de métier (texte dans un cadre « Rank ») : notre remplissage passait sous le fond de la page ;
+        -- monté au niveau de la barre, le texte au-dessus.
+        if bar.Rank and bar.Rank.SetFrameLevel then
+            local level = bar:GetFrameLevel()
+            clip:SetFrameLevel(level)
+            inner:SetFrameLevel(level)
+            bar.Rank:SetFrameLevel(level + 2)
+        end
         sync()
         _G.C_Timer.After(0, sync)
     end
