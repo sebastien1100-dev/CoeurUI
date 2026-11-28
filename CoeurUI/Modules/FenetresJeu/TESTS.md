@@ -1,5 +1,15 @@
 # Skin Blizzard : tests en jeu
 
+## 0.59.0 · page Statistiques
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet courbe.
+2. Sections (« PERSONNAGE », « DONJONS ET RAIDS »...) : petites capitales grises, chevron ; clic : la
+   section se déplie (chevron vers le bas) et se replie.
+3. Sous-sections (« Boss », « Champs de bataille ») : petite case sombre avec un chevron gris (vers la
+   droite : repliée, vers le bas : dépliée), nom en blanc ; clic : elle se déplie, le chevron suit.
+4. Lignes : nom en gris clair, valeur (« -- », « 79 ») en blanc ; survol : bande plus claire.
+5. Barre de défilement fine ; molette : la liste défile ; replier, déplier, défiler : tout reste habillé.
+
 ## 0.58.0 · page Compétences
 
 1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet marteau.

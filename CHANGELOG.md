@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.59.0 · 28/11/2026
+
+- Fiche du personnage, page Statistiques au style « Givre » : sections repliables (chevron, petites
+  capitales) ; sous-sections (« Boss »...) : le « + » / « - » rouge devient une petite case avec notre
+  chevron, leur nom en blanc ; lignes : nom en gris clair, valeur en blanc, bande plus claire au survol ;
+  défilement fin.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.58.0 · 28/11/2026
 
 - Fiche du personnage, page Compétences au style « Givre » : sections repliables (chevron, petites
