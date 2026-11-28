@@ -873,10 +873,14 @@ function CUI:SkinStatBar(bar, color)
                 end)
             end
         end
-        -- Placement connu seulement une fois la barre posée à l'écran.
+        -- Placement connu seulement une fois la barre posée à l'écran ; barre dont le jeu a déjà donné la
+        -- valeur avant nous (cartes des métiers) : recalculée à l'image suivante, et à la demande (bar.cuiSync).
         bar:HookScript("OnSizeChanged", sync)
         bar:HookScript("OnShow", function() _G.C_Timer.After(0, sync) end)
+        bar.cuiSync = sync
+        bar.cuiFillCopy = copy
         sync()
+        _G.C_Timer.After(0, sync)
     end
     local text = bar.Text
     if text then

@@ -145,7 +145,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        validé (0.62.0). Talents : maquette validée le 28/11/2026 (« 3 · Talents »,
        fond illustré estompé), validé (0.63.0). Métiers : maquettes « 4 · Métiers » et « 4 bis · Icônes
        des métiers » validées le 28/11/2026, validé (0.66.0). Carte et journal des quêtes : maquette « 5 · Carte
-       et journal des quêtes » validée le 28/11/2026 (0.67.0, en test). Liste :
+       et journal des quêtes » validée le 28/11/2026, validé (0.67.0). Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;
@@ -185,8 +185,6 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
-- Barres d'actions : réglage de transparence des cases vides (demandé le 28/11/2026) : seulement les cases sans
-  sort, plus ou moins transparentes, au curseur dans le panneau du module « Barres d'actions ».
 
 - Marqueurs de la minicarte (demandé le 28/11/2026) : ni le dessin des points (pas de
   Minimap:SetBlipTexture) ni celui des zones de quête ne peuvent changer sur Forever : les fonctions

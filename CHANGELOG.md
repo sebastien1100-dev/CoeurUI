@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.68.0 · 28/11/2026
+
+- Barres d'actions : nouveau réglage « Opacité des cases vides » (barres 1 à 8, page « Barres », section
+  Visibilité) : les cases sans sort deviennent plus ou moins transparentes, jusqu'à invisibles ; les cases
+  avec un sort ne changent pas.
+- Métiers : sur les cartes de la vue d'ensemble, la barre de niveau du métier restait vide (pas de
+  remplissage bleu) ; elle se remplit de nouveau.
+
 ## 0.67.0 · 28/11/2026
 
 - Skin Blizzard : la carte et le journal des quêtes au style « Givre » (maquette « 5 · Carte et journal des

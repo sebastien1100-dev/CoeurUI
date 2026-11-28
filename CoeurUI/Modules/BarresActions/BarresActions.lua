@@ -73,6 +73,7 @@ local function barDefaults(shown, vertical)
         taille = vertical and 34 or 40, espacement = 3, visibilite = "toujours", opacite = 100,
         raccourci = true, macro = false, charges = true, recharge = true,
         panneau = true, -- style « Givre » : la barre posée sur un panneau (sinon boutons seuls, ombrés)
+        vides = 100,    -- opacité des cases vides (barres 1 à 8)
     }
 end
 
@@ -150,6 +151,7 @@ local PAGE_BARRES = {
     { type = "column" },
     { type = "section", text = "BA_VISIBILITE" },
     barItem(quandItem()), barItem(opaciteItem()),
+    barItem({ type = "slider", key = "vides", label = "BA_VIDES", min = 0, max = 100, step = 5, format = "%d %%" }),
     { type = "section", text = "BA_TEXTES" },
     barItem({ type = "toggle", key = "raccourci", label = "BA_RACCOURCI" }),
     barItem({ type = "toggle", key = "macro", label = "BA_MACRO" }),
@@ -337,6 +339,45 @@ local function paintBorder(b)
     b.cuiBorder:SetColor(c)
 end
 
+-- Case vide (barres 1 à 8 : pas de sort, l'icône du jeu est cachée) : le fond de sa case prend l'opacité du
+-- réglage « Cases vides » ; une case pleine reste pleine. Seulement notre dessin : le bouton du jeu n'est pas touché.
+local function paintEmpty(b)
+    local def = ours[b]
+    local p = b.cuiPanel
+    if not (def and p and BAR_KEYS[def.key] and M and M.db and M.db[def.key]) then return end
+    -- Vide : d'abord la réponse du jeu (« cet emplacement a-t-il une action ? ») ; sinon l'icône du jeu, cachée
+    -- ou sans image (Forever laisse l'icône montrée, sans image).
+    local issecret = _G.issecretvalue or function() return false end
+    local empty
+    local action = b.action
+    if action == nil and b.GetAttribute then action = b:GetAttribute("action") end
+    if type(action) == "number" and not issecret(action) and _G.HasAction then
+        local has = _G.HasAction(action)
+        if not issecret(has) then empty = not has end
+    end
+    if empty == nil then
+        local icon = b.cuiIconRef
+        local shown = icon and icon:IsShown()
+        local tex = icon and icon:GetTexture()
+        if issecret(shown) or issecret(tex) then
+            empty = false
+        else
+            empty = not shown or tex == nil
+        end
+    end
+    local v = M.db[def.key].vides
+    if type(v) ~= "number" then v = 100 end
+    -- Comme le fond du suivi des quêtes : fond translucide, liseré net ; à 0 % la case disparaît tout à fait.
+    -- (Pas de SetAlpha sur les textures de la case : dans le jeu, il remplace la transparence du fond.)
+    local a = empty and v / 100 or 1
+    if a <= 0 then
+        p:SetShown(false)
+    else
+        p:SetShown(true)
+        p:SetOpacity(a)
+    end
+end
+
 local function skin(b)
     -- L'image : son champ (icon, Icon) ou son nom (…IconTexture, cas des sacs).
     local name = b:GetName()
@@ -371,6 +412,14 @@ local function skin(b)
     -- agrandit l'image jusqu'aux bords du bouton).
     b.cuiPanel = CUI:CreatePanel(b, { radius = 3, fill = C.case })
     b.cuiBorder = outline(b)
+    -- Case vide ou pleine : suivie par l'icône du jeu, que le jeu cache quand l'emplacement est vide.
+    if icon and BAR_KEYS[ours[b] and ours[b].key or ""] then
+        b.cuiIconRef = icon
+        for _, method in ipairs({ "Show", "Hide", "SetShown", "SetTexture" }) do
+            if icon[method] then _G.hooksecurefunc(icon, method, function() paintEmpty(b) end) end
+        end
+        paintEmpty(b)
+    end
     -- Survol, appui, coché : voiles légers sur l'icône.
     local hl = b:GetHighlightTexture()
     if hl and icon then
@@ -977,6 +1026,7 @@ end
 
 local function layoutAll()
     if not built then return end
+    for b in pairs(ours) do paintEmpty(b) end
     for _, def in ipairs(BARS) do layoutBar(def) end
     for _, g in ipairs(GROUPS) do layoutGroup(g) end
     layoutExtra()
@@ -1070,6 +1120,12 @@ function M:OnEnable()
         CUI:AfterCombat(function() if built then layoutGroup(GROUPS[2]) end end)
     end)
     self:Every(0.5, paintMicro)
+    -- Cases vides : un sort posé ou retiré, une page qui change (formes, véhicule).
+    local function repaintEmpty() for b in pairs(ours) do paintEmpty(b) end end
+    for _, event in ipairs({ "ACTIONBAR_SLOT_CHANGED", "ACTIONBAR_PAGE_CHANGED", "UPDATE_BONUS_ACTIONBAR",
+                             "PLAYER_ENTERING_WORLD" }) do
+        self:On(event, function() _G.C_Timer.After(0, repaintEmpty) end)
+    end
 end
 
 -- Coupé : tout reste en place jusqu'au /reload (needsReload).

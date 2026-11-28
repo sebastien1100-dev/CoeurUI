@@ -1,5 +1,15 @@
 # Barres d'actions : tests en jeu
 
+## 0.68.0 · opacité des cases vides
+
+1. Page « Barres », section Visibilité : curseur « Opacité des cases vides » (100 % par défaut : rien ne change).
+2. Le baisser à 30 % : les cases sans sort deviennent pâles, celles avec un sort restent pleines ; à 0 % : les
+   cases vides disparaissent (le panneau de la barre reste, s'il est montré).
+3. Poser un sort sur une case vide : elle redevient pleine ; retirer un sort : elle pâlit. Glisser un sort sur une
+   case invisible : il s'y pose.
+4. Chaque barre a son propre réglage (menu « Barre ») ; changer de forme (barre 1 qui change de page) : les cases
+   suivent.
+
 ## 0.65.0 · icônes carrées
 
 1. Icônes des boutons carrées (pas de coins arrondis), y compris après avoir changé de sort sur un bouton ;
