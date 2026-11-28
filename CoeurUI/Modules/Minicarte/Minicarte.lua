@@ -36,7 +36,7 @@ M = CUI:RegisterModule({
     defaultEnabled = false,
     needsReload = true, -- la minicarte du jeu ne reprend sa forme qu'après un /reload
     defaults = {
-        carre = true, largeur = 220, hauteur = 220, zoom = true,
+        carre = true, largeur = 220, hauteur = 220, zoom = true, points = 100,
         zone = true, coordonnees = true, boutonsJeu = true, tiroir = true,
     },
     settings = {
@@ -46,6 +46,8 @@ M = CUI:RegisterModule({
         { type = "slider", key = "hauteur", label = "MC_HAUTEUR", min = 120, max = 400, step = 10, format = "%d",
           description = "MC_HAUTEUR_NOTE", enabledIf = function(read) return not read("carre") end },
         { type = "toggle", key = "zoom", label = "MC_ZOOM" },
+        { type = "slider", key = "points", label = "MC_POINTS", min = 50, max = 100, step = 5, format = "%d %%",
+          description = "MC_POINTS_NOTE" },
         { type = "column" },
         { type = "section", text = "MC_AUTOUR" },
         { type = "toggle", key = "zone", label = "MC_ZONE" },
@@ -860,10 +862,20 @@ local function build()
 end
 
 -- Applique tous les réglages.
+-- Taille des points (groupe, PNJ, objectifs) : leur dessin ne peut pas changer sur Forever, leur taille si.
+-- Le jeu ne redessine les points qu'à sa prochaine mise à jour : on la lui demande tout de suite.
+local function applyPoints()
+    local map = _G.Minimap
+    if not map or not map.SetIconScale then return end
+    pcall(map.SetIconScale, map, (M.db.points or 100) / 100)
+    if map.UpdateBlips then pcall(map.UpdateBlips, map) end
+end
+
 local function applyAll()
     if not built then return end
     applySize()
     _G.Minimap:EnableMouseWheel(M.db.zoom and true or false)
+    applyPoints()
     zoneFrame:SetShown(M.db.zone)
     updateZone()
     coordFrame:SetShown(M.db.coordonnees)
@@ -888,6 +900,7 @@ function M:OnEnable()
     end
     self:On("PLAYER_ENTERING_WORLD", function()
         updateZone()
+        applyPoints() -- le jeu peut remettre la taille des points à 100 % en changeant de zone
         self:After(2, scanButtons) -- les addons créent souvent leur bouton un peu après
     end)
     self:On("ADDON_LOADED", function(_, name)

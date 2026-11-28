@@ -182,11 +182,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
-- Marqueurs de la minicarte (demandé le 28/11/2026) : les points du jeu (groupe vert cerclé de jaune, raid,
-  PNJ, objectifs) redessinés au style de CœurUI, en remplaçant l'image unique dont le jeu les découpe
-  (Minimap:SetBlipTexture), même grille. Groupe : point vert #7FC98A à liseré sombre ; raid : bleu doux ;
-  objectifs : pastille rouge cœur ou losange ; points plus petits. D'abord : relever la grille de l'image
-  de Forever, puis une maquette (deux ou trois styles), puis le code (module Minicarte).
+- Marqueurs de la minicarte (demandé le 28/11/2026) : les points eux-mêmes (groupe, PNJ, objectifs) ne
+  peuvent pas être redessinés sur Forever (pas de Minimap:SetBlipTexture, relevé le 28/11/2026). Possible :
+  leur taille (Minimap:SetIconScale, réglage « Taille des points » du module Minicarte, fait en 0.64.0) et les zones de
+  quête, de mission et d'archéologie (Set{Quest,Task,Arch}Blob{Inside,Outside,Ring}Texture) au style de
+  CœurUI. Maquette d'abord.
 - Icônes carrées partout (demandé le 28/11/2026) : toute icône d'objet ou de sort montrée par CœurUI ou par
   une fenêtre habillée passe par CUI:SquareItemIcon (Core/UI/Skin.lua : copie sans masque, rognée de 8 %
   toujours, le jeu remettant l'image entière). Fait : fiche du personnage, menu de choix d'une pièce, sacs et

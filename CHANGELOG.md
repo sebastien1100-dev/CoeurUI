@@ -2,6 +2,11 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.64.0 · 28/11/2026
+
+- Minicarte : nouveau réglage « Taille des points » (de 50 à 100 %) pour les points du groupe, des PNJ et des
+  objectifs ; plus petits, la carte respire en ville. Leur dessin, lui, ne peut pas changer sur Forever.
+
 ## 0.63.0 · 28/11/2026
 
 - Skin Blizzard : les talents au style « Givre » (maquette « 3 · Talents »), avec leur interrupteur sur la

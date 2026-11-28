@@ -1,5 +1,11 @@
 # Minicarte : tests en jeu
 
+## 0.64.0 · taille des points
+
+1. Page Minicarte : curseur « Taille des points » à 100 % ; le baisser à 60 % : les points de la carte
+   (groupe, PNJ, objectifs) rapetissent tout de suite ; le remonter : ils reviennent.
+2. /reload : la taille choisie est gardée.
+
 ## 0.10.0 · première version
 
 **Avant de commencer** : couper **EllesmereUIMinimap** dans la liste des addons (il change lui aussi la minicarte).
