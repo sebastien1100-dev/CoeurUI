@@ -1,5 +1,18 @@
 # Skin Blizzard : tests en jeu
 
+## 0.57.0 · page Réputation
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Ouvrir la fiche, onglet médaille.
+2. « ALLIANCE » : petites capitales grises, chevron vers le bas, trait sombre dessous ; clic : la section se
+   replie (chevron vers la droite), re-clic : elle revient ; survol : texte et chevron blancs.
+3. Factions : noms en gris clair ; barre striée dans une case sombre, de la couleur de l'attitude, texte
+   « Amical » blanc lisible ; survol d'une ligne et ligne choisie : bande un peu plus claire.
+4. Détail à droite : « Darnassus » en gras blanc, « Amical » en gris, traits sombres, barre « 112 / 6000 »
+   comme celles de la liste, description en gris clair.
+5. Cases à cocher : petites cases sombres ; cocher « Barre de réputation » : coche blanche, libellé blanc,
+   la barre de réputation suit ; « En guerre » grisé quand le jeu l'interdit ; survol : liseré doré.
+6. Barre de défilement fine ; molette : la liste défile.
+
 ## 0.56.0 · page Personnage finie
 
 1. **Redémarrer le jeu** (nouvelles icônes). `/cui version` : « 0.56.0 ». Aucune erreur Lua à l'ouverture de la fiche.

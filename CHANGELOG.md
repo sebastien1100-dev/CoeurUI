@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.57.0 · 28/11/2026
+
+- Fiche du personnage, page Réputation au style « Givre » : sections repliables avec notre chevron et des
+  petites capitales ; factions en gris clair ; barres striées dans une case, de la couleur de l'attitude ;
+  ligne survolée ou choisie sur une bande un peu plus claire ; défilement fin.
+- Détail de la faction : nom en gras, attitude en gris, traits sombres, même barre, description en gris
+  clair ; cases à cocher de CœurUI (coche au trait, libellé gris, plus de jaune).
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.56.0 · 28/11/2026
 
 - Fiche du personnage, page Personnage : les cases d'équipement sont carrées (le jeu les fait en 37 x 36,

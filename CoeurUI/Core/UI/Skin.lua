@@ -453,3 +453,187 @@ function CUI:Upper(text)
     if type(text) ~= "string" or issecret(text) then return text end
     return (text:upper():gsub("[\195\197][\128-\191]", function(c) return ACCENTS[c] or c end))
 end
+
+-- Listes et détails (pages de la fiche : réputation, compétences, statistiques...) -------------------
+
+-- Trait séparateur du jeu (« UI-Character-Info-ScrollLine »...) : un trait sombre d'un point.
+function CUI:SkinSeparator(t)
+    if not t or t.cuiSeparator then return end
+    t.cuiSeparator = true
+    t:SetColorTexture(C.lisereSombre[1], C.lisereSombre[2], C.lisereSombre[3], 1)
+    t:SetHeight(1)
+end
+
+-- Surlignage de ligne du jeu (cadre aux textures gauche, milieu, droite, montré au survol ou pour la ligne
+-- choisie) : une bande unie un peu plus claire, posée sur ce cadre (elle suit donc sa visibilité).
+function CUI:SkinRowHighlight(frame)
+    if not frame or frame.cuiBand then return end
+    self:SkinHideTextures(frame)
+    local band = frame:CreateTexture(nil, "BACKGROUND", nil, 1)
+    band:SetTexture(WHITE)
+    band:SetVertexColor(0.145, 0.165, 0.204, 1) -- #252A34 : ligne choisie (comme les menus)
+    band:SetPoint("TOPLEFT", 0, -1)
+    band:SetPoint("BOTTOMRIGHT", 0, 1)
+    frame.cuiBand = band
+end
+
+-- En-tête de section repliable (bouton du jeu : fond, « - » ou « + » StateIcon, nom Name) : fond caché,
+-- notre chevron (vers le bas : ouvert, vers la droite : replié), nom en petites capitales grises, trait
+-- sombre dessous ; blancs au survol.
+function CUI:SkinListHeader(row)
+    if not row or row.cuiHeader then return end
+    row.cuiHeader = true
+    self:SkinHideTextures(row)
+    local hl = row.GetHighlightTexture and row:GetHighlightTexture()
+    if hl then self:SkinHide(hl) end
+    local state, name = row.StateIcon, row.Name
+    local chevron = self:CreateChevron(row, "OVERLAY")
+    if state then
+        self:SkinHide(state)
+        chevron:SetPoint(state, "CENTER", 0, 0)
+    else
+        chevron:SetPoint(row, "LEFT", 10, 0)
+    end
+    if name then
+        name:SetFont(self:GetFont(), 10, "")
+        local busy = false
+        local function upper(fs, text)
+            if busy or type(text) ~= "string" then return end
+            busy = true
+            fs:SetText(CUI:Upper(text))
+            busy = false
+        end
+        _G.hooksecurefunc(name, "SetText", upper)
+        upper(name, name:GetText())
+    end
+    local line = row:CreateTexture(nil, "ARTWORK")
+    line:SetTexture(WHITE)
+    line:SetVertexColor(C.lisereSombre[1], C.lisereSombre[2], C.lisereSombre[3], 1)
+    line:SetHeight(1)
+    line:SetPoint("BOTTOMLEFT", 4, 2)
+    line:SetPoint("BOTTOMRIGHT", -4, 2)
+    local painting = false
+    local function paint()
+        if painting then return end
+        painting = true
+        local open = true
+        local atlas = state and state.GetAtlas and state:GetAtlas()
+        if type(atlas) == "string" and not issecret(atlas) then open = not atlas:find("plus") end
+        chevron:SetDirection(open and "down" or "right")
+        local c = row.cuiOver and C.texte or C.texteDiscret
+        chevron:SetColor(c)
+        if name then name:SetTextColor(c[1], c[2], c[3]) end
+        painting = false
+    end
+    if state then _G.hooksecurefunc(state, "SetAtlas", paint) end
+    if name then _G.hooksecurefunc(name, "SetTextColor", paint) end
+    row:HookScript("OnEnter", function() row.cuiOver = true paint() end)
+    row:HookScript("OnLeave", function() row.cuiOver = false paint() end)
+    row.cuiPaint = paint
+    paint()
+end
+
+-- Barre du jeu (« common-stat-bar » : fond, remplissage Fill teinté et masqué, texte Text) : une case
+-- sombre ; notre remplissage strié suit la largeur et la couleur de celui du jeu, devenu invisible.
+local STAT_BAR_H = 14
+function CUI:SkinStatBar(bar)
+    if not bar or bar.cuiBar then return end
+    bar.cuiBar = true
+    local fill = bar.Fill
+    for _, r in ipairs({ bar:GetRegions() }) do
+        if r:GetObjectType() == "Texture" and r ~= fill then self:SkinHide(r) end
+    end
+    local holder = _G.CreateFrame("Frame", nil, bar)
+    holder:SetPoint("LEFT", 2, 0)
+    holder:SetPoint("RIGHT", -2, 0)
+    holder:SetHeight(STAT_BAR_H + 4)
+    holder:SetFrameLevel(math.max(0, bar:GetFrameLevel() - 1))
+    self:CreatePanel(holder, { radius = 3, fill = C.case, shadow = false })
+    if fill then
+        local copy = holder:CreateTexture(nil, "ARTWORK")
+        copy:SetTexture(WHITE)
+        copy:SetPoint("LEFT", fill, "LEFT")
+        copy:SetPoint("RIGHT", fill, "RIGHT")
+        copy:SetHeight(STAT_BAR_H)
+        self:CreateStripes(holder, copy, 2)
+        local inside = false
+        local function sync()
+            if inside then return end
+            inside = true
+            local r, g, b = fill:GetVertexColor()
+            if type(r) == "number" and not issecret(r) then copy:SetVertexColor(r, g, b, 1) end
+            copy:SetShown(fill:IsShown() and (fill:GetWidth() or 0) > 1)
+            fill:SetAlpha(0)
+            inside = false
+        end
+        for _, method in ipairs({ "SetVertexColor", "Show", "Hide", "SetShown", "SetWidth", "SetAlpha",
+                                  "SetAtlas", "SetTexture" }) do
+            if fill[method] then _G.hooksecurefunc(fill, method, sync) end
+        end
+        sync()
+    end
+    local text = bar.Text
+    if text then
+        local _, size = text:GetFont()
+        text:SetFont(self:GetFont(), math.min(size or 11, 11), "")
+        text:SetShadowOffset(1, -1)
+        text:SetShadowColor(0, 0, 0, 1)
+        text:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
+    end
+end
+
+-- Case à cocher du jeu : sa case et sa coche invisibles ; une petite case du thème et une coche au trait ;
+-- libellé gris clair (blanc cochée), gris sombre quand la case est inactive ; survol : liseré doré.
+function CUI:SkinCheckbox(cb)
+    if not cb or cb.cuiCheck then return end
+    cb.cuiCheck = true
+    self:SkinHideTextures(cb)
+    for _, getter in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetHighlightTexture",
+                              "GetCheckedTexture", "GetDisabledCheckedTexture", "GetDisabledTexture" }) do
+        local t = cb[getter] and cb[getter](cb)
+        if t then self:SkinHide(t) end
+    end
+    local box = _G.CreateFrame("Frame", nil, cb)
+    box:SetSize(14, 14)
+    box:SetPoint("CENTER")
+    local panel = self:CreatePanel(box, { radius = 3, fill = C.case, shadow = false })
+    local tick = {}
+    for i, spec in ipairs({ { 4.5, 2, -2.2, -1.2, -45 }, { 8, 2, 1.4, 0.4, 50 } }) do
+        local t = box:CreateTexture(nil, "OVERLAY")
+        t:SetTexture(WHITE)
+        t:SetSize(spec[1], spec[2])
+        t:SetPoint("CENTER", spec[3], spec[4])
+        t:SetRotation(math.rad(spec[5]))
+        tick[i] = t
+    end
+    local label = cb.Label or cb.Text or (cb.GetFontString and cb:GetFontString())
+    local busy = false
+    local function paint()
+        if busy then return end
+        busy = true
+        local on = cb:GetChecked() and true or false
+        local enabled = not cb.IsEnabled or cb:IsEnabled()
+        local tc = enabled and C.texte or C.texteDesactive
+        for _, t in ipairs(tick) do
+            t:SetVertexColor(tc[1], tc[2], tc[3], 1)
+            t:SetShown(on)
+        end
+        local border = (cb.cuiOver and enabled) and C.or_ or (on and C.texteDiscret or C.bordureDiscrete)
+        panel.border:SetColor(border)
+        if label then
+            local c = (not enabled) and C.texteDesactive or (on and C.texte or C.texteSecondaire)
+            label:SetTextColor(c[1], c[2], c[3])
+        end
+        busy = false
+    end
+    _G.hooksecurefunc(cb, "SetChecked", paint)
+    if cb.SetEnabled then _G.hooksecurefunc(cb, "SetEnabled", paint) end
+    if cb.Enable then _G.hooksecurefunc(cb, "Enable", paint) end
+    if cb.Disable then _G.hooksecurefunc(cb, "Disable", paint) end
+    if label then _G.hooksecurefunc(label, "SetTextColor", paint) end
+    cb:HookScript("OnClick", paint)
+    cb:HookScript("OnShow", paint)
+    cb:HookScript("OnEnter", function() cb.cuiOver = true paint() end)
+    cb:HookScript("OnLeave", function() cb.cuiOver = false paint() end)
+    paint()
+end

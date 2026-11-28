@@ -793,6 +793,8 @@ local function skinFiche()
     skinSidebarTabs()
     skinSlots()
     skinFlyout()
+    -- Autres pages de la fiche (Reputation.lua...), chacune dans son fichier.
+    for _, page in ipairs(M.fichePages or {}) do CUI:SafeCall(CUI:Tr("FJ_FICHE"), page) end
     f:HookScript("OnShow", function()
         CUI:SafeCall(CUI:Tr("FJ_FICHE"), skinSidebarTabs) -- créés parfois après coup par le jeu
         CUI:SafeCall(CUI:Tr("FJ_FICHE"), paintSidebar)
