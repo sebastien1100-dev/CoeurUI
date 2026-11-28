@@ -389,7 +389,7 @@ local function update(f)
     end
     if not _G.UnitExists(unit) then return end
 
-    v.name:SetText(_G.UnitName(unit))
+    v.name:SetText(CUI:UnitFullName(unit))
 
     local level = _G.UnitLevel(unit)
     local classif = _G.UnitClassification(unit)

@@ -1,5 +1,11 @@
 # Cadres d'unité : tests en jeu
 
+## 0.71.0 · nom complet
+
+1. Cibler un autre joueur : nom en entier dans le cadre de la cible (« Père Daikmaz »), aussi dans la cible de
+   la cible ; en groupe ou en raid : noms des membres en entier (coupés par « ... » si le cadre est trop
+   étroit). PNJ et boss : nom inchangé.
+
 ## 0.9.0 · première version (joueur, cible, cible de la cible)
 
 Ces tests valident aussi les pièces du noyau 0.8.0 (mode déplacement, pages sur deux colonnes, aperçu, menu

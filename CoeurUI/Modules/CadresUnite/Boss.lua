@@ -212,7 +212,7 @@ local function update(f)
     if not _G.UnitExists(unit) then return end
     local S, s = sh(), db()
     local known = S.known
-    v.name:SetText(_G.UnitName(unit))
+    v.name:SetText(CUI:UnitFullName(unit))
     local hp, maxHp = _G.UnitHealth(unit), _G.UnitHealthMax(unit)
     v.health:SetMinMaxValues(0, maxHp)
     v.health:SetValue(hp)

@@ -2,6 +2,12 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.71.0 · 28/11/2026
+
+- Cadres d'unité : le nom des autres joueurs (cible, cible de la cible, focalisation, groupe, raid, boss) ne
+  montrait que sa première partie ; il s'affiche en entier (« Père Daikmaz »), coupé par « ... » s'il est
+  trop long pour le cadre.
+
 ## 0.70.0 · 28/11/2026
 
 - Plaques de nom : le nom des autres joueurs ne montrait que sa première partie (« Père » au lieu de « Père

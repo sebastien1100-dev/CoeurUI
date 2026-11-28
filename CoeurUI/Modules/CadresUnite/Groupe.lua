@@ -453,7 +453,7 @@ local function update(f)
     local S, s = sh(), db()
     local known = S.known
 
-    v.name:SetText(_G.UnitName(unit))
+    v.name:SetText(CUI:UnitFullName(unit))
     local hp, maxHp = _G.UnitHealth(unit), _G.UnitHealthMax(unit)
     v.health:SetMinMaxValues(0, maxHp)
     v.health:SetValue(hp)
@@ -609,7 +609,7 @@ local function updatePet(f)
     local unit = petUnitOf(f.unit)
     if not unit or not _G.UnitExists(unit) then return end
     local v = p.visual
-    v.name:SetText(_G.UnitName(unit))
+    v.name:SetText(CUI:UnitFullName(unit))
     v.health:SetMinMaxValues(0, _G.UnitHealthMax(unit))
     v.health:SetValue(_G.UnitHealth(unit))
     local color = sh().healthColor(unit, db().couleur)
@@ -667,7 +667,7 @@ local function updateDetachedPet(p)
     local unit = p.unit
     if not unit or not _G.UnitExists(unit) then return end
     local v = p.visual
-    v.name:SetText(_G.UnitName(unit))
+    v.name:SetText(CUI:UnitFullName(unit))
     v.health:SetMinMaxValues(0, _G.UnitHealthMax(unit))
     v.health:SetValue(_G.UnitHealth(unit))
     local color = sh().healthColor(unit, db().couleur)
