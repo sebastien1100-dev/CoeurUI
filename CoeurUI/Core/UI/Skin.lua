@@ -268,18 +268,28 @@ function CUI:SkinTextTab(tab)
         panel.border:SetColor(on and C.texteDiscret or (tab.cuiOver and C.bordureDiscrete or C.lisereSombre))
         panel:SetFillColor(on and C.panneau or C.case)
         if text then
-            local c = (on or tab.cuiOver) and C.texte or C.texteSecondaire
+            local c = tab.cuiLocked and C.texteDesactive or ((on or tab.cuiOver) and C.texte or C.texteSecondaire)
             text:SetTextColor(c[1], c[2], c[3])
         end
         busy = false
     end
     if text then
         text:SetFont(self:GetFont(), 10, "")
+        -- Le jeu glisse des images dans le texte (coche « |A:...|a », cadenas) et le grise en couleur :
+        -- retirés (les capitales casseraient l'image) ; onglet verrouillé : notre cadenas, texte grisé.
         local inner = false
         local function upper(fs, t)
-            if inner or type(t) ~= "string" then return end
+            if inner or type(t) ~= "string" or issecret(t) then return end
             inner = true
-            fs:SetText(CUI:Upper(t))
+            tab.cuiLocked = t:find("lock", 1, true) ~= nil
+            local clean = t:gsub("|A.-|a", ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""):gsub("%s+$", "")
+            local lock = ""
+            if tab.cuiLocked then
+                local d = C.texteDesactive
+                lock = string.format(" |T%sIcones\\Cadenas:11:11:0:0:64:64:0:64:0:64:%d:%d:%d|t", CUI.MEDIA,
+                    math.floor(d[1] * 255), math.floor(d[2] * 255), math.floor(d[3] * 255))
+            end
+            fs:SetText(CUI:Upper(clean) .. lock)
             inner = false
             paint()
         end
@@ -793,4 +803,68 @@ function CUI:SkinCheckbox(cb)
     cb:HookScript("OnEnter", function() cb.cuiOver = true paint() end)
     cb:HookScript("OnLeave", function() cb.cuiOver = false paint() end)
     paint()
+end
+
+
+-- Suggestions d'une recherche du jeu (grimoire, talents) : panneau des menus de CœurUI ; lignes sans le
+-- fond ni la lueur bleue du jeu, bande ardoise au survol, texte gris clair (blanc au survol) ; leur icône
+-- gardée. Les lignes sont cherchées partout dans le menu (liste défilante ou non).
+--   CUI:SkinSearchPreview(menu, champ)
+function CUI:SkinSearchPreview(preview, searchBox)
+    if not preview or preview.cuiPreview then return end
+    preview.cuiPreview = true
+    local function tr() return "CœurUI" end
+    local sb = { SearchBox = searchBox }
+    CUI:SkinHideTextures(preview)
+    CUI:CreateTipPanel(preview)
+    -- Lignes : tout bouton portant un texte, où qu'il soit rangé dans le menu (liste défilante ou non).
+    local function rowsOf(frame, depth, out)
+        if depth > 4 then return out end
+        for _, child in ipairs({ frame:GetChildren() }) do
+            local kind = child:GetObjectType()
+            if kind == "Button" and (child.Name or child.Text or (child.GetFontString and child:GetFontString())) then
+                out[#out + 1] = child
+            elseif kind ~= "Button" then
+                rowsOf(child, depth + 1, out)
+            end
+        end
+        return out
+    end
+    local function skinRows()
+        for _, row in ipairs(rowsOf(preview, 0, {})) do
+            if not row.cuiRow then
+                row.cuiRow = true
+                local icon = row.Icon or row.icon
+                local hl = row.GetHighlightTexture and row:GetHighlightTexture()
+                for _, r in ipairs({ row:GetRegions() }) do
+                    if r:GetObjectType() == "Texture" and r ~= icon and r ~= hl then CUI:SkinHide(r) end
+                end
+                if hl then
+                    hl:SetColorTexture(0.145, 0.165, 0.204, 1) -- #252A34 : ligne survolée des menus
+                    hl:SetDrawLayer("BACKGROUND", 1)
+                end
+                local text = row.Name or row.Text or (row.GetFontString and row:GetFontString())
+                if text then
+                    local c = C.texteSecondaire
+                    text:SetTextColor(c[1], c[2], c[3])
+                    row:HookScript("OnEnter", function() text:SetTextColor(C.texte[1], C.texte[2], C.texte[3]) end)
+                    row:HookScript("OnLeave", function() text:SetTextColor(c[1], c[2], c[3]) end)
+                end
+            end
+        end
+    end
+    preview:HookScript("OnShow", function()
+        CUI:SafeCall(tr(), skinRows)
+        _G.C_Timer.After(0, function() CUI:SafeCall(tr(), skinRows) end)
+    end)
+    if sb.SearchBox then
+        local function soon() _G.C_Timer.After(0, function() CUI:SafeCall(tr(), skinRows) end) end
+        sb.SearchBox:HookScript("OnEditFocusGained", soon)
+        sb.SearchBox:HookScript("OnTextChanged", soon)
+    end
+    local scroll = preview.ScrollBox
+    if scroll and scroll.Update then
+        _G.hooksecurefunc(scroll, "Update", function() CUI:SafeCall(tr(), skinRows) end)
+    end
+    if scroll and scroll.Shadows then CUI:SkinHideTextures(scroll.Shadows) end
 end

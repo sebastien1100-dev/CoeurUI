@@ -142,7 +142,8 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        maquette, gestionnaire d'ensembles et flèches jaunes, titre resté jaune sur les autres onglets) ;
        0.57.0 Réputation ; 0.58.0 Compétences ; 0.59.0 Statistiques ; 0.60.0 JcJ ; 0.61.0 Monnaies. Fiche du
        personnage terminée (0.61.0). Grimoire : maquette validée le 28/11/2026 (« 2 · Grimoire »),
-       validé (0.62.0). Liste :
+       validé (0.62.0). Talents : maquette validée le 28/11/2026 (« 3 · Talents »,
+       fond illustré estompé), validé (0.63.0). Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;
@@ -181,6 +182,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Marqueurs de la minicarte (demandé le 28/11/2026) : les points du jeu (groupe vert cerclé de jaune, raid,
+  PNJ, objectifs) redessinés au style de CœurUI, en remplaçant l'image unique dont le jeu les découpe
+  (Minimap:SetBlipTexture), même grille. Groupe : point vert #7FC98A à liseré sombre ; raid : bleu doux ;
+  objectifs : pastille rouge cœur ou losange ; points plus petits. D'abord : relever la grille de l'image
+  de Forever, puis une maquette (deux ou trois styles), puis le code (module Minicarte).
 - Icônes carrées partout (demandé le 28/11/2026) : toute icône d'objet ou de sort montrée par CœurUI ou par
   une fenêtre habillée passe par CUI:SquareItemIcon (Core/UI/Skin.lua : copie sans masque, rognée de 8 %
   toujours, le jeu remettant l'image entière). Fait : fiche du personnage, menu de choix d'une pièce, sacs et

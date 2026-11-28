@@ -496,7 +496,8 @@ end
 -- trait (celles du jeu ont leur cadre dessiné dedans) : gris clair, blanches au survol et sur l'onglet
 -- ouvert (le jeu cache alors son voile « Hider »), au liseré plus clair.
 -- Ordre de Forever : statistiques, ensembles d'équipement, titres.
-local TAB_ICONS = { "Statistiques", "Ensembles", "Titre" }
+-- 4 : le familier (chasseur seulement).
+local TAB_ICONS = { "Statistiques", "Ensembles", "Titre", "Familier" }
 
 local function tabIcon(_, i)
     return TAB_ICONS[i]
@@ -512,6 +513,8 @@ local function tabPane(i)
 end
 
 local sidebarPaints = {}
+-- Dernier petit onglet cliqué : le familier (4) n'a ni panneau fiable ni voile qui change sur Forever.
+local sidebarChosen = 1
 local function paintSidebar()
     for _, paint in ipairs(sidebarPaints) do paint() end
 end
@@ -545,9 +548,13 @@ local function skinSidebarTabs()
             local pane = tabPane(i)
             local function paint()
                 local on
+                local sets, titles = tabPane(2), tabPane(3)
+                local other = (sets and sets:IsShown()) or (titles and titles:IsShown())
                 if i == 1 then
-                    local sets, titles = tabPane(2), tabPane(3)
-                    on = not ((sets and sets:IsShown()) or (titles and titles:IsShown()))
+                    -- Ni ensembles, ni titres, ni familier (dernier onglet cliqué).
+                    on = not other and sidebarChosen ~= 4
+                elseif i == 4 then
+                    on = not other and sidebarChosen == 4
                 elseif pane then
                     on = pane:IsShown()
                 else
@@ -564,13 +571,13 @@ local function skinSidebarTabs()
             if pane then
                 pane:HookScript("OnShow", paintSidebar)
                 pane:HookScript("OnHide", paintSidebar)
-            elseif i == 1 then
-                -- Repeint par les panneaux des deux autres onglets (accrochés à leur tour).
-            elseif hider then
-                _G.hooksecurefunc(hider, "Show", paint)
-                _G.hooksecurefunc(hider, "Hide", paint)
-                if hider.SetShown then _G.hooksecurefunc(hider, "SetShown", paint) end
             end
+            -- Clic : cet onglet devient le choisi ; tous les onglets se repeignent (l'état de la toile et
+            -- de la patte en dépend).
+            tab:HookScript("OnClick", function()
+                sidebarChosen = i
+                paintSidebar()
+            end)
             tab:HookScript("OnEnter", function() tab.cuiOver = true paint() end)
             tab:HookScript("OnLeave", function() tab.cuiOver = false paint() end)
             paint()
@@ -713,6 +720,132 @@ local function skinScene(scene)
     end
 end
 
+-- Page du familier (chasseur) -------------------------------------------------------------------------
+
+-- Titre du familier (« Crocilisque niveau 24 ((Niveau de loyauté 6) Meilleur ami) », jaune, trop long) :
+-- une ligne centrée comme celle du personnage, la famille en blanc, le reste en gris :
+-- « Crocilisque niveau 24 · Niveau de loyauté 6 · Meilleur ami ».
+local function skinPetTitle()
+    local fs = _G.PetCharacterLevelText
+    if not fs or fs.cuiPet then return end
+    fs.cuiPet = true
+    local info = _G.PaperDollPetLevelInfo
+    local anchor = _G.CharacterLevelText
+    if info and anchor then
+        info:ClearAllPoints()
+        info:SetPoint("CENTER", anchor, "CENTER", 0, 0)
+    end
+    fs:SetFont(CUI:GetFont(), 13, "")
+    fs:SetJustifyH("CENTER")
+    fs:SetWordWrap(false)
+    if info then
+        fs:ClearAllPoints()
+        fs:SetPoint("CENTER", info, "CENTER", 0, 0)
+    end
+    local white = string.format("|cff%02x%02x%02x", C.texte[1] * 255, C.texte[2] * 255, C.texte[3] * 255)
+    local busy = false
+    local function restyle(self)
+        if busy then return end
+        local text = self:GetText()
+        if type(text) ~= "string" or issecret(text) then return end
+        busy = true
+        text = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+        local main, rest = text:match("^(.-)%s*(%(.*)$")
+        main = main or text
+        local parts = { }
+        -- La famille (tout sauf « niveau 24 ») en blanc.
+        local family, lvl = main:match("^(.-)%s+(%S+%s+%d+)$")
+        if family and family ~= "" then
+            parts[1] = white .. family .. "|r " .. lvl
+        else
+            parts[1] = main
+        end
+        if rest and rest ~= "" then
+            local inner = rest:match("^%((.*)%)$") or rest
+            inner = inner:gsub("^%((.-)%)%s*", "%1 · ")
+            parts[2] = inner
+        end
+        self:SetText(table.concat(parts, " · "))
+        self:SetTextColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+        busy = false
+    end
+    _G.hooksecurefunc(fs, "SetText", restyle)
+    if fs.SetFormattedText then _G.hooksecurefunc(fs, "SetFormattedText", restyle) end
+    _G.hooksecurefunc(fs, "SetTextColor", function(self)
+        if not busy then
+            busy = true
+            self:SetTextColor(C.texteSecondaire[1], C.texteSecondaire[2], C.texteSecondaire[3])
+            busy = false
+        end
+    end)
+    restyle(fs)
+end
+
+local function skinPet()
+    skinPetTitle()
+    -- Humeur (maquette « 1 quater », façon C) : un cœur dans une petite case ; plein et vert (heureux), à
+    -- moitié et jaune (content), vide, fêlé et rouge (mécontent). L'icône du jeu est cachée ; l'humeur est
+    -- demandée au jeu chaque fois qu'il met la sienne à jour.
+    local mood = _G.PetPaperDollPetHappinessInfo
+    if mood and not mood.cuiPanel then
+        -- Notre case et notre cœur, sur un cadre à part : montré seulement sur la page du familier (le jeu
+        -- laisse le cadre d'humeur affiché sur les autres pages, image cachée).
+        local box = _G.CreateFrame("Frame", nil, mood:GetParent() or mood)
+        box:SetPoint("TOPLEFT", mood, "TOPLEFT", -3, 3)
+        box:SetPoint("BOTTOMRIGHT", mood, "BOTTOMRIGHT", 3, -3)
+        box:SetFrameLevel(mood:GetFrameLevel())
+        mood.cuiPanel = CUI:CreatePanel(box, { radius = 3, fill = C.case, shadow = false })
+        local game = mood.Texture
+        if game then CUI:SkinHide(game) end
+        local heart = box:CreateTexture(nil, "OVERLAY")
+        heart:SetSize(20, 20)
+        heart:SetPoint("CENTER")
+        local MOODS = {
+            [1] = { "HumeurMecontent", C.coeur },
+            [2] = { "HumeurContent", { 0.851, 0.769, 0.416 } }, -- #D9C46A
+            [3] = { "HumeurHeureux", { 0.498, 0.788, 0.541 } }, -- #7FC98A
+        }
+        -- Humeur : demandée au jeu ; sinon lue dans le visage qu'il affiche (son image en contient trois,
+        -- côte à côte : heureux, content, mécontent).
+        local function happiness()
+            local h = _G.GetPetHappiness and _G.GetPetHappiness()
+            if type(h) == "number" and not issecret(h) and MOODS[h] then return h end
+            if game then
+                local left = game:GetTexCoord()
+                if type(left) == "number" and not issecret(left) then
+                    if left < 0.15 then return 3 elseif left < 0.3 then return 2 elseif left < 0.5 then return 1 end
+                end
+            end
+        end
+        local levelInfo = _G.PaperDollPetLevelInfo or _G.PetCharacterLevelText
+        local function paint()
+            local onPetPage = (not levelInfo or levelInfo:IsVisible()) and mood:IsVisible()
+                and (not game or game:IsShown())
+            box:SetShown(onPetPage and true or false)
+            local m = MOODS[happiness() or 0]
+            if not m then heart:Hide() return end
+            heart:SetTexture(CUI.MEDIA .. "Icones\\" .. m[1])
+            heart:SetVertexColor(m[2][1], m[2][2], m[2][3], 1)
+            heart:Show()
+        end
+        if game then
+            for _, method in ipairs({ "SetTexCoord", "SetAtlas", "SetTexture", "Show", "Hide", "SetShown" }) do
+                if game[method] then _G.hooksecurefunc(game, method, paint) end
+            end
+        end
+        mood:HookScript("OnShow", paint)
+        mood:HookScript("OnHide", paint)
+        if levelInfo and levelInfo.HookScript then
+            levelInfo:HookScript("OnShow", paint)
+            levelInfo:HookScript("OnHide", paint)
+        end
+        _G.CharacterFrame:HookScript("OnShow", function() _G.C_Timer.After(0, paint) end)
+        paint()
+    end
+    -- Expérience du familier : barre striée dans une case (verte, la couleur du jeu).
+    CUI:SkinStatBar(_G.PetPaperDollFrameExpBar)
+end
+
 -- Fiche ------------------------------------------------------------------------------------------------
 
 local function skinFiche()
@@ -793,6 +926,7 @@ local function skinFiche()
     skinSidebarTabs()
     skinSlots()
     skinFlyout()
+    skinPet()
     -- Autres pages de la fiche (Reputation.lua...), chacune dans son fichier.
     for _, page in ipairs(M.fichePages or {}) do CUI:SafeCall(CUI:Tr("FJ_FICHE"), page) end
     f:HookScript("OnShow", function()

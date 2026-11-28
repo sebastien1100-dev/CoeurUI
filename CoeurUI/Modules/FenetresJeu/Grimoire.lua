@@ -204,63 +204,7 @@ local function skinBook(sb)
     CUI:SkinEditBox(sb.SearchBox)
     local settings = sb.SettingsDropdown
     if settings then CUI:SkinIconButton(settings, settings.Icon, "Chevron") end
-    -- Suggestions de la recherche : panneau des menus de CœurUI ; lignes sans le fond ni la lueur bleue du
-    -- jeu, bande ardoise au survol, texte gris clair (blanc au survol) ; leur icône gardée.
-    local preview = sb.SearchPreviewContainer
-    if preview then
-        CUI:SkinHideTextures(preview)
-        CUI:CreateTipPanel(preview)
-        -- Lignes : tout bouton portant un texte, où qu'il soit rangé dans le menu (liste défilante ou non).
-        local function rowsOf(frame, depth, out)
-            if depth > 4 then return out end
-            for _, child in ipairs({ frame:GetChildren() }) do
-                local kind = child:GetObjectType()
-                if kind == "Button" and (child.Name or child.Text or (child.GetFontString and child:GetFontString())) then
-                    out[#out + 1] = child
-                elseif kind ~= "Button" then
-                    rowsOf(child, depth + 1, out)
-                end
-            end
-            return out
-        end
-        local function skinRows()
-            for _, row in ipairs(rowsOf(preview, 0, {})) do
-                if not row.cuiRow then
-                    row.cuiRow = true
-                    local icon = row.Icon or row.icon
-                    local hl = row.GetHighlightTexture and row:GetHighlightTexture()
-                    for _, r in ipairs({ row:GetRegions() }) do
-                        if r:GetObjectType() == "Texture" and r ~= icon and r ~= hl then CUI:SkinHide(r) end
-                    end
-                    if hl then
-                        hl:SetColorTexture(0.145, 0.165, 0.204, 1) -- #252A34 : ligne survolée des menus
-                        hl:SetDrawLayer("BACKGROUND", 1)
-                    end
-                    local text = row.Name or row.Text or (row.GetFontString and row:GetFontString())
-                    if text then
-                        local c = C.texteSecondaire
-                        text:SetTextColor(c[1], c[2], c[3])
-                        row:HookScript("OnEnter", function() text:SetTextColor(C.texte[1], C.texte[2], C.texte[3]) end)
-                        row:HookScript("OnLeave", function() text:SetTextColor(c[1], c[2], c[3]) end)
-                    end
-                end
-            end
-        end
-        preview:HookScript("OnShow", function()
-            CUI:SafeCall(tr(), skinRows)
-            _G.C_Timer.After(0, function() CUI:SafeCall(tr(), skinRows) end)
-        end)
-        if sb.SearchBox then
-            local function soon() _G.C_Timer.After(0, function() CUI:SafeCall(tr(), skinRows) end) end
-            sb.SearchBox:HookScript("OnEditFocusGained", soon)
-            sb.SearchBox:HookScript("OnTextChanged", soon)
-        end
-        local scroll = preview.ScrollBox
-        if scroll and scroll.Update then
-            _G.hooksecurefunc(scroll, "Update", function() CUI:SafeCall(tr(), skinRows) end)
-        end
-        if scroll and scroll.Shadows then CUI:SkinHideTextures(scroll.Shadows) end
-    end
+    CUI:SkinSearchPreview(sb.SearchPreviewContainer, sb.SearchBox)
     if sb.HelpPlateButton then CUI:SkinHide(sb.HelpPlateButton) end
 
     -- Pages et changement de page.
@@ -399,10 +343,8 @@ local function setup()
         return
     end
     -- Le grimoire du jeu n'est chargé qu'à sa première ouverture.
-    M:On("ADDON_LOADED", function(_, name)
-        if name == "Blizzard_PlayerSpells" and _G.PlayerSpellsFrame then
-            CUI:SafeCall(tr(), skinFrame, _G.PlayerSpellsFrame)
-        end
+    M:WhenLoaded("Blizzard_PlayerSpells", function()
+        if _G.PlayerSpellsFrame then CUI:SafeCall(tr(), skinFrame, _G.PlayerSpellsFrame) end
     end)
 end
 

@@ -377,18 +377,25 @@ end
 
 -- Heure et couleurs de classe : réglages du jeu ------------------------------------------------
 
-local FORMATS = { hm = "%H:%M", hms = "%H:%M:%S" }
+-- L'heure entre crochets, suivie d'un tiret : « [21:05] - ».
+local FORMATS = { hm = "[%H:%M]", hms = "[%H:%M:%S]" }
 
--- Le format lu par la discussion : l'heure en gris. Le jeu le réécrit (sans couleur) quand le réglage
--- change : on repasse derrière lui.
-local function setTimestampFormat()
+-- Le format lu par la discussion : l'heure et ses crochets en gris, quelle que soit la couleur de la ligne.
+-- Le jeu le réécrit sans couleur (réglage changé, chargement d'une zone...) : on repasse derrière lui,
+-- et une vérification régulière le remet s'il a été perdu.
+local function wantedFormat()
     local fmt = FORMATS[M.db.heure]
-    _G.CHAT_TIMESTAMP_FORMAT = fmt and (GRIS_HEURE .. fmt .. "|r ") or nil
+    return fmt and (GRIS_HEURE .. fmt .. " -|r ") or nil
 end
 
+local function setTimestampFormat()
+    _G.CHAT_TIMESTAMP_FORMAT = wantedFormat()
+end
+
+-- Forever relit le réglage du jeu « showTimestamps » à chaque message (et non CHAT_TIMESTAMP_FORMAT) :
+-- le format complet, couleur et tiret compris, y est écrit (rendu tel quel quand le module est coupé).
 local function applyTimestamps()
-    local fmt = FORMATS[M.db.heure]
-    M:SetCVar("showTimestamps", fmt and (fmt .. " ") or "none")
+    M:SetCVar("showTimestamps", wantedFormat() or "none")
     setTimestampFormat()
     _G.C_Timer.After(0.5, function() if M.enabled then setTimestampFormat() end end)
 end
@@ -624,7 +631,14 @@ end
 function M:OnEnable()
     CUI:AfterCombat(build)
     -- Fenêtres ouvertes plus tard (nouvel onglet, murmure) : habillées au passage.
-    self:Every(2, function() if built then skinAll() end end)
+    self:Every(2, function()
+        if not built then return end
+        skinAll()
+        local wanted = wantedFormat()
+        if wanted and _G.CHAT_TIMESTAMP_FORMAT ~= wanted then setTimestampFormat() end
+        local cvar = _G.C_CVar.GetCVar("showTimestamps")
+        if (wanted or "none") ~= cvar and not _G.InCombatLockdown() then applyTimestamps() end
+    end)
     self:Every(0.2, onHoverTick)
     self:On("CVAR_UPDATE", function()
         if built then _G.C_Timer.After(0, function() if M.enabled then setTimestampFormat() end end) end

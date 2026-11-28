@@ -2,6 +2,30 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.63.0 · 28/11/2026
+
+- Skin Blizzard : les talents au style « Givre » (maquette « 3 · Talents »), avec leur interrupteur sur la
+  page du module. L'illustration de classe du jeu est gardée, estompée, sur une case ardoise ; plus de cadre
+  doré, de séparations ni de grande barre orangée.
+- En-tête de chaque arbre : icône carrée en case, points dépensés en petite case, nom en gras.
+- Talents : icône carrée en case ; indisponible gris et sombre ; disponible au liseré gris clair ; en partie
+  au liseré vert ; au maximum au liseré blanc ; survol au liseré doré. Rang pris (maquette « 3 bis ») :
+  pastille sous l'icône, « 1/5 » en vert en cours, « 5 » en blanc complet. Liens en traits fins,
+  plus clairs quand ils sont ouverts.
+- Haut : onglets « PRINCIPALE » et « SECONDAIRE » (le verrouillé grisé avec notre cadenas), « Talents
+  restants » et son nombre dans une case (vert quand il en reste), recherche et suggestions de CœurUI.
+- Bas : « Appliquer changements » et les autres boutons de CœurUI.
+- Fiche du personnage (chasseur) : le quatrième petit onglet, celui du familier, était une case vide ; il a
+  notre empreinte de patte, et la toile ne reste plus allumée quand il est ouvert.
+- Fiche, page du familier (chasseur) : le titre jaune débordait de la fenêtre ; il tient sur une ligne
+  centrée, « Crocilisque niveau 24 · Niveau de loyauté 6 · Meilleur ami », la famille en blanc, le reste en
+  gris. Humeur (maquette « 1 quater ») : un cœur dans une petite case, plein et vert (heureux), à moitié
+  et jaune (content), vide, fêlé et rouge (mécontent). Barre d'expérience striée verte dans une case.
+- Discussion : l'heure est entre crochets suivie d'un tiret, « [21:05] - », toujours en gris discret ; elle prenait parfois la
+  couleur du message (le jeu réécrivait son format sans couleur) : remise toutes les 2 secondes si besoin.
+- `/cui cadre Cadre.Partie` : relève une pièce sans nom global.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.62.0 · 28/11/2026
 
 - Skin Blizzard : le grimoire au style « Givre » (maquette « 2 · Grimoire »), avec son interrupteur sur la

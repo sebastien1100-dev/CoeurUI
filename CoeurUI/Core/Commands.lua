@@ -166,7 +166,14 @@ local function inspect(arg)
     end
     local frame
     if arg ~= "" then
+        -- Nom global, ou chemin « Cadre.Partie.SousPartie » (pièces sans nom global).
         frame = _G[arg]
+        if not frame and arg:find(".", 1, true) then
+            for part in arg:gmatch("[^%.]+") do
+                if frame == nil then frame = _G[part] elseif type(frame) == "table" then frame = frame[part] end
+                if frame == nil then break end
+            end
+        end
     else
         local foci = _G.GetMouseFoci and _G.GetMouseFoci()
         frame = (type(foci) == "table" and foci[1]) or (_G.GetMouseFocus and _G.GetMouseFocus())

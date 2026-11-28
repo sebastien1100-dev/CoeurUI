@@ -503,6 +503,52 @@ def reduire(d):
     ligne(d, (11, 13), (4, 20))
 
 
+def familier(d):
+    """Empreinte de patte (le familier du chasseur)."""
+    tampon(d, [p(*q) for q in bezier((12, 20.5), (7, 20.5), (6.5, 16), (9, 13.5))
+               + bezier((9, 13.5), (11, 11.5), (13, 11.5), (15, 13.5))
+               + bezier((15, 13.5), (17.5, 16), (17, 20.5), (12, 20.5))])
+    for cx, cy in ((5.5, 10.5), (9.5, 6), (14.5, 6), (18.5, 10.5)):
+        cercle(d, cx, cy, 1.9)
+
+
+# Humeur du familier (maquette « 1 quater », façon C) : un cœur plein, à moitié, vide et fêlé ---------
+
+def contour_coeur():
+    return (bezier((12, 20), (6, 15.5), (3.5, 12.5), (3.5, 9))
+            + bezier((3.5, 9), (3.5, 6.5), (5.5, 4.5), (8, 4.5))
+            + bezier((8, 4.5), (9.7, 4.5), (11.1, 5.4), (12, 6.8))
+            + bezier((12, 6.8), (12.9, 5.4), (14.3, 4.5), (16, 4.5))
+            + bezier((16, 4.5), (18.5, 4.5), (20.5, 6.5), (20.5, 9))
+            + bezier((20.5, 9), (20.5, 12.5), (18, 15.5), (12, 20)))
+
+
+def coeur_rempli(d, depuis_y=None):
+    """Intérieur du cœur, en entier ou à partir d'une hauteur (moitié basse)."""
+    from PIL import Image, ImageDraw as Dessin
+    taille = int(TAILLE * SUR)
+    calque = Image.new("L", (taille, taille), 0)
+    Dessin.Draw(calque).polygon([p(*q) for q in contour_coeur()], fill=255)
+    if depuis_y is not None:
+        Dessin.Draw(calque).rectangle([0, 0, taille, p(0, depuis_y)[1]], fill=0)
+    d.bitmap((0, 0), calque, fill=BLANC)
+
+
+def humeur_heureux(d):
+    coeur_rempli(d)
+    tampon(d, [p(*q) for q in contour_coeur()])
+
+
+def humeur_content(d):
+    coeur_rempli(d, 12)
+    tampon(d, [p(*q) for q in contour_coeur()])
+
+
+def humeur_mecontent(d):
+    tampon(d, [p(*q) for q in contour_coeur()])
+    ligne(d, (12, 6.8), (10.5, 10), (13, 12.5), (11, 16))
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
@@ -512,7 +558,8 @@ ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage
           "ZoomPlus": zoom_plus, "ZoomMoins": zoom_moins, "TournerGauche": tourner_gauche,
           "TournerDroite": tourner_droite, "RangerSac": ranger_sac, "Ignorer": ignorer,
           "ResArcanes": res_arcanes, "ResFeu": res_feu, "ResGivre": res_givre, "ResNature": res_nature,
-          "ResOmbre": res_ombre, "Agrandir": agrandir, "Reduire": reduire}
+          "ResOmbre": res_ombre, "Agrandir": agrandir, "Reduire": reduire, "Familier": familier,
+          "HumeurHeureux": humeur_heureux, "HumeurContent": humeur_content, "HumeurMecontent": humeur_mecontent}
 
 
 def main():

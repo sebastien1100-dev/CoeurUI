@@ -1,5 +1,11 @@
 # Discussion : tests en jeu
 
+## 0.63.0 · heure entre crochets
+
+1. Heure « [21:05] - » réglée : chaque ligne commence par l'heure entre crochets et un tiret, en gris discret, même sur
+   les lignes jaunes (système, murmures) ; après un changement de zone, toujours gris.
+2. Réglage « [21:05:42] - » : les secondes s'ajoutent ; « Aucune » : plus d'heure.
+
 ## 0.22.0 · première version
 
 1. **Redémarrer le jeu** (nouveaux fichiers). Aucune erreur Lua. `/cui version` : « 0.22.0 ».

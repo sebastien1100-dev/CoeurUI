@@ -1,5 +1,23 @@
 # Skin Blizzard : tests en jeu
 
+## 0.63.0 · talents
+
+1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Talents » actif. Aucune erreur Lua.
+2. Fenêtre du grimoire, onglet Talents : illustration de classe estompée sur fond ardoise ; plus de cadre
+   doré ni de barre orangée ; titre et croix de CœurUI.
+3. En-têtes « Assassinat », « Combat », « Finesse » : icône carrée en case, points dans une petite case,
+   nom en gras.
+4. Talents : indisponibles gris et sombres ; disponibles en couleurs au liseré gris clair ; pris en partie
+   au liseré vert ; au maximum au liseré blanc ; survol : liseré doré et infobulle. Sous chaque talent pris,
+   une pastille : « 1/5 » en vert tant qu'il n'est pas complet, « 5 » en blanc quand il l'est.
+5. Mettre un point : le talent passe au vert, le rang s'affiche ; « Talents restants » diminue (vert tant
+   qu'il en reste) ; « Appliquer changements » marche.
+6. Liens : traits fins, sombres tant que le talent du dessus n'est pas pris, clairs ensuite.
+7. Onglets « PRINCIPALE » (ouvert) et « SECONDAIRE » (grisé, cadenas) ; recherche : case sombre,
+   suggestions de CœurUI.
+8. Couper l'interrupteur « Talents » : au prochain /reload, les talents du jeu reviennent (le grimoire reste
+   habillé).
+
 ## 0.62.0 · grimoire
 
 1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Grimoire » actif. Aucune erreur Lua.
