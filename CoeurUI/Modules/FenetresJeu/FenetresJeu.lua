@@ -14,10 +14,12 @@ local M = CUI:RegisterModule({
     needsReload = true,
     defaults = {
         fiche = true,
+        grimoire = true,
     },
     settings = {
         { type = "section", text = "FJ_FENETRES" },
         { type = "toggle", key = "fiche", label = "FJ_FICHE", description = "FJ_ACTIF_NOTE" },
+        { type = "toggle", key = "grimoire", label = "FJ_GRIMOIRE", description = "FJ_ACTIF_NOTE" },
     },
 })
 

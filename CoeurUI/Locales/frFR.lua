@@ -20,6 +20,7 @@ L.AIDE = {
 }
 L.CADRE_TITRE = "Pièces du cadre"
 L.CADRE_INCONNU = "cadre introuvable : « %s »."
+L.CADRE_ATTENTE = "Relevé du cadre sous la souris dans %d s : place la souris dessus."
 L.CADRE_AIDE = "Ctrl+C pour copier ; aussi gardé dans la sauvegarde de CœurUI au prochain /reload."
 
 L.VERSION = "version %s."
@@ -619,6 +620,7 @@ L.BUL_COULEURS_NOTE = "Coupé : tout en gris clair."
 L.FJ_NOM = "Skin Blizzard"
 L.FJ_DESC = "Les fenêtres du jeu habillées au style de CœurUI, une à une : un interrupteur par fenêtre."
 L.FJ_FICHE = "Fiche du personnage"
+L.FJ_GRIMOIRE = "Grimoire"
 L.FJ_FENETRES = "FENÊTRES HABILLÉES"
 L.FJ_ACTIF_NOTE = "Coupé : la fenêtre du jeu revient après un /reload."
 L.FJ_PAGE_PERSO = "Personnage"

@@ -155,6 +155,15 @@ local function inspectFrame(root)
 end
 
 local function inspect(arg)
+    -- « /cui cadre 5 » : le cadre sous la souris dans 5 secondes (le temps d'ouvrir un menu qui se ferme
+    -- quand on tape dans la discussion).
+    local delay = tonumber(arg)
+    if delay then
+        delay = math.max(1, math.min(30, delay))
+        CUI:Print(L.CADRE_ATTENTE:format(delay))
+        _G.C_Timer.After(delay, function() inspect("") end)
+        return
+    end
     local frame
     if arg ~= "" then
         frame = _G[arg]

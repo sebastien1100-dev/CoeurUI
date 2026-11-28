@@ -1,5 +1,23 @@
 # Skin Blizzard : tests en jeu
 
+## 0.62.0 · grimoire
+
+1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Grimoire » actif. Aucune erreur Lua.
+2. Ouvrir le grimoire (P) : cadre ardoise de CœurUI, « Grimoire » au centre, « GRIMOIRE » en petites
+   capitales à gauche ; croix grise ; « agrandir » au trait gris, il agrandit, puis « réduire » ; glisser
+   par le bandeau : la fenêtre suit et garde sa place.
+3. Catégories (Général, arbres) : petites cases, icône carrée ; l'ouverte plus claire au liseré clair ;
+   clic : la page change, tout reste habillé.
+4. Recherche : case sombre, texte d'aide gris ; taper un nom : la liste filtrée reste habillée.
+5. Page : case ardoise plus sombre, plus de parchemin ; titre « Général » en gras sur un trait.
+6. Sorts : icône carrée dans une case ; nom blanc, « Passif » / « Rang 2 » gris ; passifs un peu ternes ;
+   survol : liseré doré, infobulle de CœurUI ; glisser un sort sur une barre : marche comme avant.
+7. Sort pas encore sur une barre (Auras) : pastille rouge dans le coin ; le poser sur une barre : la
+   pastille disparaît. Bénédictions : petit chevron sur le bord droit ; clic : le choix s'ouvre.
+8. Bas : « Page 1/1 » gris, flèches grises sombres (une seule page) ; onglets « TALENTS » et « GRIMOIRE »
+   en petites capitales, l'ouvert plus clair.
+9. Couper l'interrupteur : au prochain /reload le grimoire du jeu revient.
+
 ## 0.61.0 · page Monnaies
 
 1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet pièces.

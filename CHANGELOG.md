@@ -2,6 +2,23 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.62.0 · 28/11/2026
+
+- Skin Blizzard : le grimoire au style « Givre » (maquette « 2 · Grimoire »), avec son interrupteur sur la
+  page du module. Cadre de CœurUI (plus de portrait, de métal ni de boutons rouges), croix et « agrandir »
+  au trait, page rappelée à gauche du titre, déplaçable par son bandeau.
+- Catégories en petites cases à icône carrée ; recherche dans une case sombre ; page en case ardoise, titre
+  en gras sur un trait.
+- Sorts : icône carrée dans une case du thème, nom blanc, sous-titre gris ; passifs un peu ternes ; survol au
+  liseré doré ; sort absent des barres d'actions : pastille rouge cœur ; sort à choix : petit chevron.
+- « Page 1/1 », flèches en petites cases (grisées sur une seule page) ; onglets Talents et Grimoire en
+  petites capitales.
+- Recherche du grimoire : case sombre, croix « effacer » au trait ; suggestions dans le panneau des menus
+  de CœurUI, sans le fond ni la lueur bleue du jeu.
+- `/cui cadre 5` : relève le cadre sous la souris dans 5 secondes (le temps d'ouvrir un menu qui se ferme
+  quand on tape dans la discussion).
+- Redémarrer le jeu (nouveau fichier, nouvelles icônes).
+
 ## 0.61.0 · 28/11/2026
 
 - Fiche du personnage, page Monnaies au style « Givre » : sections repliables, monnaies avec leur icône

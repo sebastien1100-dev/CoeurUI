@@ -485,6 +485,24 @@ def res_ombre(d):
     tampon(d, [p(*q) for q in outer + inner])
 
 
+# Fenêtres du jeu : agrandir et réduire ------------------------------------------------------------
+
+def agrandir(d):
+    """Deux flèches vers les coins (agrandir la fenêtre)."""
+    ligne(d, (14, 4), (20, 4), (20, 10))
+    ligne(d, (20, 4), (13, 11))
+    ligne(d, (10, 20), (4, 20), (4, 14))
+    ligne(d, (4, 20), (11, 13))
+
+
+def reduire(d):
+    """Deux flèches vers le centre (réduire la fenêtre)."""
+    ligne(d, (13, 5), (13, 11), (19, 11))
+    ligne(d, (13, 11), (20, 4))
+    ligne(d, (11, 19), (11, 13), (5, 13))
+    ligne(d, (11, 13), (4, 20))
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
@@ -494,7 +512,7 @@ ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage
           "ZoomPlus": zoom_plus, "ZoomMoins": zoom_moins, "TournerGauche": tourner_gauche,
           "TournerDroite": tourner_droite, "RangerSac": ranger_sac, "Ignorer": ignorer,
           "ResArcanes": res_arcanes, "ResFeu": res_feu, "ResGivre": res_givre, "ResNature": res_nature,
-          "ResOmbre": res_ombre}
+          "ResOmbre": res_ombre, "Agrandir": agrandir, "Reduire": reduire}
 
 
 def main():

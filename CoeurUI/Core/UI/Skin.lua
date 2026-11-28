@@ -221,11 +221,18 @@ function CUI:SkinIconButton(b, icon, pictoName)
     for _, key in ipairs({ "NormalTexture", "PushedTexture", "HighlightTexture" }) do
         if b[key] and b[key] ~= icon then self:SkinHide(b[key]) end
     end
+    -- Toute autre texture du jeu (lueur de survol posée à part, sur la couche HIGHLIGHT...).
+    for _, r in ipairs({ b:GetRegions() }) do
+        if r:GetObjectType() == "Texture" and r ~= icon then self:SkinHide(r) end
+    end
     b.cuiPanel = self:CreatePanel(b, { radius = 3, fill = C.case, shadow = false, inset = 3 })
+    -- Inactif (page unique...) : icône gris sombre, pas de survol.
     local function paint(over)
+        local enabled = not b.IsEnabled or b:IsEnabled()
+        over = over and enabled
         b.cuiPanel.border:SetColor(over and C.texteDiscret or C.lisereSombre)
         if icon then
-            local c = over and C.texte or C.texteSecondaire
+            local c = (not enabled) and C.texteDesactive or (over and C.texte or C.texteSecondaire)
             icon:SetDesaturated(true)
             icon:SetVertexColor(c[1], c[2], c[3], 1)
         end
@@ -233,6 +240,134 @@ function CUI:SkinIconButton(b, icon, pictoName)
     paint(false)
     b:HookScript("OnEnter", function() paint(true) end)
     b:HookScript("OnLeave", function() paint(false) end)
+    for _, method in ipairs({ "Enable", "Disable", "SetEnabled" }) do
+        if b[method] then _G.hooksecurefunc(b, method, function() paint(b:IsMouseOver()) end) end
+    end
+end
+
+-- Onglet texte du jeu (Left, Middle, Right et leurs versions Active et Highlight ; Text) : petite case du
+-- thème, texte en petites capitales ; ouvert (LeftActive montrée) : case plus claire, liseré clair, texte
+-- blanc ; survol : texte blanc.
+function CUI:SkinTextTab(tab)
+    if not tab or tab.cuiTab then return end
+    tab.cuiTab = true
+    local active = tab.LeftActive
+    for _, key in ipairs({ "Left", "Middle", "Right", "LeftActive", "MiddleActive", "RightActive",
+                           "LeftHighlight", "MiddleHighlight", "RightHighlight" }) do
+        if tab[key] then self:SkinHide(tab[key]) end
+    end
+    local hl = tab.GetHighlightTexture and tab:GetHighlightTexture()
+    if hl then self:SkinHide(hl) end
+    local panel = self:CreatePanel(tab, { radius = 3, fill = C.case, shadow = false, inset = { 2, 3 } })
+    local text = tab.Text or (tab.GetFontString and tab:GetFontString())
+    local busy = false
+    local function paint()
+        if busy then return end
+        busy = true
+        local on = active and active:IsShown()
+        panel.border:SetColor(on and C.texteDiscret or (tab.cuiOver and C.bordureDiscrete or C.lisereSombre))
+        panel:SetFillColor(on and C.panneau or C.case)
+        if text then
+            local c = (on or tab.cuiOver) and C.texte or C.texteSecondaire
+            text:SetTextColor(c[1], c[2], c[3])
+        end
+        busy = false
+    end
+    if text then
+        text:SetFont(self:GetFont(), 10, "")
+        local inner = false
+        local function upper(fs, t)
+            if inner or type(t) ~= "string" then return end
+            inner = true
+            fs:SetText(CUI:Upper(t))
+            inner = false
+            paint()
+        end
+        _G.hooksecurefunc(text, "SetText", upper)
+        _G.hooksecurefunc(text, "SetTextColor", paint)
+        upper(text, text:GetText())
+    end
+    if active then
+        _G.hooksecurefunc(active, "Show", paint)
+        _G.hooksecurefunc(active, "Hide", paint)
+        if active.SetShown then _G.hooksecurefunc(active, "SetShown", paint) end
+    end
+    tab:HookScript("OnEnter", function() tab.cuiOver = true paint() end)
+    tab:HookScript("OnLeave", function() tab.cuiOver = false paint() end)
+    tab.cuiPaint = paint
+    paint()
+end
+
+-- Onglet à icône du jeu (icône Icon et son masque, cadres SquareBackground... ; ouvert :
+-- SquareBackgroundActive montrée) : petite case, icône carrée ; ouverte : case plus claire, liseré clair,
+-- icône vive ; les autres un peu ternes.
+function CUI:SkinIconTab(tab)
+    if not tab or tab.cuiTab then return end
+    tab.cuiTab = true
+    local active = tab.SquareBackgroundActive
+    for _, r in ipairs({ tab:GetRegions() }) do
+        if r:GetObjectType() == "Texture" and r ~= tab.Icon then self:SkinHide(r) end
+    end
+    local icon = tab.Icon
+    if icon then
+        if tab.IconMask and icon.RemoveMaskTexture then pcall(icon.RemoveMaskTexture, icon, tab.IconMask) end
+        icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        icon:ClearAllPoints()
+        icon:SetPoint("CENTER")
+        icon:SetSize(26, 26)
+    end
+    local box = _G.CreateFrame("Frame", nil, tab)
+    box:SetSize(32, 32)
+    box:SetPoint("CENTER")
+    box:SetFrameLevel(math.max(0, tab:GetFrameLevel() - 1))
+    local panel = self:CreatePanel(box, { radius = 3, fill = C.case, shadow = false })
+    local function paint()
+        local on = active and active:IsShown()
+        panel.border:SetColor(on and C.texteDiscret or (tab.cuiOver and C.bordureDiscrete or C.lisereSombre))
+        panel:SetFillColor(on and C.panneau or C.case)
+        if icon then
+            local k = (on or tab.cuiOver) and 1 or 0.6
+            icon:SetVertexColor(k, k, k, 1)
+        end
+    end
+    if active then
+        _G.hooksecurefunc(active, "Show", paint)
+        _G.hooksecurefunc(active, "Hide", paint)
+        if active.SetShown then _G.hooksecurefunc(active, "SetShown", paint) end
+    end
+    tab:HookScript("OnEnter", function() tab.cuiOver = true paint() end)
+    tab:HookScript("OnLeave", function() tab.cuiOver = false paint() end)
+    tab.cuiPaint = paint
+    paint()
+end
+
+-- Champ de saisie du jeu (bords Left, Middle, Right) : case sombre du thème ; texte d'aide en gris.
+function CUI:SkinEditBox(eb)
+    if not eb or eb.cuiEdit then return end
+    eb.cuiEdit = true
+    for _, key in ipairs({ "Left", "Middle", "Right", "Mid" }) do
+        if eb[key] then self:SkinHide(eb[key]) end
+    end
+    local name = eb.GetName and eb:GetName()
+    if name then
+        for _, suffix in ipairs({ "Left", "Middle", "Right", "Mid" }) do
+            if _G[name .. suffix] then self:SkinHide(_G[name .. suffix]) end
+        end
+    end
+    -- Case dessinée sur le champ lui-même (couche du fond) : un cadre à part finissait sous la fenêtre.
+    local panel = self:CreatePanel(eb, { radius = 3, fill = C.case, shadow = false, inset = { -4, 2 } })
+    -- Croix « effacer » du jeu (rond) : au trait gris.
+    local clear = eb.clearButton or eb.ClearButton
+    if clear then
+        self:SkinCloseButton(clear)
+        clear:SetSize(16, 16)
+    end
+    if eb.Instructions then
+        local c = C.texteDiscret
+        eb.Instructions:SetTextColor(c[1], c[2], c[3])
+    end
+    eb:HookScript("OnEditFocusGained", function() panel.border:SetColor(C.texteDiscret) end)
+    eb:HookScript("OnEditFocusLost", function() panel.border:SetColor(C.lisereSombre) end)
 end
 
 -- Case d'objet ------------------------------------------------------------------------------------
