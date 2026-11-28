@@ -478,8 +478,8 @@ function CUI:SkinRowHighlight(frame)
 end
 
 -- En-tête de section repliable (bouton du jeu : fond, « - » ou « + » StateIcon, nom Name) : fond caché,
--- notre chevron (vers le bas : ouvert, vers la droite : replié), nom en petites capitales grises, trait
--- sombre dessous ; blancs au survol.
+-- notre chevron à gauche, devant le nom (vers le bas : ouvert, vers la droite : replié ; le jeu met son
+-- « - » à droite), nom en petites capitales grises, trait sombre dessous ; blancs au survol.
 function CUI:SkinListHeader(row)
     if not row or row.cuiHeader then return end
     row.cuiHeader = true
@@ -488,12 +488,17 @@ function CUI:SkinListHeader(row)
     if hl then self:SkinHide(hl) end
     local state, name = row.StateIcon, row.Name
     local chevron = self:CreateChevron(row, "OVERLAY")
-    if state then
-        self:SkinHide(state)
-        chevron:SetPoint(state, "CENTER", 0, 0)
-    else
-        chevron:SetPoint(row, "LEFT", 10, 0)
+    if state then self:SkinHide(state) end
+    chevron:SetPoint(row, "LEFT", 14, 0)
+    -- Le nom passe juste après le chevron (remis à chaque mise à jour, le jeu pouvant le replacer).
+    local function placeName()
+        if not name then return end
+        name:ClearAllPoints()
+        name:SetPoint("LEFT", row, "LEFT", 26, 0)
+        name:SetPoint("RIGHT", row, "RIGHT", -8, 0)
+        name:SetJustifyH("LEFT")
     end
+    placeName()
     if name then
         name:SetFont(self:GetFont(), 10, "")
         local busy = false
@@ -523,6 +528,7 @@ function CUI:SkinListHeader(row)
         local c = row.cuiOver and C.texte or C.texteDiscret
         chevron:SetColor(c)
         if name then name:SetTextColor(c[1], c[2], c[3]) end
+        placeName()
         painting = false
     end
     if state then _G.hooksecurefunc(state, "SetAtlas", paint) end

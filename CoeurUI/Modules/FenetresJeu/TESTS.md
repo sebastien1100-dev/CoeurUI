@@ -1,5 +1,16 @@
 # Skin Blizzard : tests en jeu
 
+## 0.61.0 · page Monnaies
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet pièces.
+2. Sans monnaie : liste vide sans décor, traits sombres en haut et en bas, défilement fin ; à droite
+   « Sélectionnez une monnaie... » en gris.
+3. Avec une monnaie (à vérifier dès qu'il y en a une) : section repliable en petites capitales ; ligne :
+   icône carrée dans une petite case, nom gris clair, quantité blanche ; survol : bande plus claire.
+4. Détail d'une monnaie : titre en gras, trait, texte gris ; cases « Inutilisée », « Montrer dans le sac »
+   de CœurUI ; bouton « Transférer » de CœurUI.
+5. Journal des transferts (si la monnaie se transfère) : cadre de CœurUI, croix grise, plus de métal.
+
 ## 0.60.0 · page JcJ
 
 1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet épées croisées.

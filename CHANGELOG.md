@@ -2,6 +2,19 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.61.0 · 28/11/2026
+
+- Fiche du personnage, page Monnaies au style « Givre » : sections repliables, monnaies avec leur icône
+  dans une petite case, nom gris clair, quantité blanche, bande plus claire au survol, défilement fin.
+- Détail : titre en gras, trait sombre, textes gris ; cases « Inutilisée » et « Montrer dans le sac » et
+  bouton « Transférer » de CœurUI.
+- Journal des transferts : cadre des fenêtres de CœurUI au lieu du cadre métallique, croix grise.
+- Sections repliables (réputation, compétences, statistiques, monnaies) : le chevron passe à gauche, devant
+  le nom, comme sur la maquette (il restait à la place du « - » du jeu, à droite).
+- Monnaies : la description restait blanche ; elle est en gris clair.
+- Toutes les pages de la fiche du personnage sont habillées.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.60.0 · 28/11/2026
 
 - Fiche du personnage, page JcJ au style « Givre » (maquette « 1 ter ») : le blason de faction du jeu est

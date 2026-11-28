@@ -140,7 +140,8 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        (nos icônes, plus d'or). Étapes restantes, une par version, testée en jeu :
        0.56.0 page Personnage finie (résistances, icônes d'équipement carrées, cases vides unies comme la
        maquette, gestionnaire d'ensembles et flèches jaunes, titre resté jaune sur les autres onglets) ;
-       0.57.0 Réputation ; 0.58.0 Compétences ; 0.59.0 Statistiques ; 0.60.0 JcJ ; 0.61.0 Monnaies. Liste :
+       0.57.0 Réputation ; 0.58.0 Compétences ; 0.59.0 Statistiques ; 0.60.0 JcJ ; 0.61.0 Monnaies. Fiche du
+       personnage terminée (0.61.0). Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;
