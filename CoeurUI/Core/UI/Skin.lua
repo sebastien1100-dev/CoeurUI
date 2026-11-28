@@ -536,6 +536,15 @@ end
 -- Barre du jeu (« common-stat-bar » : fond, remplissage Fill teinté et masqué, texte Text) : une case
 -- sombre ; notre remplissage strié suit la largeur et la couleur de celui du jeu, devenu invisible.
 local STAT_BAR_H = 14
+-- Barres dont la couleur est dessinée dans l'image du jeu (« common-stat-bar-<couleur> ») : la nôtre.
+local STAT_BAR_COLORS = {
+    blue = { 0.29, 0.47, 0.72 },   -- #4A78B8 (compétences, comme la maquette)
+    green = { 0.25, 0.64, 0.30 },
+    red = { 0.72, 0.23, 0.23 },
+    yellow = { 0.79, 0.66, 0.23 },
+    orange = { 0.76, 0.42, 0.18 },
+    purple = { 0.55, 0.35, 0.75 },
+}
 function CUI:SkinStatBar(bar)
     if not bar or bar.cuiBar then return end
     bar.cuiBar = true
@@ -560,9 +569,16 @@ function CUI:SkinStatBar(bar)
         local function sync()
             if inside then return end
             inside = true
-            local r, g, b = fill:GetVertexColor()
-            if type(r) == "number" and not issecret(r) then copy:SetVertexColor(r, g, b, 1) end
-            copy:SetShown(fill:IsShown() and (fill:GetWidth() or 0) > 1)
+            -- Couleur : dans le nom de l'image (« common-stat-bar-blue »...) ; image blanche : sa teinte.
+            local atlas = fill.GetAtlas and fill:GetAtlas()
+            local named = type(atlas) == "string" and not issecret(atlas) and STAT_BAR_COLORS[atlas:match("%-(%a+)$") or ""]
+            if named then
+                copy:SetVertexColor(named[1], named[2], named[3], 1)
+            else
+                local r, g, b = fill:GetVertexColor()
+                if type(r) == "number" and not issecret(r) then copy:SetVertexColor(r, g, b, 1) end
+            end
+            copy:SetShown(fill:IsShown())
             fill:SetAlpha(0)
             inside = false
         end

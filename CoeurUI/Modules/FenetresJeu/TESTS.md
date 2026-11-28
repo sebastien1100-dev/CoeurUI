@@ -1,5 +1,18 @@
 # Skin Blizzard : tests en jeu
 
+## 0.58.0 · page Compétences
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet marteau.
+2. « MÉTIERS », « COMPÉTENCES D'ARMES »... : petites capitales grises, chevron, trait sombre ; clic : la
+   section se replie et revient.
+3. Compétences : noms gris clair ; barres striées gris bleuté dans une case, « 23 / 30 » blanc lisible ;
+   survol et ligne choisie : bande plus claire.
+4. Détail à droite (cliquer « Minage ») : nom en gras blanc, traits sombres, barre « 1 / 75 » pareille,
+   description en gris clair ; choisir une arme (Épées) : intertitres « CONTRE LES BOSS DE RAID »,
+   « ADVERSAIRE DE NIVEAU ÉGAL » en petites capitales grises sur un trait, plus de bandeau doré ; changer
+   de compétence : pareil.
+5. Réputation : rien n'a changé (barres de la couleur de l'attitude).
+
 ## 0.57.0 · page Réputation
 
 1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Ouvrir la fiche, onglet médaille.

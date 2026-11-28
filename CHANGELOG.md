@@ -2,6 +2,17 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.58.0 · 28/11/2026
+
+- Fiche du personnage, page Compétences au style « Givre » : sections repliables (chevron, petites
+  capitales), compétences en gris clair, barres striées gris bleuté dans une case, ligne survolée ou choisie
+  sur une bande plus claire, défilement fin ; détail à droite : nom en gras, traits sombres, même barre,
+  description en gris clair ; intertitres du détail (« Contre les boss de raid »...) en petites capitales
+  grises sur un trait sombre, au lieu du bandeau doré.
+- Barres dont la couleur est dessinée dans l'image du jeu (bleu des compétences...) : notre barre striée
+  prend cette couleur (elle restait blanche).
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.57.0 · 28/11/2026
 
 - Fiche du personnage, page Réputation au style « Givre » : sections repliables avec notre chevron et des
