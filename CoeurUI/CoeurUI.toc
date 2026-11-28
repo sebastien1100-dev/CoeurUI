@@ -2,7 +2,7 @@
 ## Title: CœurUI
 ## Notes: Interface minimaliste, en modules qu'on active un par un.
 ## Author: sebastien1100-dev
-## Version: 0.68.0
+## Version: 0.69.0
 ## IconTexture: Interface\AddOns\CoeurUI\Media\Icone
 ## SavedVariables: CoeurUIDB
 ## SavedVariablesPerCharacter: CoeurUICharDB
@@ -54,3 +54,4 @@ Modules\FenetresJeu\Grimoire.lua
 Modules\FenetresJeu\Talents.lua
 Modules\FenetresJeu\Metiers.lua
 Modules\FenetresJeu\Carte.lua
+Modules\FenetresJeu\MenuJeu.lua

@@ -152,6 +152,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        - talents ;
        - métiers ;
        - dialogues des PNJ et des quêtes (accepter, rendre, choix de récompense) ;
+       - menu de jeu (Échap ; maquette « 6 · Menu de jeu », 0.69.0) ;
        - fenêtres de confirmation du jeu (« Abandonner la quête ? », « Oui » / « Non »... ; demandé le 28/11/2026) ;
        - fenêtre de butin et jets de butin en groupe ;
        - marchand (achat, vente, réparation, rachat) ;

@@ -2,6 +2,15 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.69.0 · 28/11/2026
+
+- Skin Blizzard : le menu de jeu (Échap) au style « Givre » (maquette « 6 · Menu de jeu »), avec son
+  interrupteur. Cadre ardoise sans métal, « Menu de jeu » en gras au centre ; boutons plats graphite, texte
+  gris clair, blanc au survol avec un liseré gris clair ; les boutons ajoutés par d'autres addons aussi.
+- Menu de jeu : nouveau bouton « CœurUI » sous celui de Polestar ; il ferme le menu et ouvre la fenêtre de
+  CœurUI.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.68.0 · 28/11/2026
 
 - Barres d'actions : nouveau réglage « Opacité des cases vides » (barres 1 à 8, page « Barres », section

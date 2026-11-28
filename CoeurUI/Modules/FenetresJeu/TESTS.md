@@ -1,5 +1,16 @@
 # Skin Blizzard : tests en jeu
 
+## 0.69.0 · menu de jeu
+
+1. **Redémarrer le jeu** (nouveau fichier). Page « Skin Blizzard » : interrupteur « Menu de jeu » actif.
+2. Échap : cadre ardoise, plus de métal ni d'étiquette ; « Menu de jeu » en gras, blanc, en haut au centre.
+3. Boutons plats graphite, texte gris clair ; survol : fond plus clair, texte blanc, liseré gris clair. Bouton
+   inactif (s'il y en a) : texte gris sombre. « Polestar » au même style.
+4. Chaque bouton marche : Options, Add-ons, Mode Édition, Macros, Retour au jeu ; Déconnexion et Quitter
+   (annuler ensuite). Fermer et rouvrir le menu plusieurs fois : le style reste.
+5. Bouton « CœurUI » juste sous « Polestar » (au même style) : clic, le menu se ferme et la fenêtre de CœurUI
+   s'ouvre. Rouvrir le menu : un seul bouton « CœurUI ».
+
 ## 0.67.0 · carte et journal des quêtes
 
 1. **Redémarrer le jeu** (nouveau fichier, nouvelles icônes). Aucune erreur Lua. Page « Skin Blizzard » :

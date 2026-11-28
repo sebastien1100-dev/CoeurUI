@@ -18,6 +18,7 @@ local M = CUI:RegisterModule({
         talents = true,
         metiers = true,
         carte = true,
+        menu = true,
     },
     settings = {
         { type = "section", text = "FJ_FENETRES" },
@@ -26,6 +27,7 @@ local M = CUI:RegisterModule({
         { type = "toggle", key = "talents", label = "FJ_TALENTS", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "metiers", label = "FJ_METIERS", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "carte", label = "FJ_CARTE", description = "FJ_ACTIF_NOTE" },
+        { type = "toggle", key = "menu", label = "FJ_MENU", description = "FJ_ACTIF_NOTE" },
     },
 })
 
