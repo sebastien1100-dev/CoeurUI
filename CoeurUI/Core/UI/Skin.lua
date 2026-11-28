@@ -469,7 +469,7 @@ function CUI:SkinItemSlot(b)
     -- Icône : certains boutons en portent deux (« icon » vide et « Icon » qui montre l'objet, composants des
     -- métiers) : celle qui a une image, sinon la première trouvée.
     local icon
-    for _, cand in ipairs({ b.Icon, b.icon, name and _G[name .. "IconTexture"] or nil }) do
+    for _, cand in ipairs({ b.Icon, b.icon, name and _G[name .. "IconTexture"] or nil, name and _G[name .. "Icon"] or nil }) do
         if cand and cand.GetObjectType and cand:GetObjectType() == "Texture" then
             local tex = cand:GetTexture()
             if tex ~= nil and (issecret(tex) or tex ~= "") then icon = cand break end
@@ -531,8 +531,14 @@ function CUI:SkinItemSlot(b)
         pushed:SetColorTexture(0, 0, 0, 0.3)
         pushed:SetAllPoints(icon)
     end
-    -- Contour de qualité du jeu : invisible ; sa couleur passe à notre liseré.
-    local qb = b.IconBorder
+    -- Contour de qualité du jeu : invisible ; sa couleur passe à notre liseré. Fond d'emplacement nommé
+    -- (« ...Slot », courrier) : invisible.
+    local qb = b.IconBorder or (name and _G[name .. "IconBorder"]) or nil
+    if name and _G[name .. "Slot"] then
+        self:SkinHide(_G[name .. "Slot"])
+        local checked = b.GetCheckedTexture and b:GetCheckedTexture()
+        if checked then self:SkinHide(checked) end
+    end
     local function sync()
         local r, g, bl
         if qb and qb:IsShown() then r, g, bl = qb:GetVertexColor() end

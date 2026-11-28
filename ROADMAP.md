@@ -157,7 +157,7 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        - fenêtre de butin et jets de butin en groupe ;
        - marchand (achat, vente, réparation, rachat) ;
        - formateur ;
-       - courrier ;
+       - courrier (maquette « 7 · Courrier », 0.72.0) ;
        - hôtel des ventes ;
        - échange entre joueurs ;
        - social : amis, ignorés, qui est en ligne ;

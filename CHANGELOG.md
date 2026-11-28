@@ -2,6 +2,18 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.72.0 · 28/11/2026
+
+- Skin Blizzard : le courrier au style « Givre » (maquette « 7 · Courrier »), avec son interrupteur. Cadres
+  ardoise sans médaillon ni métal, titre blanc, croix au trait ; boîte aux lettres déplaçable ; onglets du bas
+  en petites cases.
+- Réception : lettres sur une case ardoise, objet en case carrée (liseré de qualité), expéditeur blanc, sujet
+  gris, bande au survol ; pages en petites cases à chevron.
+- Lettre ouverte : texte sur une case sombre (plus de parchemin), objets joints en cases carrées.
+- Envoi : champs, montant et pièces jointes en cases du thème, argent ou contre-remboursement en ronds,
+  boutons de CœurUI.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.71.1 · 28/11/2026
 
 - Métiers : sur la page des recettes, la barre de niveau du métier restait vide (comme celles de la vue

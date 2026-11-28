@@ -1,5 +1,20 @@
 # Skin Blizzard : tests en jeu
 
+## 0.72.0 · courrier
+
+1. **Redémarrer le jeu** (nouveau fichier). Page « Skin Blizzard » : interrupteur « Courrier » actif.
+2. Boîte aux lettres : cadre ardoise, plus de médaillon ni de métal, titre blanc, croix au trait ; tirer
+   l'en-tête : la fenêtre bouge et garde sa place. Onglets du bas en petites cases.
+3. Réception : lettres sur une case ardoise ; objet en case carrée (liseré bleu, vert... selon la qualité) ;
+   expéditeur blanc, sujet gris, jours restants en couleur ; bande au survol ; pages : petites cases à
+   chevron ; « Tout ouvrir » au style de CœurUI. Clic sur une lettre : elle s'ouvre.
+4. Lettre ouverte : cadre ardoise, « De » et « Sujet » gris, texte lisible sur une case sombre, objet joint en
+   case carrée (clic : récupéré) ; boutons Répondre, Retour, Fermer, Signaler au style de CœurUI.
+5. Lettre de l'hôtel des ventes (vente conclue) : textes lisibles.
+6. Envoi : champs « À » et « Sujet » en cases sombres, texte de la lettre sur une case sombre ; glisser un objet
+   dans une case jointe : icône carrée, liseré de qualité ; montant en petites cases ; « Env. argent » et
+   « C.R. » en ronds (point blanc sur le choisi) ; Envoyer et Annuler marchent.
+
 ## 0.69.0 · menu de jeu
 
 1. **Redémarrer le jeu** (nouveau fichier). Page « Skin Blizzard » : interrupteur « Menu de jeu » actif.

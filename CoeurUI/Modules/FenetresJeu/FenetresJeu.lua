@@ -19,6 +19,7 @@ local M = CUI:RegisterModule({
         metiers = true,
         carte = true,
         menu = true,
+        courrier = true,
     },
     settings = {
         { type = "section", text = "FJ_FENETRES" },
@@ -28,6 +29,7 @@ local M = CUI:RegisterModule({
         { type = "toggle", key = "metiers", label = "FJ_METIERS", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "carte", label = "FJ_CARTE", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "menu", label = "FJ_MENU", description = "FJ_ACTIF_NOTE" },
+        { type = "toggle", key = "courrier", label = "FJ_COURRIER", description = "FJ_ACTIF_NOTE" },
     },
 })
 
