@@ -5,11 +5,16 @@
 --   CUI:SkinHide(region)                 -- invisible pour de bon
 --   CUI:SkinWindow(cadre)                -- cadre de fenêtre (NineSlice, portrait, fond) : panneau du thème
 --   CUI:SkinCloseButton(bouton)          -- croix grise, blanche au survol
+--   CUI:SkinMovable(cadre, store, cle)   -- fenêtre déplaçable par son bandeau, place gardée
 --   CUI:SkinScrollBar(barre)             -- barre de défilement fine (modèle « minimal » du jeu)
 --   CUI:SkinButton(bouton)               -- bouton à texte du jeu : bouton de CœurUI
---   CUI:SkinIconButton(bouton, icone)    -- petit bouton carré à icône : case du thème
+--   CUI:SkinIconButton(bouton, icone, picto) -- petit bouton carré à icône : case du thème ; picto : une
+--                                            -- de nos icônes au trait (Media/Icones) à la place de celle du jeu
 --   CUI:SkinItemSlot(bouton)             -- case d'objet (équipement) : case du thème, liseré de qualité
---   CUI:SkinSideTab(onglet)              -- onglet de côté à icône : case, liseré quand il est ouvert
+--   CUI:SquareItemIcon(bouton, icone)    -- icône d'un bouton d'objet du jeu sans ses coins arrondis
+--   CUI:SkinSideTab(onglet, picto)       -- onglet de côté à icône : case, liseré clair quand il est ouvert
+-- Pas d'or dans les fenêtres du jeu (direction des icônes) : survol et ouvert au liseré gris clair ; sauf
+-- les cases d'objet, survolées en or comme les boutons des barres d'actions.
 local _, CUI = ...
 local C = CUI.Colors
 
@@ -48,6 +53,48 @@ function CUI:SkinWindow(frame)
     if portrait then self:SkinHide(portrait) end
     frame.cuiPanel = self:CreatePanel(frame, { fill = C.fenetre })
     return frame.cuiPanel
+end
+
+-- Fenêtre déplaçable : on la prend par son bandeau de titre (hauteur `height`, la croix à droite laissée
+-- libre) ; sa place est gardée dans store[key] et remise à chaque ouverture, et après chaque fois que le
+-- jeu range ses fenêtres (UpdateUIPanelPositions). Jamais en combat si le cadre est protégé.
+--   CUI:SkinMovable(cadre, store, cle, hauteur)
+function CUI:SkinMovable(frame, store, key, height)
+    if not frame or frame.cuiMovable or type(store) ~= "table" then return end
+    frame.cuiMovable = true
+    frame:SetMovable(true)
+    frame:SetClampedToScreen(true)
+    local function locked()
+        return frame:IsProtected() and _G.InCombatLockdown()
+    end
+    local function apply()
+        local pos = store[key]
+        if type(pos) ~= "table" or locked() then return end
+        frame:ClearAllPoints()
+        frame:SetPoint(pos[1], _G.UIParent, pos[2], pos[3], pos[4])
+    end
+    local grip = _G.CreateFrame("Frame", nil, frame)
+    grip:SetPoint("TOPLEFT", 0, 0)
+    grip:SetPoint("TOPRIGHT", -32, 0)
+    grip:SetHeight(height or 24)
+    grip:EnableMouse(true)
+    grip:RegisterForDrag("LeftButton")
+    grip:SetScript("OnDragStart", function()
+        if not locked() then frame:StartMoving() end
+    end)
+    grip:SetScript("OnDragStop", function()
+        frame:StopMovingOrSizing()
+        if frame.SetUserPlaced then frame:SetUserPlaced(false) end -- c'est nous qui gardons la place
+        local point, _, relPoint, x, y = frame:GetPoint(1)
+        if point then store[key] = { point, relPoint, x, y } end
+    end)
+    frame:HookScript("OnShow", apply)
+    if type(_G.UpdateUIPanelPositions) == "function" then
+        _G.hooksecurefunc("UpdateUIPanelPositions", function()
+            if frame:IsShown() then apply() end
+        end)
+    end
+    apply()
 end
 
 -- Croix : deux traits tournés, gris, blancs au survol (comme la fenêtre de CœurUI).
@@ -148,11 +195,25 @@ function CUI:SkinButton(b)
     b:HookScript("OnLeave", function() paint(false) end)
 end
 
+-- Une de nos icônes au trait, posée au centre d'un cadre (teinte donnée ensuite).
+local function picto(frame, name, size)
+    local t = frame:CreateTexture(nil, "OVERLAY")
+    t:SetTexture(CUI.MEDIA .. "Icones\\" .. name)
+    t:SetSize(size, size)
+    t:SetPoint("CENTER")
+    return t
+end
+
 -- Petit bouton carré à icône (zoom, rotation...) : case du thème, icône grise, blanche au survol.
-function CUI:SkinIconButton(b, icon)
+function CUI:SkinIconButton(b, icon, pictoName)
     if not b or b.cuiSkinned then return end
     b.cuiSkinned = true
     icon = icon or b.Icon
+    if pictoName then
+        if icon then self:SkinHide(icon) end
+        icon = picto(b, pictoName, 14)
+        b.cuiPicto = icon
+    end
     for _, getter in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetHighlightTexture", "GetDisabledTexture" }) do
         local t = b[getter] and b[getter](b)
         if t and t ~= icon then self:SkinHide(t) end
@@ -162,7 +223,7 @@ function CUI:SkinIconButton(b, icon)
     end
     b.cuiPanel = self:CreatePanel(b, { radius = 3, fill = C.case, shadow = false, inset = 3 })
     local function paint(over)
-        b.cuiPanel.border:SetColor(over and C.or_ or C.lisereSombre)
+        b.cuiPanel.border:SetColor(over and C.texteDiscret or C.lisereSombre)
         if icon then
             local c = over and C.texte or C.texteSecondaire
             icon:SetDesaturated(true)
@@ -176,20 +237,76 @@ end
 
 -- Case d'objet ------------------------------------------------------------------------------------
 
--- Case d'équipement du jeu : icône rognée dans une case du thème ; le liseré extérieur prend la couleur
--- de la qualité que le jeu donne à son contour (recopiée telle quelle). Case vide : le dessin de
--- l'emplacement, très discret (CUI:SetItemSlotEmpty).
+-- Icône carrée sur un bouton d'objet du jeu (équipement, sacs, banque...) : le jeu masque son icône
+-- (coins arrondis) et ce masque résiste. L'icône du jeu devient donc invisible et une copie à nous, sans
+-- masque, la remplace à la même place ; la copie suit tout ce que le jeu fait de l'icône (dessin, atlas,
+-- grisé, teinte, transparence, montrée ou cachée). Rend la copie (à utiliser comme icône ensuite).
+--   CUI:SquareItemIcon(bouton, icone)
+function CUI:SquareItemIcon(b, icon)
+    icon = icon or (b and (b.icon or b.Icon))
+    if not b or not icon then return end
+    if icon.cuiCopy then return icon.cuiCopy end
+    local layer, sub = icon:GetDrawLayer()
+    local copy = b:CreateTexture(nil, layer or "BORDER", nil, math.min(7, (sub or 0) + 1))
+    copy:SetAllPoints(icon)
+    icon.cuiCopy = copy
+    local wanted = icon:GetAlpha()
+    local inside = false
+    local function sync()
+        if inside then return end
+        inside = true
+        local atlas = icon.GetAtlas and icon:GetAtlas()
+        if type(atlas) == "string" and atlas ~= "" and not issecret(atlas) then
+            copy:SetAtlas(atlas)
+        else
+            -- Icône d'objet : le liseré sombre aux coins arrondis est dessiné dans l'image ; rogné de 8 %
+            -- de chaque côté, toujours (le jeu remet l'image entière à chaque mise à jour).
+            copy:SetTexture(icon:GetTexture())
+            copy:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+        end
+        if icon.IsDesaturated then copy:SetDesaturated(icon:IsDesaturated() and true or false) end
+        local cr, cg, cb, ca = icon:GetVertexColor()
+        if type(cr) == "number" and not issecret(cr) then copy:SetVertexColor(cr, cg, cb, ca or 1) end
+        copy:SetShown(icon:IsShown())
+        copy:SetAlpha(wanted)
+        icon:SetAlpha(0)
+        inside = false
+    end
+    -- La transparence voulue par le jeu va à la copie ; l'icône du jeu reste invisible.
+    _G.hooksecurefunc(icon, "SetAlpha", function(_, a)
+        if inside then return end
+        if type(a) == "number" and not issecret(a) then wanted = a end
+        sync()
+    end)
+    for _, method in ipairs({ "SetTexture", "SetAtlas", "SetTexCoord", "SetDesaturated", "SetDesaturation",
+                              "SetVertexColor", "Show", "Hide", "SetShown" }) do
+        if icon[method] then _G.hooksecurefunc(icon, method, sync) end
+    end
+    sync()
+    return copy
+end
+
+-- Case d'équipement du jeu : icône rognée dans une case carrée du thème (le jeu fait ses cases en
+-- 37 x 36 : la nôtre prend le plus petit côté, centrée) ; le liseré extérieur prend la couleur de la
+-- qualité que le jeu donne à son contour (recopiée telle quelle). Case vide : unie (CUI:SetItemSlotEmpty).
 function CUI:SkinItemSlot(b)
     if not b or b.cuiSkinned then return end
     b.cuiSkinned = true
     local name = b:GetName()
     local icon = b.icon or b.Icon or (name and _G[name .. "IconTexture"])
+    local w, h = b:GetSize()
+    local side = (w and h and w > 0 and h > 0) and math.floor(math.min(w, h)) or nil
     if icon then
-        if b.Mask and icon.RemoveMaskTexture then pcall(icon.RemoveMaskTexture, icon, b.Mask) end
+        CUI:SquareItemIcon(b, icon)
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:ClearAllPoints()
-        icon:SetPoint("TOPLEFT", 2, -2)
-        icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        if side then
+            icon:SetPoint("CENTER")
+            icon:SetSize(side - 4, side - 4)
+        else
+            icon:SetPoint("TOPLEFT", 2, -2)
+            icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        end
         b.cuiIcon = icon
     end
     local normal = b.GetNormalTexture and b:GetNormalTexture()
@@ -213,7 +330,15 @@ function CUI:SkinItemSlot(b)
             if isDecor(r) then self:SkinHide(r) end
         end
     end
-    b.cuiPanel = self:CreatePanel(b, { radius = 3, fill = C.case, shadow = false })
+    -- Case carrée : sur un cadre à la taille du plus petit côté, sous la case du jeu.
+    local holder = b
+    if side then
+        holder = _G.CreateFrame("Frame", nil, b)
+        holder:SetSize(side, side)
+        holder:SetPoint("CENTER")
+        holder:SetFrameLevel(math.max(0, b:GetFrameLevel() - 1))
+    end
+    b.cuiPanel = self:CreatePanel(holder, { radius = 3, fill = C.case, shadow = false })
     local hl = b.GetHighlightTexture and b:GetHighlightTexture()
     if hl and icon then
         hl:SetColorTexture(1, 1, 1, 0.08)
@@ -235,7 +360,10 @@ function CUI:SkinItemSlot(b)
             and math.abs(r - g) < 0.06 and math.abs(g - bl) < 0.06 then
             r = nil
         end
-        if b.cuiOver then
+        -- Comme les boutons des barres d'actions : appuyé, or clair ; survolé, or.
+        if b.cuiDown then
+            b.cuiPanel.border:SetColor(C.orClair)
+        elseif b.cuiOver then
             b.cuiPanel.border:SetColor(C.or_)
         elseif r then
             b.cuiPanel.border:SetColor({ r, g, bl, 1 })
@@ -251,27 +379,36 @@ function CUI:SkinItemSlot(b)
         if qb.SetShown then _G.hooksecurefunc(qb, "SetShown", sync) end
     end
     b:HookScript("OnEnter", function() b.cuiOver = true sync() end)
-    b:HookScript("OnLeave", function() b.cuiOver = false sync() end)
+    b:HookScript("OnLeave", function() b.cuiOver = false b.cuiDown = false sync() end)
+    b:HookScript("OnMouseDown", function() b.cuiDown = true sync() end)
+    b:HookScript("OnMouseUp", function() b.cuiDown = false sync() end)
     b.cuiSync = sync
     sync()
 end
 
--- Case vide : le dessin de l'emplacement du jeu, très discret ; objet : icône pleine.
+-- Case vide : unie (le dessin de l'emplacement du jeu caché ; l'infobulle le nomme) ; objet : icône pleine.
 function CUI:SetItemSlotEmpty(b, empty)
     if b.cuiIcon then
-        b.cuiIcon:SetDesaturated(empty and true or false)
-        b.cuiIcon:SetAlpha(empty and 0.18 or 1)
+        b.cuiIcon:SetDesaturated(false)
+        b.cuiIcon:SetAlpha(empty and 0 or 1)
     end
 end
 
 -- Onglets -------------------------------------------------------------------------------------------
 
 -- Onglet de côté (icône) : case du thème avec ombre ; ouvert (texture « Selected » du jeu montrée) :
--- icône vive et liseré de la couleur des boutons ; fermé : icône un peu terne.
-function CUI:SkinSideTab(tab)
+-- case plus claire, liseré gris clair. Avec picto : notre icône au trait (grise, blanche au survol et
+-- ouvert) à la place de celle du jeu ; sans : celle du jeu, un peu terne quand l'onglet est fermé.
+function CUI:SkinSideTab(tab, pictoName)
     if not tab or tab.cuiSkinned then return end
     tab.cuiSkinned = true
     local icon = tab.Icon
+    local line
+    if pictoName then
+        if icon then self:SkinHide(icon) end
+        icon = nil
+        line = picto(tab, pictoName, 24)
+    end
     if icon and tab.Mask and icon.RemoveMaskTexture then pcall(icon.RemoveMaskTexture, icon, tab.Mask) end
     if icon then
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
@@ -286,12 +423,15 @@ function CUI:SkinSideTab(tab)
     tab.cuiPanel = self:CreatePanel(tab, { radius = 4, fill = C.case, inset = 1 })
     local function paint()
         local on = selected and selected:IsShown()
-        local c = (on or tab.cuiOver) and C.or_ or C.lisereSombre
-        tab.cuiPanel.border:SetColor(c)
+        tab.cuiPanel.border:SetColor(on and C.texteDiscret or (tab.cuiOver and C.bordureDiscrete or C.lisereSombre))
         tab.cuiPanel:SetFillColor(on and C.panneau or C.case)
         if icon then
             local k = on and 1 or 0.7
             icon:SetVertexColor(k, k, k, 1)
+        end
+        if line then
+            local c = (on or tab.cuiOver) and C.texte or C.texteSecondaire
+            line:SetVertexColor(c[1], c[2], c[3], 1)
         end
     end
     if selected then

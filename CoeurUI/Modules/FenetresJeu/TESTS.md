@@ -1,5 +1,43 @@
 # Skin Blizzard : tests en jeu
 
+## 0.56.0 · page Personnage finie
+
+1. **Redémarrer le jeu** (nouvelles icônes). `/cui version` : « 0.56.0 ». Aucune erreur Lua à l'ouverture de la fiche.
+2. Cases d'équipement carrées, icône carrée ; case vide : unie, sans dessin ; au survol, l'infobulle nomme
+   l'emplacement.
+3. Résistances : cinq petites cases sombres avec nos icônes grises (étoile, flamme, flocon, feuille,
+   croissant de lune), dans le bon ordre (Arcanes, Feu, Givre, Nature, Ombre).
+3 bis. Petits onglets du haut : un seul ouvert (case plus claire, liseré gris clair) ; survol d'un autre :
+   liseré gris et icône blanche ; l'état suit les clics.
+4. Petit onglet cuirasse ouvert : à côté de chaque case, une petite case avec un chevron gris tourné vers
+   l'extérieur (droite à gauche de la fiche, gauche à droite, haut sous les armes) ; clic : la liste des
+   pièces s'ouvre comme avant : panneau ardoise avec ombre, choix en cases du thème (liseré de qualité),
+   plus de cadre doré ni de liseré jaune autour de la case ouverte ; un clic sur un choix l'équipe.
+   Bouton « Nouvel ensemble » : « + » au trait et texte gris clair (blancs au survol), plus de vert ; sur
+   une ligne, au-dessus de « Équiper » et « Sauver », de leur largeur. Dans le menu de choix : « Mettre dans
+   les sacs » = sac et flèche au trait, « Ignorer » = cercle barré ; ils marchent comme avant.
+6. Le personnage tient entier dans sa case (pieds compris) ; zoom et rotation marchent ; les boutons
+   restent lisibles.
+8. Survol d'une case d'équipement (et d'un choix du menu) : liseré doré, or clair en appuyant, comme les
+   barres d'actions.
+7. Glisser la fiche par son bandeau (le nom en haut) : elle suit ; la fermer, la rouvrir : même place ;
+   après un /reload : même place ; ouvrir le grimoire à côté : la fiche ne revient pas à sa place d'origine.
+5. Passer sur Réputation, Compétences... : le titre reste « Chouf Maurice » en blanc ; la page est écrite
+   en haut à gauche.
+
+## 0.55.0 · fiche complète (icônes, plus d'or)
+
+1. **Redémarrer le jeu** (nouvelles icônes). `/cui version` : « 0.55.0 ».
+2. Onglets de côté : nos icônes au trait (silhouette, médaille, marteau, épées croisées, pièces, courbe), grises,
+   blanches au survol ; l'ouvert : case plus claire, liseré gris clair, icône blanche. Plus de liseré doré.
+3. En haut à gauche de la fiche, le nom de la page ouverte en petites capitales (« PERSONNAGE »,
+   « RÉPUTATION »...) ; il change avec l'onglet.
+4. « Guerrier de niveau 6 » : « Guerrier » en blanc, « de niveau 6 » en gris clair ; pas de jaune.
+5. Boutons sous le titre : loupe +, loupe -, flèche à gauche, flèche à droite, retour ; chacun fait bien ce
+   que son icône montre.
+6. Fond sombre du personnage : entre les deux colonnes d'équipement seulement, pas sous les cases.
+7. Survol d'une case d'équipement, du bouton flèche, d'un petit onglet : liseré gris clair, jamais doré.
+
 ## 0.54.0 · fiche du personnage
 
 1. **Redémarrer le jeu** (nouveaux fichiers). Aucune erreur Lua. `/cui version` : « 0.54.0 ».

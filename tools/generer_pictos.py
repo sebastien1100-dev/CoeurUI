@@ -339,11 +339,162 @@ def ensembles(d):
            (15, 4), (12, 7))
 
 
+# Fiche du personnage : onglets de côté et boutons du personnage ----------------------------------
+
+def reputation(d):
+    """Médaille : disque et ruban (réputation)."""
+    cercle(d, 12, 9, 5)
+    ligne(d, (8.6, 12.7), (7, 21), (12, 18.5), (17, 21), (15.4, 12.7))
+
+
+def jcj(d):
+    """Deux épées croisées, avec leur garde (JcJ)."""
+    ligne(d, (4, 4), (20, 20))
+    ligne(d, (20, 4), (4, 20))
+    ligne(d, (15, 19), (19, 15))
+    ligne(d, (5, 15), (9, 19))
+
+
+def monnaies(d):
+    """Pile de pièces (monnaies)."""
+    n = 64
+    haut = [(12 + 7 * math.cos(2 * math.pi * i / n), 6.5 + 2.8 * math.sin(2 * math.pi * i / n)) for i in range(n + 1)]
+    tampon(d, [p(*q) for q in haut])
+    for y in (6.5, 11.5):
+        bas = [(12 + 7 * math.cos(math.pi * i / n), y + 5 + 2.8 * math.sin(math.pi * i / n)) for i in range(n + 1)]
+        tampon(d, [p(19, y)] + [p(*q) for q in bas] + [p(5, y)])
+
+
+def courbe(d):
+    """Axes et courbe qui monte (statistiques du jeu)."""
+    ligne(d, (4, 4), (4, 20), (20, 20))
+    ligne(d, (7.5, 15), (11, 10.5), (14, 13.5), (19, 7.5))
+
+
+def loupe(d):
+    cercle(d, 10.5, 10.5, 6)
+    ligne(d, (15, 15), (20, 20))
+
+
+def zoom_plus(d):
+    loupe(d)
+    ligne(d, (10.5, 8), (10.5, 13))
+    ligne(d, (8, 10.5), (13, 10.5))
+
+
+def zoom_moins(d):
+    loupe(d)
+    ligne(d, (8, 10.5), (13, 10.5))
+
+
+def demi_tour(d, sens):
+    """Flèche en U : part d'en haut, revient en bas (sens 1 : vers la gauche, -1 : vers la droite)."""
+    def x(v):
+        return v if sens == 1 else 24 - v
+    arc = [(x(15 + 5 * math.sin(math.pi * i / 24)), 14 - 5 * math.cos(math.pi * i / 24)) for i in range(25)]
+    tampon(d, [p(x(5), 9)] + [p(*q) for q in arc] + [p(x(10), 19)])
+    ligne(d, (x(8.5), 5.5), (x(5), 9), (x(8.5), 12.5))
+
+
+def tourner_gauche(d):
+    demi_tour(d, 1)
+
+
+def tourner_droite(d):
+    demi_tour(d, -1)
+
+
+def ranger_sac(d):
+    """Sac et flèche qui descend dedans (ranger la pièce dans les sacs)."""
+    rect_arrondi(d, 4.5, 11, 15, 10, 2)
+    ligne(d, (12, 2.5), (12, 13.5))
+    ligne(d, (8.5, 10), (12, 13.5), (15.5, 10))
+
+
+def ignorer(d):
+    """Cercle barré (ignorer l'emplacement)."""
+    cercle(d, 12, 12, 7.5)
+    ligne(d, (6.7, 17.3), (17.3, 6.7))
+
+
+# Résistances (fiche du personnage) : une forme par école de magie -----------------------------------
+
+def res_arcanes(d):
+    """Étoile scintillante à quatre branches."""
+    chemin(d, (12, 3), (13.8, 10.2), (21, 12), (13.8, 13.8), (12, 21), (10.2, 13.8), (3, 12), (10.2, 10.2))
+
+
+def res_feu(d):
+    """Flamme, et une petite flamme dedans."""
+    tampon(d, [p(*q) for q in bezier((12, 21), (6.5, 21), (5, 16), (7.5, 12.5))
+               + bezier((7.5, 12.5), (9.5, 9.5), (10, 6), (12, 3))
+               + bezier((12, 3), (15, 7), (19, 11), (18.5, 15.5))
+               + bezier((18.5, 15.5), (18, 19), (15.5, 21), (12, 21))])
+    tampon(d, [p(*q) for q in bezier((12, 18.2), (10, 18.2), (9.6, 15.6), (12, 13.2))
+               + bezier((12, 13.2), (14.4, 15.6), (14, 18.2), (12, 18.2))])
+
+
+def res_givre(d):
+    """Flocon : trois traits croisés, un petit V au bout de chaque branche."""
+    for k in range(3):
+        a = math.radians(90 + 60 * k)
+        ligne(d, (12 + 8.5 * math.cos(a), 12 + 8.5 * math.sin(a)), (12 - 8.5 * math.cos(a), 12 - 8.5 * math.sin(a)))
+    for k in range(6):
+        a = math.radians(90 + 60 * k)
+        bx, by = 12 + 5.5 * math.cos(a), 12 + 5.5 * math.sin(a)
+        for side in (-1, 1):
+            b = a + side * math.radians(40)
+            ligne(d, (bx, by), (bx + 2.6 * math.cos(b), by + 2.6 * math.sin(b)))
+
+
+def res_nature(d):
+    """Feuille et sa nervure."""
+    tampon(d, [p(*q) for q in bezier((5, 19), (5, 9), (11, 4), (20, 4)) + bezier((20, 4), (20, 13), (15, 19), (5, 19))])
+    ligne(d, (5, 19), (14, 10))
+
+
+def res_ombre(d):
+    """Croissant de lune."""
+    cx, cy, r = 12, 12, 8.5
+    ix, iy, ir = 16.5, 8.5, 7
+    # Points d'intersection des deux cercles (calcul direct), puis l'arc extérieur et l'arc intérieur.
+    dx, dy = ix - cx, iy - cy
+    dist = math.hypot(dx, dy)
+    a = (r * r - ir * ir + dist * dist) / (2 * dist)
+    h = math.sqrt(max(0.0, r * r - a * a))
+    mx, my = cx + a * dx / dist, cy + a * dy / dist
+    p1 = (mx + h * dy / dist, my - h * dx / dist)
+    p2 = (mx - h * dy / dist, my + h * dx / dist)
+    def angle(c, q):
+        return math.atan2(q[1] - c[1], q[0] - c[0])
+    def arc(c, rad, a0, a1, n=60):
+        return [(c[0] + rad * math.cos(a0 + (a1 - a0) * i / n), c[1] + rad * math.sin(a0 + (a1 - a0) * i / n)) for i in range(n + 1)]
+    o0, o1 = angle((cx, cy), p1), angle((cx, cy), p2)
+    if o1 < o0:
+        o1 += 2 * math.pi
+    outer = arc((cx, cy), r, o0, o1)
+    # L'arc extérieur doit passer par le côté opposé au cercle intérieur.
+    mid = outer[len(outer) // 2]
+    if math.hypot(mid[0] - ix, mid[1] - iy) < ir:
+        outer = arc((cx, cy), r, o1, o0 + 2 * math.pi)
+    i0, i1 = angle((ix, iy), outer[-1]), angle((ix, iy), outer[0])
+    inner = arc((ix, iy), ir, i0, i1 if i1 > i0 else i1 + 2 * math.pi)
+    mid = inner[len(inner) // 2]
+    if math.hypot(mid[0] - cx, mid[1] - cy) > r:
+        inner = arc((ix, iy), ir, i0, i1 - 2 * math.pi if i1 > i0 else i1)
+    tampon(d, [p(*q) for q in outer + inner])
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
           "Boutique": boutique, "Menu": menu, "Logement": logement,
-          "Statistiques": statistiques, "Titre": titre, "Ensembles": ensembles}
+          "Statistiques": statistiques, "Titre": titre, "Ensembles": ensembles,
+          "Reputation": reputation, "JcJ": jcj, "Monnaies": monnaies, "Courbe": courbe,
+          "ZoomPlus": zoom_plus, "ZoomMoins": zoom_moins, "TournerGauche": tourner_gauche,
+          "TournerDroite": tourner_droite, "RangerSac": ranger_sac, "Ignorer": ignorer,
+          "ResArcanes": res_arcanes, "ResFeu": res_feu, "ResGivre": res_givre, "ResNature": res_nature,
+          "ResOmbre": res_ombre}
 
 
 def main():

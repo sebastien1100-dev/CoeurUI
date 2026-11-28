@@ -135,10 +135,12 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        (« CœurUI · Maquette Cadres de boss »). Validé en jeu (0.37.0). Module terminé.
    18. Fenêtres du jeu habillées au style de CœurUI, une à une (demandé le 27/11/2026). Chacune : maquette,
        code, tests en jeu. Ordre à choisir par le joueur. Module « Skin Blizzard » (une page, un interrupteur par fenêtre),
-       pièces communes dans Core/UI/Skin.lua. Fiche du personnage : en test (0.54.0). Suite de la fiche (captures du
-       joueur le 28/11/2026) : onglets Réputation (en-têtes repliables, barres, cases à cocher), Compétences
-       (en-têtes, barres bleues), JcJ (rang, récompenses), Monnaies, Statistiques (en-têtes, sous-catégories) ;
-       titre de ces onglets resté doré (le jeu le recolore). Liste :
+       pièces communes dans Core/UI/Skin.lua. Fiche du personnage : maquette « fiche complète » validée le 28/11/2026
+       (« CœurUI · Direction artistique », planche « 1 bis »). Fait : 0.54.0 (cadre, cases, statistiques), 0.55.0
+       (nos icônes, plus d'or). Étapes restantes, une par version, testée en jeu :
+       0.56.0 page Personnage finie (résistances, icônes d'équipement carrées, cases vides unies comme la
+       maquette, gestionnaire d'ensembles et flèches jaunes, titre resté jaune sur les autres onglets) ;
+       0.57.0 Réputation ; 0.58.0 Compétences ; 0.59.0 Statistiques ; 0.60.0 JcJ ; 0.61.0 Monnaies. Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;
@@ -177,6 +179,11 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
 
 Idées notées pendant le travail, pas encore commencées.
 
+- Icônes carrées partout (demandé le 28/11/2026) : toute icône d'objet ou de sort montrée par CœurUI ou par
+  une fenêtre habillée passe par CUI:SquareItemIcon (Core/UI/Skin.lua : copie sans masque, rognée de 8 %
+  toujours, le jeu remettant l'image entière). Fait : fiche du personnage, menu de choix d'une pièce, sacs et
+  banque (0.56.0). À reprendre : barres d'actions, effets, butin, marchands, courrier, échange, récompenses de
+  quête, et chaque fenêtre du Skin Blizzard au fur et à mesure.
 - Système de thèmes (demandé le 28/11/2026) : la porte est ouverte dans Core/UI/Style.lua (CUI.Themes, un seul
   thème « givre » ; CUI:GetTheme, CUI:ApplyTheme repeint ce qui est dessiné). Reste à faire : d'autres thèmes,
   un choix dans « Paramètres » (CUI.db.ui.theme), et que chaque module redessine ce qui ne passe pas par les

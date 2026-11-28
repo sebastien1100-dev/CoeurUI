@@ -2,6 +2,43 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.56.0 · 28/11/2026
+
+- Fiche du personnage, page Personnage : les cases d'équipement sont carrées (le jeu les fait en 37 x 36,
+  l'icône n'était pas carrée) ; une case vide est unie (le dessin pâle de l'emplacement a disparu, l'infobulle
+  le nomme toujours).
+- Cases d'équipement survolées : liseré doré (or clair quand on appuie), comme les boutons des barres
+  d'actions.
+- La fiche se déplace : la prendre par son bandeau de titre ; elle garde sa place d'une ouverture à
+  l'autre.
+- Sacs, banque et fiche : les icônes d'objet avaient les coins arrondis (le jeu remettait l'image entière,
+  avec son liseré arrondi) ; elles sont carrées, toujours rognées.
+- Résistances : l'icône du jeu gardait son cadre brun ; elle est remplacée par notre icône au trait, une
+  forme par école (étoile des arcanes, flamme, flocon, feuille, croissant de lune), dans une petite case.
+- Les trois petits onglets du haut ne réagissaient pas au survol (deux passaient pour ouverts) : un seul
+  ouvert à la fois, survol comme les onglets de côté.
+- Les pieds du personnage dépassaient de sa case : l'aperçu prend maintenant la taille de la case.
+- Gestionnaire d'ensembles : les flèches jaunes à côté des cases deviennent de petites cases avec notre
+  chevron ; le petit menu de choix d'une pièce perd son cadre doré et le liseré jaune de la case ouverte
+  (panneau du thème, choix en cases du thème). Bouton « Nouvel ensemble » : « + » au trait et texte gris
+  clair au lieu du vert, sur une ligne, à la largeur des boutons « Équiper » et « Sauver ». Boutons spéciaux
+  du menu (« Mettre dans les sacs », « Ignorer l'emplacement ») : nos icônes au trait (sac et flèche, cercle
+  barré).
+- Redémarrer le jeu (nouvelles icônes).
+- Le titre de la fiche restait jaune et changeait selon la page (« Comp. »...) : c'est toujours le nom du
+  personnage, en blanc ; la page est rappelée à gauche.
+
+## 0.55.0 · 28/11/2026
+
+- Fiche du personnage (Skin Blizzard), suite de la maquette « fiche complète » : nos icônes au trait sur les
+  onglets de côté (personnage, réputation, compétences, JcJ, monnaies, statistiques) et sur les boutons du
+  personnage (zoom, rotation, retour) ; plus d'or : onglet ouvert et case survolée au liseré gris clair.
+- « Guerrier de niveau 6 » : la classe en blanc, le reste en gris (plus de jaune du jeu). Le nom de la page
+  ouverte est rappelé en petites capitales à gauche du titre.
+- Le fond sombre du personnage couvrait toute la colonne de gauche, cases comprises : il est maintenant
+  posé entre les deux colonnes d'équipement.
+- Redémarrer le jeu (nouvelles icônes).
+
 ## 0.54.0 · 28/11/2026
 
 - Nouveau module « Skin Blizzard » : les fenêtres du jeu habillées au style de CœurUI, une à une, sur une seule

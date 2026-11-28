@@ -1,5 +1,10 @@
 # Sacs et banque : tests en jeu
 
+## 0.56.0 · icônes carrées
+
+1. Sacs et banque ouverts : chaque icône d'objet est carrée (plus de coins arrondis) ; clic, glisser,
+   infobulle : comme avant.
+
 ## 0.29.0 · étape 1 : les sacs
 
 **Avant de commencer** : couper ce qui, dans EllesmereUI (ou un autre addon), remplace les sacs.

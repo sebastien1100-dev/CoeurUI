@@ -180,6 +180,7 @@ end
 -- Habillage d'un bouton d'objet du jeu (une fois).
 local function skinButton(b)
     local icon = b.icon or b.Icon
+    CUI:SquareItemIcon(b, icon) -- coins arrondis du jeu retirés
     if icon then
         icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         icon:ClearAllPoints()
