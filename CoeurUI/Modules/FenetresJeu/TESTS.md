@@ -1,5 +1,16 @@
 # Skin Blizzard : tests en jeu
 
+## 0.60.0 · page JcJ
+
+1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet épées croisées.
+2. « SAISON 1 » en petites capitales grises, « Civil/civile » en gras blanc, trait sombre dessous.
+3. Blason de la faction du jeu dans un médaillon rond sombre (double liseré, ombre) ; plus d'anneau doré ni
+   de lueur ; rang « 0 » dans une petite case dessous.
+4. « Points de rang » à gauche, « 0 / 750 » à droite ; barre striée vide (bleue Alliance, rouge Horde) ;
+   dessous « 750 points pour le rang 1 ».
+5. Détail : « Civil/civile » en gras, trait, texte gris, « Augmentation du plafond cette semaine : 1800 » ;
+   « RÉCOMPENSES AU RANG 1 » en petites capitales sur un trait ; tabard dans une case du thème, nom blanc.
+
 ## 0.59.0 · page Statistiques
 
 1. **Redémarrer le jeu** (nouveau fichier). Aucune erreur Lua. Fiche, onglet courbe.

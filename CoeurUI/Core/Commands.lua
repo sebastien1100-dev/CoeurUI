@@ -87,9 +87,11 @@ local MAX_LINES, MAX_DEPTH = 3000, 6
 -- Pièces sans intérêt pour l'habillage (manette, Azérite, châsses) : sautées, avec leurs enfants.
 local SKIPPED = { "JumpHint", "TabIndicators", "AvailableTraitFrame", "RankFrame", "SocketDisplay",
                   "GearEnchantAnimation", "GamepadFocusIndicator" }
+-- Comparé au dernier morceau du nom seulement (« PVPRankFrame.DetailFrame » n'est pas un « RankFrame »).
 local function skipped(name)
+    local last = name:match("([^%.]+)$") or name
     for _, part in ipairs(SKIPPED) do
-        if name:find(part, 1, true) then return true end
+        if last == part then return true end
     end
 end
 

@@ -2,8 +2,20 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.60.0 · 28/11/2026
+
+- Fiche du personnage, page JcJ au style « Givre » (maquette « 1 ter ») : le blason de faction du jeu est
+  gardé, posé dans un médaillon rond du thème (plus d'anneau doré ni de cercle de progression) ; rang chiffré
+  en petite case ; « Points de rang » en barre striée de la couleur de la faction, avec ce qui manque pour le
+  rang suivant (ou « Rang maximum atteint ») ; saison en petites capitales, rang en gras.
+- Détail : titre en gras, textes gris, intertitre « RÉCOMPENSES AU RANG » en petites capitales sur un trait,
+  récompense en case d'objet du thème.
+- Redémarrer le jeu (nouveau fichier).
+
 ## 0.59.0 · 28/11/2026
 
+- `/cui cadre` sautait tout cadre dont le nom contenait « RankFrame » (page JcJ vide) : seules les pièces
+  qui portent exactement ce nom sont sautées.
 - Fiche du personnage, page Statistiques au style « Givre » : sections repliables (chevron, petites
   capitales) ; sous-sections (« Boss »...) : le « + » / « - » rouge devient une petite case avec notre
   chevron, leur nom en blanc ; lignes : nom en gris clair, valeur en blanc, bande plus claire au survol ;
