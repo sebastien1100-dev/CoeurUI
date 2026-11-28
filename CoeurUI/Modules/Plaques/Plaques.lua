@@ -238,6 +238,27 @@ local function newText(parent)
     return fs
 end
 
+-- Pastille de niveau : texte (« 22 », « 27+ », « ?? »), couleur de difficulté du jeu (crâne : rouge), largeur
+-- ajustée au texte ; nil : cachée.
+local CRANE = { 0.88, 0.25, 0.25 }
+local function setLevel(p, text, level)
+    if not text then
+        p.levelPill:Hide()
+        return
+    end
+    p.level:SetText(text)
+    local color = CRANE
+    if level > 0 then
+        local f = _G.GetCreatureDifficultyColor or _G.GetQuestDifficultyColor
+        local c = f and f(level)
+        color = c and { c.r, c.g, c.b } or C.texteDiscret
+    end
+    p.levelPill.panel:SetFillColor(color)
+    local _, size = p.level:GetFont()
+    p.levelPill:SetSize(math.max((size or 9) + 7, p.level:GetStringWidth() + 8), (size or 9) + 5)
+    p.levelPill:Show()
+end
+
 local function setBorder(p, color)
     p.panel.border:SetColor(color)
 end
@@ -275,9 +296,17 @@ local function createPlate(base)
     -- Textes : nom au-dessus (niveau en petit gris devant), pourcentage dans la barre.
     p.name = newText(p)
     p.name:SetPoint("BOTTOM", p, "TOP", 0, 3)
-    p.level = newText(p)
-    p.level:SetPoint("BOTTOMRIGHT", p.name, "BOTTOMLEFT", -3, 0)
-    p.level:SetTextColor(C.texteDiscret[1], C.texteDiscret[2], C.texteDiscret[3])
+    -- Niveau dans une pastille ronde de la couleur de difficulté, chiffre sombre (maquette « niveau en pastille »,
+    -- façon B, 28/11/2026), devant le nom.
+    p.levelPill = _G.CreateFrame("Frame", nil, p)
+    p.levelPill:SetPoint("RIGHT", p.name, "LEFT", -4, 0)
+    p.levelPill:SetSize(18, 14)
+    p.levelPill.panel = CUI:CreatePanel(p.levelPill, { radius = 7, fill = C.texteDiscret, shadow = false })
+    p.levelPill:Hide()
+    p.level = p.levelPill:CreateFontString(nil, "OVERLAY")
+    p.level:SetPoint("CENTER", 0, 0)
+    p.level:SetWordWrap(false)
+    p.level:SetTextColor(0.063, 0.071, 0.094) -- #101218
     p.pct = newText(p.health)
     p.pct:SetPoint("RIGHT", p.health, "RIGHT", -2, 0)
     p.pct:SetTextColor(C.texte[1], C.texte[2], C.texte[3])
@@ -315,7 +344,7 @@ local function layoutPlate(p)
         p:SetSize(a.largeur, a.hauteur)
         fitBar(p.health, p, a.hauteur)
         p.name:SetFont(CUI:GetFont(), a.tailleNom, "OUTLINE")
-        p.level:SetFont(CUI:GetFont(), math.max(7, a.tailleNom - 2), "OUTLINE")
+        p.level:SetFont(CUI:GetFont(), math.max(7, a.tailleNom - 3), "")
         p.name:SetWidth(0)
         local icon = a.tailleNom + 6
         p.raid:SetSize(icon, icon)
@@ -329,7 +358,7 @@ local function layoutPlate(p)
     fitBar(p.cast.bar, p.cast, s.hauteurInc)
     local font = CUI:GetFont()
     p.name:SetFont(font, s.tailleNom, "OUTLINE")
-    p.level:SetFont(font, math.max(7, s.tailleNom - 2), "OUTLINE")
+    p.level:SetFont(font, math.max(7, s.tailleNom - 3), "")
     p.pct:SetFont(font, math.max(7, math.min(s.hauteur, s.tailleNom - 3)), "OUTLINE")
     p.questText:SetFont(font, s.tailleAvancement, "OUTLINE") -- avancement « 5/10 » (réglage)
     p.name:SetWidth(0)
@@ -447,7 +476,7 @@ end
 -- Plaque amie : le nom (vert pour un PNJ, couleur de classe pour un joueur), barre si blessé.
 local function updateFriend(p)
     local unit = p.unit
-    p.name:SetText(_G.UnitName(unit))
+    p.name:SetText(CUI:UnitFullName(unit))
     local color = VERT
     local isPlayer = _G.UnitIsPlayer(unit)
     if known(isPlayer) and isPlayer then
@@ -460,10 +489,9 @@ local function updateFriend(p)
     -- Niveau : joueurs seulement (pas sur les PNJ alliés).
     local level = _G.UnitLevel(unit)
     if M.db.amis.niveau and known(isPlayer) and isPlayer and known(level) then
-        p.level:SetText(level <= 0 and "??" or level)
-        p.level:Show()
+        setLevel(p, level <= 0 and "??" or tostring(level), level)
     else
-        p.level:Hide()
+        setLevel(p, nil)
     end
     p.pct:Hide()
     p.questText:Hide()
@@ -476,15 +504,14 @@ local function updateAll(p)
     if p.friend then return updateFriend(p) end
     local unit = p.unit
     local s = M.db.ennemis
-    p.name:SetText(_G.UnitName(unit))
+    p.name:SetText(CUI:UnitFullName(unit))
     local level = _G.UnitLevel(unit)
     if s.niveau and known(level) then
         local classif = _G.UnitClassification(unit)
         local plus = known(classif) and (classif == "elite" or classif == "rareelite" or classif == "worldboss")
-        p.level:SetText(level <= 0 and "??" or (level .. (plus and "+" or "")))
-        p.level:Show()
+        setLevel(p, level <= 0 and "??" or (level .. (plus and "+" or "")), level)
     else
-        p.level:Hide()
+        setLevel(p, nil)
     end
     local color = healthColor(unit)
     p.health:SetStatusBarColor(color[1], color[2], color[3])

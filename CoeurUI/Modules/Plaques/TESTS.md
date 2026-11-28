@@ -1,5 +1,14 @@
 # Plaques de nom : tests en jeu
 
+
+## 0.70.0 · nom complet
+
+1. Plaque d'un autre joueur (ami ou ennemi) : son nom en entier, en deux parties (« Père Daikmaz »). PNJ : nom
+   inchangé. Son propre familier, un joueur sans seconde partie : pas d'espace en trop.
+2. Niveau : pastille ronde devant le nom, couleur de difficulté (gris très bas, vert, jaune, orange, rouge),
+   chiffre sombre lisible ; élite « 27+ » : pastille plus large ; crâne « ?? » : rouge. Amis (joueurs) et
+   ennemis. Réglage « Niveau » coupé : plus de pastille.
+
 ## 0.65.0 · icônes carrées
 
 1. Icônes des effets sur les plaques de nom carrées, même quand un effet change ou se renouvelle.

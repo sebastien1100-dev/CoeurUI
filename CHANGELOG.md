@@ -2,6 +2,14 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.70.0 · 28/11/2026
+
+- Plaques de nom : le nom des autres joueurs ne montrait que sa première partie (« Père » au lieu de « Père
+  Daikmaz ») ; il s'affiche en entier.
+- Plaques de nom : le niveau passe dans une petite pastille ronde devant le nom, de la couleur de difficulté
+  (vert, jaune, orange, rouge ; crâne « ?? » en rouge), chiffre sombre ; amis et ennemis (maquette « niveau
+  en pastille », façon B).
+
 ## 0.69.0 · 28/11/2026
 
 - Skin Blizzard : le menu de jeu (Échap) au style « Givre » (maquette « 6 · Menu de jeu »), avec son

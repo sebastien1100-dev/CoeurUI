@@ -184,3 +184,17 @@ function CUI:BankClose()
         _G.HideUIPanel(_G.BankFrame)
     end
 end
+
+-- Nom complet d'une unité. Sur Forever, les persos ont un nom en deux parties (« Père Daikmaz ») : pour les
+-- autres joueurs, le jeu rend la seconde partie à la place du royaume (deuxième valeur de UnitName). Les deux
+-- parties sont recollées ; valeur cachée par le jeu : la première seule, telle quelle.
+function CUI:UnitFullName(unit)
+    local issecret = _G.issecretvalue or function() return false end
+    local name, extra = _G.UnitName(unit)
+    if issecret(name) or issecret(extra) then return name end
+    if type(name) ~= "string" then return name end
+    if type(extra) == "string" and extra ~= "" and not name:find(extra, 1, true) then
+        return name .. " " .. extra
+    end
+    return name
+end
