@@ -145,7 +145,9 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        validé (0.62.0). Talents : maquette validée le 28/11/2026 (« 3 · Talents »,
        fond illustré estompé), validé (0.63.0). Métiers : maquettes « 4 · Métiers » et « 4 bis · Icônes
        des métiers » validées le 28/11/2026, validé (0.66.0). Carte et journal des quêtes : maquette « 5 · Carte
-       et journal des quêtes » validée le 28/11/2026, validé (0.67.0). Liste :
+       et journal des quêtes » validée le 28/11/2026, validé (0.67.0). Menu de jeu (0.69.0), courrier (0.72.0)
+       validés. **En pause depuis le 28/11/2026** (à la demande du joueur : long à faire) ; reprendre plus tard
+       par une fenêtre de la liste, avec sa maquette. Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;
