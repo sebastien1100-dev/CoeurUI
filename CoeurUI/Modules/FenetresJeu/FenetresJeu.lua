@@ -16,12 +16,14 @@ local M = CUI:RegisterModule({
         fiche = true,
         grimoire = true,
         talents = true,
+        metiers = true,
     },
     settings = {
         { type = "section", text = "FJ_FENETRES" },
         { type = "toggle", key = "fiche", label = "FJ_FICHE", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "grimoire", label = "FJ_GRIMOIRE", description = "FJ_ACTIF_NOTE" },
         { type = "toggle", key = "talents", label = "FJ_TALENTS", description = "FJ_ACTIF_NOTE" },
+        { type = "toggle", key = "metiers", label = "FJ_METIERS", description = "FJ_ACTIF_NOTE" },
     },
 })
 

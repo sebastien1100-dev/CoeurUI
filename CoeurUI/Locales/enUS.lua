@@ -625,6 +625,7 @@ L.FJ_DESC = "The game's windows dressed in the CœurUI style, one by one: one sw
 L.FJ_FICHE = "Character sheet"
 L.FJ_GRIMOIRE = "Spellbook"
 L.FJ_TALENTS = "Talents"
+L.FJ_METIERS = "Professions"
 L.FJ_FENETRES = "DRESSED WINDOWS"
 L.FJ_ACTIF_NOTE = "Off: the game's window comes back after a /reload."
 L.FJ_PAGE_PERSO = "Character"

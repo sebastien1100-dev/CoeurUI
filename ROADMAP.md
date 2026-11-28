@@ -143,7 +143,8 @@ CœurUI ne dépend de rien chez EllesmereUI, qui n'est pas installé sur le PC d
        0.57.0 Réputation ; 0.58.0 Compétences ; 0.59.0 Statistiques ; 0.60.0 JcJ ; 0.61.0 Monnaies. Fiche du
        personnage terminée (0.61.0). Grimoire : maquette validée le 28/11/2026 (« 2 · Grimoire »),
        validé (0.62.0). Talents : maquette validée le 28/11/2026 (« 3 · Talents »,
-       fond illustré estompé), validé (0.63.0). Liste :
+       fond illustré estompé), validé (0.63.0). Métiers : maquettes « 4 · Métiers » et « 4 bis · Icônes
+       des métiers » validées le 28/11/2026, validé (0.66.0). Liste :
        - fiche du personnage (équipement, statistiques, réputations, monnaies) ;
        - carte du monde et journal des quêtes ;
        - grimoire (sorts et techniques) ;

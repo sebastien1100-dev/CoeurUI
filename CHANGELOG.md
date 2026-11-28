@@ -2,6 +2,24 @@
 
 La plus récente en premier. Phrases courtes, du point de vue du joueur.
 
+## 0.66.0 · 28/11/2026
+
+- Skin Blizzard : la fenêtre des métiers au style « Givre » (maquette « 4 · Métiers »), avec son
+  interrupteur. Cadre de CœurUI, déplaçable, page rappelée à gauche du titre ; onglets de côté en cases
+  (vue d'ensemble : notre marteau ; chaque métier : son icône au trait, maquette « 4 bis » : fiole, enclume,
+  baguette, clé, brin, peau, pioche, couteau, aiguille, marmite, hameçon, croix, gemme, plume).
+- Recettes : barre de compétence striée bleue ; recherche et « Filtrer » de CœurUI ; sections repliables ;
+  pastille de la couleur de difficulté devant chaque recette, nom gris clair ; recette choisie ou survolée
+  sur une bande plus claire.
+- Détail : case ardoise (illustration du métier très estompée), icône carrée, nom en gras, favori en étoile
+  au trait, composants en cases d'objet, case à cocher, boutons et compteur de CœurUI.
+- Vue d'ensemble : cartes sur cases ardoise (illustrations de la cuisine, de la pêche et du secourisme très
+  estompées), noms en petites capitales, sorts en cases à icône carrée, barre striée bleue, « oublier le
+  métier » en petite croix au trait. Fond marron de la page des recettes et bords du compteur retirés.
+- Composants : cases carrées du thème, aussi pour ceux qui apparaissent en changeant de recette ; barres de
+  métier à la bonne longueur (1/75 ne remplit plus la barre).
+- Redémarrer le jeu (nouveau fichier, nouvelles icônes).
+
 ## 0.65.1 · 28/11/2026
 
 - Sacs : le clic droit sur un objet qui lance un sort (parchemin, potion...) était bloqué par le jeu

@@ -624,6 +624,7 @@ L.FJ_DESC = "Les fenêtres du jeu habillées au style de CœurUI, une à une : u
 L.FJ_FICHE = "Fiche du personnage"
 L.FJ_GRIMOIRE = "Grimoire"
 L.FJ_TALENTS = "Talents"
+L.FJ_METIERS = "Métiers"
 L.FJ_FENETRES = "FENÊTRES HABILLÉES"
 L.FJ_ACTIF_NOTE = "Coupé : la fenêtre du jeu revient après un /reload."
 L.FJ_PAGE_PERSO = "Personnage"

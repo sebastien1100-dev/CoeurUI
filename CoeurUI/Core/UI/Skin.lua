@@ -364,6 +364,16 @@ function CUI:SkinEditBox(eb)
             if _G[name .. suffix] then self:SkinHide(_G[name .. suffix]) end
         end
     end
+    -- Bords sans nom ajoutés par le jeu (« common-search-border-... ») ; la loupe est gardée.
+    for _, r in ipairs({ eb:GetRegions() }) do
+        if r:GetObjectType() == "Texture" then
+            local atlas = r.GetAtlas and r:GetAtlas()
+            if type(atlas) == "string" and not issecret(atlas) and atlas:find("border", 1, true)
+                and not atlas:find("magnif", 1, true) then
+                self:SkinHide(r)
+            end
+        end
+    end
     -- Case dessinée sur le champ lui-même (couche du fond) : un cadre à part finissait sous la fenêtre.
     local panel = self:CreatePanel(eb, { radius = 3, fill = C.case, shadow = false, inset = { -4, 2 } })
     -- Croix « effacer » du jeu (rond) : au trait gris.
@@ -449,7 +459,16 @@ function CUI:SkinItemSlot(b)
     if not b or b.cuiSkinned then return end
     b.cuiSkinned = true
     local name = b:GetName()
-    local icon = b.icon or b.Icon or (name and _G[name .. "IconTexture"])
+    -- Icône : certains boutons en portent deux (« icon » vide et « Icon » qui montre l'objet, composants des
+    -- métiers) : celle qui a une image, sinon la première trouvée.
+    local icon
+    for _, cand in ipairs({ b.Icon, b.icon, name and _G[name .. "IconTexture"] or nil }) do
+        if cand and cand.GetObjectType and cand:GetObjectType() == "Texture" then
+            local tex = cand:GetTexture()
+            if tex ~= nil and (issecret(tex) or tex ~= "") then icon = cand break end
+            icon = icon or cand
+        end
+    end
     local w, h = b:GetSize()
     local side = (w and h and w > 0 and h > 0) and math.floor(math.min(w, h)) or nil
     if icon then
@@ -564,6 +583,7 @@ function CUI:SkinSideTab(tab, pictoName)
         if icon then self:SkinHide(icon) end
         icon = nil
         line = picto(tab, pictoName, 24)
+        tab.cuiPicto = line -- dessin changeable ensuite (onglets de métier)
     end
     if icon and tab.Mask and icon.RemoveMaskTexture then pcall(icon.RemoveMaskTexture, icon, tab.Mask) end
     if icon then
@@ -707,7 +727,8 @@ local STAT_BAR_COLORS = {
     orange = { 0.76, 0.42, 0.18 },
     purple = { 0.55, 0.35, 0.75 },
 }
-function CUI:SkinStatBar(bar)
+-- color (facultatif) : couleur imposée (barre dont l'image animée ne dit pas sa couleur : métiers).
+function CUI:SkinStatBar(bar, color)
     if not bar or bar.cuiBar then return end
     bar.cuiBar = true
     local fill = bar.Fill
@@ -721,19 +742,42 @@ function CUI:SkinStatBar(bar)
     holder:SetFrameLevel(math.max(0, bar:GetFrameLevel() - 1))
     self:CreatePanel(holder, { radius = 3, fill = C.case, shadow = false })
     if fill then
-        local copy = holder:CreateTexture(nil, "ARTWORK")
+        -- Le remplissage du jeu peut être plus large que la barre (il le rogne d'un masque) : notre copie est
+        -- dans un cadre qui coupe ce qui dépasse de la case.
+        local clip = _G.CreateFrame("Frame", nil, holder)
+        clip:SetPoint("TOPLEFT", 2, -2)
+        clip:SetPoint("BOTTOMRIGHT", -2, 2)
+        clip:SetClipsChildren(true)
+        clip:SetFrameLevel(holder:GetFrameLevel()) -- sous le texte de la barre
+        local inner = _G.CreateFrame("Frame", nil, clip)
+        inner:SetAllPoints(clip)
+        inner:SetFrameLevel(holder:GetFrameLevel())
+        local copy = inner:CreateTexture(nil, "ARTWORK")
         copy:SetTexture(WHITE)
         copy:SetPoint("LEFT", fill, "LEFT")
-        copy:SetPoint("RIGHT", fill, "RIGHT")
         copy:SetHeight(STAT_BAR_H)
-        self:CreateStripes(holder, copy, 2)
+        self:CreateStripes(inner, copy, 2)
+        -- Largeur : celle du remplissage, ou celle du masque si elle est plus petite (barres de métier : le
+        -- remplissage fait toute la largeur et le masque n'en dévoile que la part acquise).
+        local mask = bar.Mask
+        local function width()
+            local left, right = fill:GetLeft(), fill:GetRight()
+            if not left or not right then return end
+            if mask and mask.GetRight then
+                local mr = mask:GetRight()
+                if mr and mr < right then right = mr end
+            end
+            copy:SetWidth(math.max(0.01, right - left))
+        end
         local inside = false
         local function sync()
             if inside then return end
             inside = true
+            width()
             -- Couleur : dans le nom de l'image (« common-stat-bar-blue »...) ; image blanche : sa teinte.
             local atlas = fill.GetAtlas and fill:GetAtlas()
-            local named = type(atlas) == "string" and not issecret(atlas) and STAT_BAR_COLORS[atlas:match("%-(%a+)$") or ""]
+            local named = color or (type(atlas) == "string" and not issecret(atlas)
+                and STAT_BAR_COLORS[atlas:match("%-(%a+)$") or ""])
             if named then
                 copy:SetVertexColor(named[1], named[2], named[3], 1)
             else
@@ -745,9 +789,26 @@ function CUI:SkinStatBar(bar)
             inside = false
         end
         for _, method in ipairs({ "SetVertexColor", "Show", "Hide", "SetShown", "SetWidth", "SetAlpha",
-                                  "SetAtlas", "SetTexture" }) do
+                                  "SetAtlas", "SetTexture", "SetPoint", "SetSize" }) do
             if fill[method] then _G.hooksecurefunc(fill, method, sync) end
         end
+        if mask then
+            for _, method in ipairs({ "SetWidth", "SetPoint", "SetSize", "ClearAllPoints" }) do
+                if mask[method] then _G.hooksecurefunc(mask, method, sync) end
+            end
+        end
+        -- Barre « à valeur » (compétences) : le jeu la fait avancer sans toucher au remplissage.
+        for _, method in ipairs({ "SetValue", "SetMinMaxValues" }) do
+            if bar[method] then
+                _G.hooksecurefunc(bar, method, function()
+                    sync()
+                    _G.C_Timer.After(0, sync) -- la largeur du remplissage suit à l'image suivante
+                end)
+            end
+        end
+        -- Placement connu seulement une fois la barre posée à l'écran.
+        bar:HookScript("OnSizeChanged", sync)
+        bar:HookScript("OnShow", function() _G.C_Timer.After(0, sync) end)
         sync()
     end
     local text = bar.Text
@@ -785,6 +846,18 @@ function CUI:SkinCheckbox(cb)
         tick[i] = t
     end
     local label = cb.Label or cb.Text or (cb.GetFontString and cb:GetFontString())
+    -- Couleur glissée par le jeu dans le libellé (« |cff999999 ») : retirée, la nôtre la remplace.
+    if label then
+        local inner = false
+        local function clean(fs, t)
+            if inner or type(t) ~= "string" or issecret(t) or not t:find("|c") then return end
+            inner = true
+            fs:SetText((t:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")))
+            inner = false
+        end
+        _G.hooksecurefunc(label, "SetText", clean)
+        clean(label, label:GetText())
+    end
     local busy = false
     local function paint()
         if busy then return end

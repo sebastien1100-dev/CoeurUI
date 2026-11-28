@@ -1,5 +1,21 @@
 # Skin Blizzard : tests en jeu
 
+## 0.66.0 · métiers
+
+1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Métiers » actif. Aucune erreur Lua.
+2. Ouvrir un métier (Minage) : cadre ardoise, « MINAGE » à gauche du titre, croix grise ; glisser par le
+   bandeau. Onglets de côté : marteau au trait (vue d'ensemble), puis l'icône au trait de chaque métier
+   (pioche pour le minage, marmite pour la cuisine...), l'ouvert plus clair.
+3. Barre « Minage 1/75 » striée bleue dans une case.
+4. Liste : recherche en case sombre, « Filtrer » en bouton de CœurUI ; « BARRES FONDUES » en petites
+   capitales avec un chevron (clic : repli) ; chaque recette : pastille colorée (orange, jaune, vert, gris),
+   nom gris clair ; recette choisie : bande plus claire ; survol : bande et nom blanc.
+5. Détail : case ardoise, icône carrée en case, « Barre de cuivre » en gras, « Requiert : Forge » (Forge en
+   rouge si absente), texte gris, étoile au trait (clic : favori, étoile blanche) ; « COMPOSANTS » en petites
+   capitales ; composant en case d'objet ; « Suivre la recette » case de CœurUI.
+6. Bas : « Tout créer », compteur (flèches en petites cases), « Créer » au style de CœurUI ; créer marche.
+7. Vue d'ensemble (onglet marteau) : cases ardoise, barres striées, sorts en cases ; envoyer une capture.
+
 ## 0.63.0 · talents
 
 1. **Redémarrer le jeu**. Page du Skin Blizzard : interrupteur « Talents » actif. Aucune erreur Lua.

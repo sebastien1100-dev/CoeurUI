@@ -549,6 +549,107 @@ def humeur_mecontent(d):
     ligne(d, (12, 6.8), (10.5, 10), (13, 12.5), (11, 16))
 
 
+# Métiers (maquette « 4 bis · Icônes des métiers ») -------------------------------------------------
+
+def arc(cx, cy, r, de, a, n=48):
+    """Arc de cercle, angles en degrés (0 = droite, sens horaire à l'écran)."""
+    return [(cx + r * math.cos(math.radians(de + (a - de) * i / n)),
+             cy + r * math.sin(math.radians(de + (a - de) * i / n))) for i in range(n + 1)]
+
+
+def metier_alchimie(d):
+    ligne(d, (9.5, 3.5), (14.5, 3.5))
+    ligne(d, (10.5, 3.5), (10.5, 9), (5, 18.5), (6.4, 20.5), (17.6, 20.5), (19, 18.5), (13.5, 9), (13.5, 3.5))
+    ligne(d, (7.5, 14.5), (16.5, 14.5))
+
+
+def metier_forge(d):
+    tampon(d, [p(*q) for q in [(3.5, 7.5), (17, 7.5)] + bezier((17, 7.5), (17, 10), (19, 11), (20.5, 11))])
+    tampon(d, [p(*q) for q in bezier((5.5, 7.5), (5.5, 11), (8, 12), (9.5, 12))
+               + [(9.5, 16), (7, 16), (7, 19.5), (17, 19.5), (17, 16), (14.5, 16), (14.5, 12)]
+               + bezier((14.5, 12), (16, 12), (17, 11), (17, 7.5))])
+
+
+def metier_enchantement(d):
+    ligne(d, (4, 20), (14, 10))
+    ligne(d, (16.5, 3.5), (16.5, 7.5))
+    ligne(d, (14.5, 5.5), (18.5, 5.5))
+    ligne(d, (19.5, 9), (19.5, 11))
+    ligne(d, (18.5, 10), (20.5, 10))
+    ligne(d, (11, 3.5), (11, 5))
+    ligne(d, (10.25, 4.25), (11.75, 4.25))
+
+
+def metier_ingenierie(d):
+    """Clé : tête en arc ouverte en haut à droite, manche vers le bas à gauche."""
+    tampon(d, [p(*q) for q in arc(15.5, 8.5, 4.5, -15, 285)])
+    ligne(d, (12.3, 11.7), (4, 20))
+
+
+def metier_herboristerie(d):
+    ligne(d, (12, 21), (12, 9))
+    tampon(d, [p(*q) for q in bezier((12, 14), (8, 14), (5.5, 11.5), (5.5, 7.5))
+               + bezier((5.5, 7.5), (9.5, 7.5), (12, 10), (12, 14))])
+    tampon(d, [p(*q) for q in bezier((12, 11), (15.5, 11), (18.5, 8.5), (18.5, 4.5))
+               + bezier((18.5, 4.5), (14.5, 4.5), (12, 7), (12, 11))])
+
+
+def metier_cuir(d):
+    chemin(d, (6, 4), (9, 6), (15, 6), (18, 4), (19.5, 9), (17.5, 11), (18.5, 17), (15, 20), (9, 20),
+           (5.5, 17), (6.5, 11), (4.5, 9))
+
+
+def metier_minage(d):
+    tampon(d, [p(*q) for q in bezier((3.5, 9), (8, 4.5), (16, 4.5), (20.5, 9))])
+    ligne(d, (12, 6), (12, 20.5))
+
+
+def metier_depecage(d):
+    ligne(d, (4, 20), (8.5, 15.5))
+    ligne(d, (7.5, 16.5), (9.5, 18.5))
+    tampon(d, [p(*q) for q in [(8.5, 15.5), (19.5, 4.5)] + bezier((19.5, 4.5), (20.5, 8), (17, 13), (12.5, 15.5))
+               + [(8.5, 15.5)]])
+
+
+def metier_couture(d):
+    ligne(d, (18.5, 3.5), (5, 17))
+    cercle(d, 18.8, 4.2, 1.4)
+    tampon(d, [p(*q) for q in bezier((5, 17), (3, 19), (4.5, 21), (7, 19.5))
+               + bezier((7, 19.5), (10, 17.5), (13, 20), (16, 18))
+               + bezier((16, 18), (18, 16.5), (19, 14), (20.5, 13.5))])
+
+
+def metier_cuisine(d):
+    rect_arrondi(d, 4.5, 10.5, 15, 9.5, 3)
+    ligne(d, (2.5, 12.5), (4.5, 12.5))
+    ligne(d, (19.5, 12.5), (21.5, 12.5))
+    tampon(d, [p(*q) for q in bezier((9, 7.5), (9, 6), (10, 5.5), (10, 4))])
+    tampon(d, [p(*q) for q in bezier((14, 7.5), (14, 6), (15, 5.5), (15, 4))])
+
+
+def metier_peche(d):
+    tampon(d, [p(*q) for q in [(14, 3.5), (14, 14.5)] + arc(9.5, 14.5, 4.5, 0, 180) + [(5, 12.5), (8, 15)]])
+    ligne(d, (12, 3.5), (16, 3.5))
+
+
+def metier_secourisme(d):
+    chemin(d, (9.5, 4), (14.5, 4), (14.5, 9.5), (20, 9.5), (20, 14.5), (14.5, 14.5), (14.5, 20), (9.5, 20),
+           (9.5, 14.5), (4, 14.5), (4, 9.5), (9.5, 9.5))
+
+
+def metier_joaillerie(d):
+    chemin(d, (7, 4), (17, 4), (21, 9), (12, 20.5), (3, 9))
+    ligne(d, (3, 9), (21, 9))
+    ligne(d, (9, 4), (8, 9), (12, 20.5), (16, 9), (15, 4))
+
+
+def metier_calligraphie(d):
+    tampon(d, [p(*q) for q in bezier((20, 4), (13, 4), (7.5, 9.5), (6.5, 17.5))])
+    ligne(d, (6.5, 17.5), (4, 20))
+    tampon(d, [p(*q) for q in bezier((6.5, 17.5), (14, 16.5), (19.5, 11), (20, 4))])
+    ligne(d, (10, 14), (14, 10))
+
+
 ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage, "Aide": aide, "Courrier": courrier, "Suivi": suivi, "File": file_attente, "Tiroir": tiroir, "Categories": categories, "Trier": trier, "Chevron": chevron, "TagElite": tag_elite, "TagDonjon": tag_donjon, "TagRaid": tag_raid, "TagGroupe": tag_groupe, "Cadenas": cadenas, "RoleTank": role_tank, "RoleSoin": role_soin, "RoleDegats": role_degats, "Recharger": recharger,
           "Sortie": sortie, "Personnage": personnage, "Metiers": metiers, "Sorts": sorts, "Succes": succes,
           "Quetes": quetes, "Guilde": guilde, "Groupes": groupes, "Collections": collections, "Journal": journal,
@@ -559,7 +660,13 @@ ICONES = {"Copier": copier, "Bas": bas, "Talents": talents, "Heritage": heritage
           "TournerDroite": tourner_droite, "RangerSac": ranger_sac, "Ignorer": ignorer,
           "ResArcanes": res_arcanes, "ResFeu": res_feu, "ResGivre": res_givre, "ResNature": res_nature,
           "ResOmbre": res_ombre, "Agrandir": agrandir, "Reduire": reduire, "Familier": familier,
-          "HumeurHeureux": humeur_heureux, "HumeurContent": humeur_content, "HumeurMecontent": humeur_mecontent}
+          "HumeurHeureux": humeur_heureux, "HumeurContent": humeur_content, "HumeurMecontent": humeur_mecontent,
+          "MetierAlchimie": metier_alchimie, "MetierForge": metier_forge, "MetierEnchantement": metier_enchantement,
+          "MetierIngenierie": metier_ingenierie, "MetierHerboristerie": metier_herboristerie,
+          "MetierCuir": metier_cuir, "MetierMinage": metier_minage, "MetierDepecage": metier_depecage,
+          "MetierCouture": metier_couture, "MetierCuisine": metier_cuisine, "MetierPeche": metier_peche,
+          "MetierSecourisme": metier_secourisme, "MetierJoaillerie": metier_joaillerie,
+          "MetierCalligraphie": metier_calligraphie}
 
 
 def main():
